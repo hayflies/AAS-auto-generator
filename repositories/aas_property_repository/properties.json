@@ -1,0 +1,97 @@
+{
+  "properties": [
+    {
+      "candidate_id": "AAS_PROP_ASSET_NAME",
+      "idShort": "AssetName",
+      "description": "Human-readable name of the asset.",
+      "submodel": "DigitalNameplate",
+      "semantic_id": "https://admin-shell.io/idta/nameplate/AssetName/1/0",
+      "aliases": ["asset name", "name", "device name"]
+    },
+    {
+      "candidate_id": "AAS_PROP_ASSET_TYPE",
+      "idShort": "AssetType",
+      "description": "Functional type or class of the asset.",
+      "submodel": "TechnicalData",
+      "semantic_id": "https://example.org/aas/technical/AssetType",
+      "aliases": ["asset type", "device type", "equipment type"]
+    },
+    {
+      "candidate_id": "AAS_PROP_MANUFACTURER",
+      "idShort": "ManufacturerName",
+      "description": "Name of the manufacturer or supplier.",
+      "submodel": "DigitalNameplate",
+      "semantic_id": "https://admin-shell.io/idta/nameplate/ManufacturerName/1/0",
+      "aliases": ["manufacturer", "maker", "supplier"]
+    },
+    {
+      "candidate_id": "AAS_PROP_MODEL_NAME",
+      "idShort": "ManufacturerProductDesignation",
+      "description": "Manufacturer-specific model name or product designation.",
+      "submodel": "DigitalNameplate",
+      "semantic_id": "https://admin-shell.io/idta/nameplate/ManufacturerProductDesignation/1/0",
+      "aliases": ["model name", "model", "product designation"]
+    },
+    {
+      "candidate_id": "AAS_PROP_SERIAL_NUMBER",
+      "idShort": "SerialNumber",
+      "description": "Unique serial number assigned to the asset.",
+      "submodel": "DigitalNameplate",
+      "semantic_id": "https://admin-shell.io/idta/nameplate/SerialNumber/1/0",
+      "aliases": ["serial number", "serial", "s/n"]
+    },
+    {
+      "candidate_id": "AAS_PROP_NOMINAL_VOLTAGE",
+      "idShort": "NominalVoltage",
+      "description": "Nominal voltage required for operating the asset.",
+      "submodel": "TechnicalData",
+      "semantic_id": "https://example.org/aas/technical/NominalVoltage",
+      "preferred_unit": "V",
+      "aliases": ["rated voltage", "nominal voltage", "operating voltage"]
+    },
+    {
+      "candidate_id": "AAS_PROP_RATED_CURRENT",
+      "idShort": "RatedCurrent",
+      "description": "Nominal current required by the asset.",
+      "submodel": "TechnicalData",
+      "semantic_id": "https://example.org/aas/technical/RatedCurrent",
+      "preferred_unit": "A",
+      "aliases": ["rated current", "nominal current", "operating current"]
+    },
+    {
+      "candidate_id": "AAS_PROP_WEIGHT",
+      "idShort": "Weight",
+      "description": "Weight or mass of the asset.",
+      "submodel": "TechnicalData",
+      "semantic_id": "https://example.org/aas/technical/Weight",
+      "preferred_unit": "kg",
+      "aliases": ["weight", "mass"]
+    },
+    {
+      "candidate_id": "AAS_PROP_TEMPERATURE",
+      "idShort": "Temperature",
+      "description": "Temperature value used for status and visual validation.",
+      "submodel": "OperationalData",
+      "semantic_id": "https://example.org/aas/operation/Temperature",
+      "preferred_unit": "°C",
+      "aliases": ["temperature", "temp"]
+    },
+    {
+      "candidate_id": "AAS_PROP_ROTATION_ANGLE",
+      "idShort": "RotationAngle",
+      "description": "Rotation angle applied to the digital twin asset.",
+      "submodel": "OperationalData",
+      "semantic_id": "https://example.org/aas/operation/RotationAngle",
+      "preferred_unit": "deg",
+      "aliases": ["rotation angle", "angle", "joint angle"]
+    },
+    {
+      "candidate_id": "AAS_PROP_STATUS",
+      "idShort": "OperationalStatus",
+      "description": "Operational status or state of the asset.",
+      "submodel": "OperationalData",
+      "semantic_id": "https://example.org/aas/operation/OperationalStatus",
+      "aliases": ["status", "state", "mode"]
+    }
+  ]
+}

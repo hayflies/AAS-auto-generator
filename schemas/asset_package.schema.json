@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AssetPackage",
+  "type": "object",
+  "required": ["asset_id", "asset_name", "asset_type", "images", "documents", "user_inputs"],
+  "properties": {
+    "asset_id": {"type": "string"},
+    "asset_name": {"type": "string"},
+    "asset_type": {"type": "string"},
+    "manufacturer": {"type": ["string", "null"]},
+    "model_name": {"type": ["string", "null"]},
+    "images": {"type": "array", "items": {"type": "string"}},
+    "documents": {"type": "array", "items": {"type": "string"}},
+    "user_inputs": {"type": "object"}
+  }
+}

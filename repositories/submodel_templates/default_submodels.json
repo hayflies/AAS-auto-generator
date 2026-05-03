@@ -1,0 +1,20 @@
+{
+  "submodels": [
+    {
+      "idShort": "DigitalNameplate",
+      "description": "Identity and manufacturer information."
+    },
+    {
+      "idShort": "TechnicalData",
+      "description": "Technical attributes mapped from Semantic Nodes."
+    },
+    {
+      "idShort": "ProvisionOf3DModels",
+      "description": "References to 3D model files used by the DT environment."
+    },
+    {
+      "idShort": "OperationalData",
+      "description": "Sensor-like values used for DT behavior validation."
+    }
+  ]
+}

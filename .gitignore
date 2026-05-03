@@ -1,0 +1,11 @@
+.idea/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+data/output/*
+data/generated_aas/*
+data/generated_models/*
+!data/output/.gitkeep
+!data/generated_aas/.gitkeep
+!data/generated_models/.gitkeep

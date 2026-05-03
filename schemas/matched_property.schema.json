@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "MatchedProperty",
+  "type": "object",
+  "required": [
+    "semantic_node_id",
+    "aas_property_id",
+    "submodel",
+    "idShort",
+    "value",
+    "match_score"
+  ],
+  "properties": {
+    "semantic_node_id": {"type": "string"},
+    "aas_property_id": {"type": "string"},
+    "submodel": {"type": "string"},
+    "idShort": {"type": "string"},
+    "value": {},
+    "unit": {"type": ["string", "null"]},
+    "match_score": {"type": "number", "minimum": 0, "maximum": 1},
+    "semantic_id": {"type": ["string", "null"]}
+  }
+}

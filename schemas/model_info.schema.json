@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ModelInfo",
+  "type": "object",
+  "required": ["model_path", "model_format", "generation_method", "scale", "position", "rotation"],
+  "properties": {
+    "model_path": {"type": "string"},
+    "model_format": {"type": "string"},
+    "generation_method": {"type": "string"},
+    "scale": {"type": "array", "items": {"type": "number"}, "minItems": 3, "maxItems": 3},
+    "position": {"type": "array", "items": {"type": "number"}, "minItems": 3, "maxItems": 3},
+    "rotation": {"type": "array", "items": {"type": "number"}, "minItems": 3, "maxItems": 3}
+  }
+}

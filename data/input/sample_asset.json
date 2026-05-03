@@ -1,0 +1,35 @@
+{
+  "asset_images": [
+    "data/input/robot_arm_front.jpg",
+    "data/input/robot_arm_nameplate.jpg"
+  ],
+  "manual_files": [
+    "data/input/robot_arm_datasheet.pdf"
+  ],
+  "user_inputs": {
+    "asset_id": "robot_arm_b",
+    "asset_name": "Robot Arm B",
+    "manufacturer": "ROBOTIS",
+    "model_name": "example_model",
+    "asset_type": "robot_arm",
+    "rated_voltage": {
+      "value": 34,
+      "unit": "V"
+    },
+    "rated_current": {
+      "value": 4.5,
+      "unit": "A"
+    },
+    "serial_number": "RA-2026-0002",
+    "weight": {
+      "value": 13.4,
+      "unit": "kg"
+    },
+    "existing_model_path": "data/generated_models/robot_arm_b.glb",
+    "test_sensor_values": {
+      "rotation_angle": 40,
+      "temperature": 90,
+      "status": "running"
+    }
+  }
+}
