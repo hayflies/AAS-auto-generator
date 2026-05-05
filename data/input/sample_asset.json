@@ -2,6 +2,7 @@
   "asset_images": [
     "data/input/robot_arm_front.jpg",
     "data/input/robot_arm_nameplate.jpg"
+    "data/input/테스트사진.jpg"
   ],
   "manual_files": [
     "data/input/robot_arm_datasheet.pdf"
