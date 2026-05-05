@@ -1,0 +1,16 @@
+names:
+- base
+- gripper
+- joint
+- link
+- nameplate
+nc: 5
+roboflow:
+  license: CC BY 4.0
+  project: test
+  url: https://universe.roboflow.com/robotpartsdetection/test/dataset/1
+  version: 1
+  workspace: robotpartsdetection
+test: ../test/images
+train: ../train/images
+val: ../valid/images
