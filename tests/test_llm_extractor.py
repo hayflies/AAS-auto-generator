@@ -3,14 +3,42 @@ from __future__ import annotations
 import unittest
 
 from app.models import AssetPackage, CVOutput, ExtractedEntity
-from modules.llm.llm_extractor import LLMExtractor
+from modules.extraction.llm_extractor import LLMExtractor
+
+
+class FakeExtractionClient:
+    """LLM 서버 없이 extractor 변환 로직을 검증하기 위한 테스트 더블."""
+
+    def generate_json_list(self, prompt: str, fallback: list | None = None) -> list:
+        if "rated_voltage" not in prompt:
+            return fallback or []
+        return [
+            {
+                "raw_name": "Rated Voltage",
+                "raw_value": "24",
+                "raw_unit": "V",
+                "confidence": 0.95,
+            },
+            {
+                "raw_name": "Rated Current",
+                "raw_value": "1.5",
+                "raw_unit": "A",
+                "confidence": 0.9,
+            },
+            {
+                "raw_name": "Weight",
+                "raw_value": "3.5",
+                "raw_unit": "kg",
+                "confidence": 0.88,
+            },
+        ]
 
 
 class LLMExtractorTest(unittest.TestCase):
     """LLMExtractor가 AssetPackage에서 ExtractedEntity를 올바르게 추출하는지 검증한다."""
 
     def setUp(self) -> None:
-        self.extractor = LLMExtractor()
+        self.extractor = LLMExtractor(FakeExtractionClient())
         self.sample_package = AssetPackage(
             asset_id="test_001",
             asset_name="Robot Arm A",

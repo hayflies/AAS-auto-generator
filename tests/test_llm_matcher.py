@@ -3,7 +3,30 @@ from __future__ import annotations
 import unittest
 
 from app.models import AASPropertyCandidate, MatchResult, SemanticNode
-from modules.llm.llm_matcher import LLMMatcher
+from modules.matching.llm_matcher import LLMMatcher
+
+
+class FakeMatchingClient:
+    """LLM 서버 없이 matcher threshold/변환 로직을 검증하기 위한 테스트 더블."""
+
+    def generate_json(self, prompt: str, fallback: dict | None = None) -> dict:
+        if "ManufacturerName" in prompt:
+            return {
+                "match": False,
+                "score": 0.1,
+                "reason": "different concepts",
+            }
+        if "GrossWeight" in prompt:
+            return {
+                "match": True,
+                "score": 0.7,
+                "reason": "related weight concept",
+            }
+        return {
+            "match": True,
+            "score": 0.92,
+            "reason": "same electrical voltage concept",
+        }
 
 
 def _make_node(name: str, value: str, unit: str | None = None) -> SemanticNode:
@@ -33,7 +56,7 @@ class LLMMatcherTest(unittest.TestCase):
     """LLMMatcher가 SemanticNode와 AASPropertyCandidate를 올바르게 판정하는지 검증한다."""
 
     def setUp(self) -> None:
-        self.matcher = LLMMatcher()
+        self.matcher = LLMMatcher(client=FakeMatchingClient())
 
     def test_match_returns_match_result(self) -> None:
         """match()가 MatchResult 인스턴스를 반환한다."""
@@ -83,7 +106,7 @@ class LLMMatcherTest(unittest.TestCase):
 
     def test_match_false_when_score_below_threshold(self) -> None:
         """threshold보다 높게 설정하면 낮은 점수는 match=False가 된다."""
-        strict_matcher = LLMMatcher(threshold=0.99)
+        strict_matcher = LLMMatcher(client=FakeMatchingClient(), threshold=0.99)
         node = _make_node("Weight", "3.5", "kg")
         candidate = _make_candidate("GrossWeight", "Total weight of the packaged asset")
         result = strict_matcher.match(node, candidate)

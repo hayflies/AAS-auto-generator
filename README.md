@@ -32,6 +32,16 @@ python main.py
 python main.py --input-json data/input/sample_asset.json
 ```
 
+선택형 구현체를 명시적으로 켤 수도 있습니다.
+
+```bash
+python main.py --pipeline llm
+python main.py --pipeline yolo
+python main.py --pipeline llm-yolo
+```
+
+`default` 파이프라인은 외부 런타임 의존성 없이 동작합니다. `llm` 계열은 Ollama 서버와 모델이 필요하고, `yolo` 계열은 `ultralytics`와 YOLO weight 파일이 필요합니다.
+
 결과 파일은 기본적으로 다음 위치에 생성됩니다.
 
 ```text
@@ -60,6 +70,7 @@ python -m unittest
 - 수동 입력 기반 entity 추출
 - 로컬 JSON repository 기반 후보 검색
 - rule-based entity matching
+- NoOp CV adapter
 - 코드 기반 AAS JSON 생성 및 구조 검증
 - 기존 3D 모델 경로 참조 또는 생성 예정 경로 기록
 - in-memory DT 등록 및 mock sensor validation

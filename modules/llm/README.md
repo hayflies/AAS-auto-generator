@@ -1,6 +1,7 @@
-# LLM 모듈
+# LLM 공통 인프라와 선택형 구현
 
-Ollama 기반 로컬 LLM을 사용해 AAS 자동 생성 파이프라인의 4개 단계를 구현한 패키지입니다.
+Ollama 기반 로컬 LLM을 사용해 AAS 자동 생성 파이프라인의 일부 단계를 확장합니다.
+`modules/llm/`에는 공통 클라이언트와 프롬프트만 두고, 계층별 구현체는 프로젝트 구조에 맞춰 각 디렉토리에 배치합니다.
 
 ---
 
@@ -9,13 +10,13 @@ Ollama 기반 로컬 LLM을 사용해 AAS 자동 생성 파이프라인의 4개 
 ```
 [Input Layer]               
         ↓
-[LLMExtractor]              ← 이 패키지
+[LLMExtractor]              ← modules/extraction
         ↓
-[LLMSemanticNodeBuilder]    ← 이 패키지
+[LLMSemanticNodeBuilder]    ← modules/semantic_node
         ↓
-[EmbeddingCandidateRetriever] ← 이 패키지
+[EmbeddingCandidateRetriever] ← modules/retrieval
         ↓
-[LLMMatcher]                ← 이 패키지
+[LLMMatcher]                ← modules/matching
         ↓
 [AAS 생성 → DT 등록]        
 ```
@@ -43,10 +44,10 @@ ollama pull nomic-embed-text
 |---|---|
 | `ollama_client.py` | Ollama REST API 공통 클라이언트 |
 | `prompts.py` | LLM 프롬프트 템플릿 모음 |
-| `llm_extractor.py` | 파이프라인 2단계: 속성 추출 |
-| `llm_semantic_builder.py` | 파이프라인 3단계: 의미 보강 |
-| `embedding_retriever.py` | 파이프라인 4단계: 후보 검색 |
-| `llm_matcher.py` | 파이프라인 5단계: 의미 매칭 |
+| `../extraction/llm_extractor.py` | 파이프라인 2단계: 속성 추출 |
+| `../semantic_node/llm_semantic_builder.py` | 파이프라인 3단계: 의미 보강 |
+| `../retrieval/embedding_retriever.py` | 파이프라인 4단계: 후보 검색 |
+| `../matching/llm_matcher.py` | 파이프라인 5단계: 의미 매칭 |
 
 ---
 
@@ -54,10 +55,10 @@ ollama pull nomic-embed-text
 
 ### `ollama_client.py` — 공통 클라이언트
 
-모든 LLM 호출의 단일 창구입니다. 다른 모듈은 직접 HTTP 요청 없이 이 클라이언트를 통해 Ollama와 통신합니다.
+모든 Ollama 호출의 단일 창구입니다. `interfaces/base_llm.py`의 `BaseLLM`과 `interfaces/base_embedding.py`의 `BaseEmbeddingModel`을 구현하므로, extraction/semantic/matching 계층은 Ollama 구체 타입이 아니라 `BaseLLM` 계약을 통해 사용합니다.
 
 ```python
-from modules.llm.ollama_client import OllamaClient
+from modules.llm import OllamaClient
 
 client = OllamaClient()
 client.generate("안녕")                    # 텍스트 응답
@@ -78,7 +79,6 @@ client.is_available()                     # 서버 상태 확인
 | `build_extraction_prompt(input_text)` | `llm_extractor.py` |
 | `build_semantic_node_prompt(name, value, unit)` | `llm_semantic_builder.py` |
 | `build_matching_prompt(node, candidate)` | `llm_matcher.py` |
-| `build_batch_matching_prompt(node, candidates)` | `llm_matcher.py` |
 
 ---
 
@@ -188,25 +188,13 @@ node_matches = [self.matcher.match(node, candidate) for candidate in candidates]
 
 ## 파이프라인 연결 방법
 
-`app/pipeline.py`의 `create_default_pipeline()` 함수에서 교체합니다.
+`app/pipeline.py`의 `create_llm_pipeline()` 함수를 사용합니다.
 
 ```python
-# 현재 (LLM 버전)
-from modules.llm.llm_extractor import LLMExtractor
-from modules.llm.llm_semantic_builder import LLMSemanticNodeBuilder
-from modules.llm.embedding_retriever import EmbeddingCandidateRetriever
-from modules.llm.llm_matcher import LLMMatcher
+from app.pipeline import create_llm_pipeline
 
-extractor        = LLMExtractor()
-semantic_builder = LLMSemanticNodeBuilder()
-retriever        = EmbeddingCandidateRetriever(repository_path)
-matcher          = LLMMatcher(threshold=config.match_threshold)
-
-# Rule-based로 되돌리려면
-from modules.extraction import ManualInputExtractor
-from modules.semantic_node import DefaultSemanticNodeBuilder
-from modules.retrieval import InMemoryCandidateRetriever
-from modules.matching import RuleBasedEntityMatcher
+pipeline = create_llm_pipeline()
+result = pipeline.run(payload)
 ```
 
 ---
@@ -214,22 +202,22 @@ from modules.matching import RuleBasedEntityMatcher
 ## 테스트
 
 ```bash
-# LLM 모듈 단위 테스트 (24개)
+# LLM 모듈 단위 테스트
 python -m unittest tests/test_llm_client.py tests/test_llm_extractor.py tests/test_llm_matcher.py -v
 
 # 전체 파이프라인 통합 테스트
 python main.py
 ```
 
-**테스트 결과 (2026-05-06 기준):**
+**테스트 결과 예시:**
 ```
-test_llm_client.py     8/8  ✅
-test_llm_extractor.py  8/8  ✅
-test_llm_matcher.py    8/8  ✅
+test_llm_client.py     10/10
+test_llm_extractor.py  8/8
+test_llm_matcher.py    8/8
 
-파이프라인 실행:
-  semantic_nodes    = 13
-  matched_properties = 3
+기본 파이프라인 실행:
+  semantic_nodes     = 8
+  matched_properties = 8
   aas_valid          = True
   dt_status          = success
   dt_validation      = passed

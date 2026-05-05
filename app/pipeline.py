@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
 
 from app.config import PipelineConfig
@@ -14,8 +15,10 @@ from app.models import (
 from interfaces.base_aas_generator import BaseAASGenerator
 from interfaces.base_cv import BaseCVModel
 from interfaces.base_dt_adapter import BaseDTAdapter
+from interfaces.base_embedding import BaseEmbeddingModel
 from interfaces.base_extractor import BaseInformationExtractor
 from interfaces.base_input import BaseInputLayer
+from interfaces.base_llm import BaseLLM
 from interfaces.base_mapper import BaseAASMapper
 from interfaces.base_matcher import BaseEntityMatcher
 from interfaces.base_model_generator import BaseModelGenerator
@@ -24,17 +27,15 @@ from interfaces.base_semantic_builder import BaseSemanticNodeBuilder
 from interfaces.base_validator import BaseDTValidator
 from modules.aas_generation import JsonAASGenerator
 from modules.aas_mapping import DefaultAASMapper
-from modules.cv import NoOpCVModel
-from modules.cv.yolo_part_detector import YOLOPartDetector
+from modules.cv import NoOpCVModel, YOLOPartDetector
 from modules.dt_integration import InMemoryDTAdapter
 from modules.extraction import LLMExtractor, ManualInputExtractor
 from modules.input_layer import DefaultInputLayer
-from modules.llm.embedding_retriever import EmbeddingCandidateRetriever
-from modules.llm.llm_semantic_builder import LLMSemanticNodeBuilder
+from modules.llm import OllamaClient
 from modules.matching import LLMMatcher, RuleBasedEntityMatcher
 from modules.model_3d import DefaultModelManager
-from modules.retrieval import InMemoryCandidateRetriever
-from modules.semantic_node import DefaultSemanticNodeBuilder
+from modules.retrieval import EmbeddingCandidateRetriever, InMemoryCandidateRetriever
+from modules.semantic_node import DefaultSemanticNodeBuilder, LLMSemanticNodeBuilder
 from modules.validation import DefaultDTValidator
 
 
@@ -179,6 +180,78 @@ def create_default_pipeline(config: PipelineConfig | None = None) -> AASAutoGene
     """
 
     config = config or PipelineConfig()
+    repository_path, template_path = _repository_paths(config)
+    dt_adapter = InMemoryDTAdapter(config)
+    return AASAutoGenerationPipeline(
+        config=config,
+        input_layer=DefaultInputLayer(),
+        cv_model=NoOpCVModel(),
+        extractor=ManualInputExtractor(),
+        semantic_builder=DefaultSemanticNodeBuilder(),
+        retriever=InMemoryCandidateRetriever(repository_path),
+        matcher=RuleBasedEntityMatcher(threshold=config.match_threshold),
+        model_manager=DefaultModelManager(config),
+        mapper=DefaultAASMapper(template_path),
+        aas_generator=JsonAASGenerator(),
+        dt_adapter=dt_adapter,
+        validator=DefaultDTValidator(dt_adapter),
+    )
+
+
+def create_llm_pipeline(
+    config: PipelineConfig | None = None,
+    llm: BaseLLM | None = None,
+    embedding_model: BaseEmbeddingModel | None = None,
+    cv_model: BaseCVModel | None = None,
+) -> AASAutoGenerationPipeline:
+    """Ollama 기반 LLM/embedding 구현체를 사용하는 선택형 파이프라인을 조립한다.
+
+    Ollama 서버와 모델이 준비된 환경에서만 사용한다. 기본 파이프라인은 외부
+    의존성이 없는 `create_default_pipeline`을 유지한다.
+    """
+
+    config = config or PipelineConfig()
+    default_client = OllamaClient() if llm is None or embedding_model is None else None
+    llm = llm or default_client
+    embedding_model = embedding_model or default_client
+    if llm is None or embedding_model is None:
+        raise ValueError("LLM pipeline requires both llm and embedding_model adapters.")
+
+    repository_path, template_path = _repository_paths(config)
+    dt_adapter = InMemoryDTAdapter(config)
+    return AASAutoGenerationPipeline(
+        config=config,
+        input_layer=DefaultInputLayer(),
+        cv_model=cv_model or NoOpCVModel(),
+        extractor=LLMExtractor(llm),
+        semantic_builder=LLMSemanticNodeBuilder(llm),
+        retriever=EmbeddingCandidateRetriever(repository_path, embedding_model),
+        matcher=LLMMatcher(client=llm, threshold=config.match_threshold),
+        model_manager=DefaultModelManager(config),
+        mapper=DefaultAASMapper(template_path),
+        aas_generator=JsonAASGenerator(),
+        dt_adapter=dt_adapter,
+        validator=DefaultDTValidator(dt_adapter),
+    )
+
+
+def create_yolo_pipeline(config: PipelineConfig | None = None) -> AASAutoGenerationPipeline:
+    """YOLO CV만 켜고 나머지는 기본 구현을 사용하는 선택형 파이프라인을 조립한다."""
+
+    pipeline = create_default_pipeline(config)
+    pipeline.cv_model = YOLOPartDetector()
+    return pipeline
+
+
+def create_llm_yolo_pipeline(config: PipelineConfig | None = None) -> AASAutoGenerationPipeline:
+    """YOLO CV와 Ollama LLM/embedding 구현을 함께 사용하는 실험용 파이프라인이다."""
+
+    return create_llm_pipeline(config, cv_model=YOLOPartDetector())
+
+
+def _repository_paths(config: PipelineConfig) -> tuple[Path, Path]:
+    """파이프라인 구현체들이 공유하는 repository/template 경로를 반환한다."""
+
     repository_path = (
         config.project_root
         / "repositories"
@@ -191,18 +264,4 @@ def create_default_pipeline(config: PipelineConfig | None = None) -> AASAutoGene
         / "submodel_templates"
         / "default_submodels.json"
     )
-    dt_adapter = InMemoryDTAdapter(config)
-    return AASAutoGenerationPipeline(
-        config=config,
-        input_layer=DefaultInputLayer(),
-        cv_model=YOLOPartDetector(),
-        extractor=LLMExtractor(),
-        semantic_builder=LLMSemanticNodeBuilder(),
-        retriever=EmbeddingCandidateRetriever(repository_path),
-        matcher=LLMMatcher(threshold=config.match_threshold),
-        model_manager=DefaultModelManager(config),
-        mapper=DefaultAASMapper(template_path),
-        aas_generator=JsonAASGenerator(),
-        dt_adapter=dt_adapter,
-        validator=DefaultDTValidator(dt_adapter),
-    )
+    return repository_path, template_path

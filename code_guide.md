@@ -64,7 +64,8 @@ Input Layer
 - `base_model_generator.py`: 3D 모델 생성 또는 참조 정보 생성 계약입니다.
 - `base_dt_adapter.py`: 디지털 트윈 등록 및 센서값 적용 계약입니다.
 - `base_validator.py`: DT 동작 검증 계약입니다.
-- `base_llm.py`, `base_embedding.py`: 향후 LLM/임베딩 기반 확장을 위한 계약입니다.
+- `base_llm.py`: LLM text generation, JSON object/list 응답 파싱, LLM 연결/응답 형식 오류 계약입니다.
+- `base_embedding.py`: 향후 sentence-transformers, OpenAI embedding, FAISS/Chroma 연동으로 교체할 때 쓰는 임베딩 계약입니다.
 
 ## modules/
 
@@ -81,30 +82,44 @@ Input Layer
 선택적 CV 단계입니다.
 
 - `noop_cv.py`: 실제 CV 모델 없이 이미지 파일명에서 `robot`, `pump`, `motor`, `conveyor` 같은 힌트를 찾아 자산 타입을 약하게 추론합니다. 세그멘테이션은 현재 수행하지 않습니다.
+- `yolo_part_detector.py`: YOLOv8 weight 파일로 로봇 부품을 탐지하고 crop 이미지를 `data/output/cv_crops`에 저장합니다. `--pipeline yolo` 또는 `--pipeline llm-yolo`에서 명시적으로 사용합니다.
+- `models/`: YOLO 모델 weight와 학습 데이터 설정 파일을 보관합니다.
 
 ### modules/extraction/
 
 입력 데이터에서 AAS 매핑 후보가 될 원천 속성을 추출합니다.
 
 - `manual_input_extractor.py`: 사용자 입력 필드에서 `ExtractedEntity` 목록을 만듭니다. OCR, 문서 파서, LLM extractor가 붙기 전의 기본 구현입니다.
+- `llm_extractor.py`: Ollama LLM을 사용해 자산 텍스트와 사용자 입력에서 `ExtractedEntity` 목록을 추출합니다. 기본 파이프라인이 아니라 선택형 LLM 파이프라인에서 사용합니다.
 
 ### modules/semantic_node/
 
 추출된 속성을 AAS 매핑 전 중간 표현인 `SemanticNode`로 변환합니다.
 
 - `default_builder.py`: 각 속성에 개념 정의, affordance, value type, confidence 같은 의미 정보를 붙입니다. 현재는 사전 기반 규칙으로 동작합니다.
+- `llm_semantic_builder.py`: Ollama LLM으로 각 속성의 개념 정의와 DT/AAS 용도를 동적으로 생성합니다.
 
 ### modules/retrieval/
 
 Semantic Node와 유사한 AAS Property 후보를 검색합니다.
 
 - `in_memory_retriever.py`: `repositories/aas_property_repository/properties.json`을 메모리에 로드한 뒤, 토큰 겹침 기반 점수로 후보 Top-K를 반환합니다.
+- `embedding_retriever.py`: Ollama embedding API로 Semantic Node와 AAS Property 후보 간 코사인 유사도를 계산합니다.
 
 ### modules/matching/
 
 검색된 후보 중 실제 매칭 여부를 판단합니다.
 
 - `rule_based_matcher.py`: 후보 검색 점수, 이름 토큰 겹침, 단위 일치 여부를 조합해 match 여부와 점수를 계산합니다.
+- `llm_matcher.py`: Ollama LLM으로 Semantic Node와 AAS Property 후보가 같은 의미인지 판단합니다.
+
+### modules/llm/
+
+LLM 계층 공통 인프라입니다. 계층별 구현체는 `extraction`, `semantic_node`, `retrieval`, `matching` 디렉토리에 두고, 이 디렉토리에는 공유 코드만 둡니다.
+
+- `ollama_client.py`: Ollama REST API 호출, JSON 응답 파싱, embedding 요청을 담당하는 공통 클라이언트입니다.
+- `prompts.py`: extraction, semantic node, matching 단계에서 쓰는 프롬프트 템플릿입니다.
+- `README.md`: Ollama 기반 선택형 구현체 사용 방법과 모델 준비 절차를 설명합니다.
 
 ### modules/aas_mapping/
 
@@ -190,6 +205,13 @@ DT 등록 결과에 mock sensor 값을 적용해 동작 검증을 수행합니�
 9. `JsonAASGenerator`가 mapping plan에서 최종 AAS JSON을 생성하고 검증합니다.
 10. `InMemoryDTAdapter`가 AAS와 모델 정보를 mock DT registry에 등록합니다.
 11. `DefaultDTValidator`가 mock sensor 값으로 DT 동작 검증 결과를 만듭니다.
+
+## 파이프라인 선택 모드
+
+- `default`: 외부 런타임 의존성 없이 `NoOpCVModel`, `ManualInputExtractor`, `DefaultSemanticNodeBuilder`, `InMemoryCandidateRetriever`, `RuleBasedEntityMatcher`를 사용합니다.
+- `llm`: Ollama 기반 `LLMExtractor`, `LLMSemanticNodeBuilder`, `EmbeddingCandidateRetriever`, `LLMMatcher`를 사용합니다.
+- `yolo`: YOLO CV만 켜고 나머지는 기본 구현을 사용합니다.
+- `llm-yolo`: YOLO CV와 Ollama 기반 LLM/embedding 구현을 함께 사용합니다.
 
 ## 확장 포인트
 

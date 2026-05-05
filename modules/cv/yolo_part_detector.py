@@ -18,7 +18,7 @@ from interfaces.base_cv import BaseCVModel
 
 
 # 로봇 부품 클래스 → 자산 유형 매핑
-# (joint/link/gripper 등이 탐지되면 robot arm일 가능성이 높음)
+# (joint/link/gripper 등이 탐지되면 robot_arm일 가능성이 높음)
 ROBOT_ARM_PARTS = {"base", "joint", "link", "gripper"}
 
 
@@ -29,7 +29,7 @@ class YOLOPartDetector(BaseCVModel):
         self,
         model_path: str | None = None,
         conf_threshold: float = 0.25,
-        output_dir: str = "data/generated_models/cv_crops",
+        output_dir: str = "data/output/cv_crops",
     ) -> None:
         """
         Args:
@@ -37,9 +37,6 @@ class YOLOPartDetector(BaseCVModel):
             conf_threshold: 탐지 신뢰도 최소 기준값 (0~1).
             output_dir: 부품별 크롭 이미지 저장 경로.
         """
-        # ultralytics는 lazy import (초기 import 비용 절감 + 미설치 환경 지원)
-        from ultralytics import YOLO
-
         if model_path is None:
             module_dir = Path(__file__).resolve().parent
             model_path = str(module_dir / "models" / "robot_parts_best.pt")
@@ -49,6 +46,15 @@ class YOLOPartDetector(BaseCVModel):
                 f"YOLO 모델 파일을 찾을 수 없습니다: {model_path}"
             )
 
+        # ultralytics는 lazy import (초기 import 비용 절감 + 미설치 환경 지원)
+        try:
+            from ultralytics import YOLO
+        except ImportError as exc:
+            raise RuntimeError(
+                "YOLOPartDetector를 사용하려면 ultralytics 패키지가 필요합니다. "
+                "기본 파이프라인은 NoOpCVModel을 사용하므로 이 의존성이 필요 없습니다."
+            ) from exc
+
         self._model = YOLO(model_path)
         self._conf_threshold = conf_threshold
         self._output_dir = output_dir
@@ -57,14 +63,18 @@ class YOLOPartDetector(BaseCVModel):
     def classify(self, images: list[str]) -> CVOutput:
         """이미지에서 부품을 탐지하고, 탐지된 부품으로 자산 유형을 추론한다.
 
-        부품(base/joint/link/gripper) 중 하나라도 탐지되면 'robot arm'으로 간주.
+        부품(base/joint/link/gripper) 중 하나라도 탐지되면 'robot_arm'으로 간주.
         """
         if not images:
             return CVOutput(predicted_type=None, confidence=0.0)
 
-        # 첫 번째 이미지로 분류 (대표값)
+        existing_images = [image for image in images if Path(image).exists()]
+        if not existing_images:
+            return CVOutput(predicted_type=None, confidence=0.0)
+
+        # 첫 번째 존재 이미지로 분류 (대표값)
         results = self._model.predict(
-            source=images[0],
+            source=existing_images[0],
             conf=self._conf_threshold,
             verbose=False,
         )
@@ -80,7 +90,7 @@ class YOLOPartDetector(BaseCVModel):
         class_names = [result.names[int(cls)] for cls in result.boxes.cls]
         confidences = [float(c) for c in result.boxes.conf]
 
-        # 로봇팔 부품이 하나라도 있으면 robot arm
+        # 로봇팔 부품이 하나라도 있으면 robot_arm
         robot_parts_detected = [
             (name, conf)
             for name, conf in zip(class_names, confidences)
@@ -89,7 +99,7 @@ class YOLOPartDetector(BaseCVModel):
 
         if robot_parts_detected:
             avg_conf = sum(c for _, c in robot_parts_detected) / len(robot_parts_detected)
-            return CVOutput(predicted_type="robot arm", confidence=avg_conf)
+            return CVOutput(predicted_type="robot_arm", confidence=avg_conf)
 
         return CVOutput(predicted_type=None, confidence=0.0)
 
