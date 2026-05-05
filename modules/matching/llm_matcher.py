@@ -1,0 +1,105 @@
+"""LLM 기반 엔티티 매처.
+
+interfaces/base_matcher.py의 BaseEntityMatcher를 구현한다.
+파이프라인은 RuleBasedEntityMatcher 대신 이 클래스를 꽂아 쓸 수 있다.
+
+파이프라인 호출 방식 (pipeline.py 85번 줄):
+    node_matches = [self.matcher.match(node, candidate) for candidate in candidates]
+즉 후보를 하나씩 넘겨서 MatchResult 하나씩 받는 구조다.
+"""
+
+from __future__ import annotations
+
+from app.models import AASPropertyCandidate, MatchResult, SemanticNode
+from interfaces.base_matcher import BaseEntityMatcher
+from interfaces.base_llm import BaseLLM, LLMConnectionError
+from modules.llm import OllamaClient
+from modules.llm.prompts import build_matching_prompt
+
+
+DEFAULT_MATCH_THRESHOLD = 0.5
+
+
+class LLMMatcher(BaseEntityMatcher):
+    """LLM을 사용해 SemanticNode와 AAS Property 후보의 의미 일치를 판단한다.
+
+    Args:
+        client: BaseLLM 구현체. 기본값은 OllamaClient 인스턴스 생성.
+        threshold: 이 점수 미만이면 match=False로 처리한다. 기본값 0.5.
+    """
+
+    def __init__(
+        self,
+        client: BaseLLM | None = None,
+        threshold: float = DEFAULT_MATCH_THRESHOLD,
+    ):
+        self.client = client or OllamaClient()
+        self.threshold = threshold
+
+    def match(
+        self,
+        source_entity: SemanticNode,
+        target_entity: AASPropertyCandidate,
+    ) -> MatchResult:
+        """source SemanticNode와 target AASPropertyCandidate의 의미 일치 여부를 판단한다.
+
+        LLM에 두 속성을 보내고 match/score/reason을 받아 MatchResult로 반환한다.
+        LLM 연결 실패 시 match=False인 MatchResult를 반환한다 (예외 전파 안 함).
+        """
+        node_dict = self._node_to_dict(source_entity)
+        candidate_dict = self._candidate_to_dict(target_entity)
+
+        prompt = build_matching_prompt(node_dict, candidate_dict)
+
+        try:
+            response = self.client.generate_json(prompt, fallback={})
+        except LLMConnectionError as e:
+            print(f"[LLMMatcher] LLM 연결 실패: {e}")
+            return MatchResult(
+                semantic_node_id=source_entity.semantic_node_id,
+                selected_candidate_id=None,
+                match=False,
+                match_score=0.0,
+                reason="LLM connection failed",
+                candidate=None,
+            )
+
+        try:
+            score = float(response.get("score", 0.0))
+        except (TypeError, ValueError):
+            score = 0.0
+        score = max(0.0, min(1.0, score))
+        reason = str(response.get("reason", ""))
+
+        # score를 기준으로 판단 (llama3.2는 boolean과 score를 모순되게 반환하는 경우가 있어
+        # boolean match 필드 대신 score로 결정한다)
+        is_match = score >= self.threshold
+
+        return MatchResult(
+            semantic_node_id=source_entity.semantic_node_id,
+            selected_candidate_id=target_entity.candidate_id if is_match else None,
+            match=is_match,
+            match_score=score,
+            reason=reason,
+            candidate=target_entity if is_match else None,
+        )
+
+    def _node_to_dict(self, node: SemanticNode) -> dict:
+        return {
+            "semantic_node_id": node.semantic_node_id,
+            "name": node.name,
+            "value": node.value,
+            "unit": node.unit,
+            "conceptual_definition": node.conceptual_definition,
+            "affordance": node.affordance,
+        }
+
+    def _candidate_to_dict(self, candidate: AASPropertyCandidate) -> dict:
+        return {
+            "candidate_id": candidate.candidate_id,
+            "idShort": candidate.idShort,
+            "description": candidate.description,
+            "submodel": candidate.submodel,
+            "semantic_id": candidate.semantic_id,
+            "preferred_unit": candidate.preferred_unit,
+        }
