@@ -25,6 +25,7 @@ from interfaces.base_validator import BaseDTValidator
 from modules.aas_generation import JsonAASGenerator
 from modules.aas_mapping import DefaultAASMapper
 from modules.cv import NoOpCVModel
+from modules.cv.yolo_part_detector import YOLOPartDetector
 from modules.dt_integration import InMemoryDTAdapter
 from modules.extraction import ManualInputExtractor
 from modules.input_layer import DefaultInputLayer
@@ -192,7 +193,7 @@ def create_default_pipeline(config: PipelineConfig | None = None) -> AASAutoGene
     return AASAutoGenerationPipeline(
         config=config,
         input_layer=DefaultInputLayer(),
-        cv_model=NoOpCVModel(),
+        cv_model=YOLOPartDetector(),
         extractor=ManualInputExtractor(),
         semantic_builder=DefaultSemanticNodeBuilder(),
         retriever=InMemoryCandidateRetriever(repository_path),
