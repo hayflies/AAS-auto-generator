@@ -27,9 +27,11 @@ from modules.aas_mapping import DefaultAASMapper
 from modules.cv import NoOpCVModel
 from modules.cv.yolo_part_detector import YOLOPartDetector
 from modules.dt_integration import InMemoryDTAdapter
-from modules.extraction import ManualInputExtractor
+from modules.extraction import LLMExtractor, ManualInputExtractor
 from modules.input_layer import DefaultInputLayer
-from modules.matching import RuleBasedEntityMatcher
+from modules.llm.embedding_retriever import EmbeddingCandidateRetriever
+from modules.llm.llm_semantic_builder import LLMSemanticNodeBuilder
+from modules.matching import LLMMatcher, RuleBasedEntityMatcher
 from modules.model_3d import DefaultModelManager
 from modules.retrieval import InMemoryCandidateRetriever
 from modules.semantic_node import DefaultSemanticNodeBuilder
@@ -194,10 +196,10 @@ def create_default_pipeline(config: PipelineConfig | None = None) -> AASAutoGene
         config=config,
         input_layer=DefaultInputLayer(),
         cv_model=YOLOPartDetector(),
-        extractor=ManualInputExtractor(),
-        semantic_builder=DefaultSemanticNodeBuilder(),
-        retriever=InMemoryCandidateRetriever(repository_path),
-        matcher=RuleBasedEntityMatcher(threshold=config.match_threshold),
+        extractor=LLMExtractor(),
+        semantic_builder=LLMSemanticNodeBuilder(),
+        retriever=EmbeddingCandidateRetriever(repository_path),
+        matcher=LLMMatcher(threshold=config.match_threshold),
         model_manager=DefaultModelManager(config),
         mapper=DefaultAASMapper(template_path),
         aas_generator=JsonAASGenerator(),
