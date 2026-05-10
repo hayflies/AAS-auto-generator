@@ -8,18 +8,19 @@ from __future__ import annotations
 
 from app.models import AssetPackage, CVOutput, ExtractedEntity
 from interfaces.base_extractor import BaseInformationExtractor
-from modules.llm.ollama_client import OllamaClient, OllamaConnectionError
+from interfaces.base_llm import BaseLLM, LLMConnectionError
+from modules.llm import OllamaClient
 from modules.llm.prompts import build_extraction_prompt
 
 
 class LLMExtractor(BaseInformationExtractor):
-    """Ollama LLM을 사용해 AssetPackage에서 ExtractedEntity 목록을 추출한다.
+    """LLM을 사용해 AssetPackage에서 ExtractedEntity 목록을 추출한다.
 
     Args:
-        client: OllamaClient 인스턴스. 기본값은 새 인스턴스 생성.
+        client: BaseLLM 구현체. 기본값은 OllamaClient 인스턴스 생성.
     """
 
-    def __init__(self, client: OllamaClient | None = None):
+    def __init__(self, client: BaseLLM | None = None):
         self.client = client or OllamaClient()
 
     def extract(
@@ -41,8 +42,8 @@ class LLMExtractor(BaseInformationExtractor):
         for attempt in range(3):
             try:
                 raw_results = self.client.generate_json_list(prompt, fallback=[])
-            except OllamaConnectionError as e:
-                print(f"[LLMExtractor] Ollama 연결 실패: {e}")
+            except LLMConnectionError as e:
+                print(f"[LLMExtractor] LLM 연결 실패: {e}")
                 return []
 
             entities = self._to_extracted_entities(raw_results)

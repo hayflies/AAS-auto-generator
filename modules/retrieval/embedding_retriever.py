@@ -15,12 +15,14 @@ from pathlib import Path
 from typing import Any
 
 from app.models import AASPropertyCandidate, SemanticNode
+from interfaces.base_embedding import BaseEmbeddingModel
+from interfaces.base_llm import LLMConnectionError
 from interfaces.base_retriever import BaseCandidateRetriever
-from modules.llm.ollama_client import OllamaClient, OllamaConnectionError
+from modules.llm import OllamaClient
 
 
 class EmbeddingCandidateRetriever(BaseCandidateRetriever):
-    """Ollama 임베딩을 사용해 SemanticNode와 가장 유사한 AAS Property 후보를 검색한다.
+    """임베딩 모델로 SemanticNode와 가장 유사한 AAS Property 후보를 검색한다.
 
     초기화 시 properties.json의 모든 후보에 대한 임베딩을 미리 계산해 캐싱한다.
     retrieve() 호출마다 쿼리 임베딩과 코사인 유사도를 계산해 Top-K를 반환한다.
@@ -30,15 +32,15 @@ class EmbeddingCandidateRetriever(BaseCandidateRetriever):
 
     Args:
         repository_path: AAS Property 후보 JSON 파일 경로.
-        client: OllamaClient 인스턴스. 기본값은 새 인스턴스 생성.
+        embedding_model: BaseEmbeddingModel 구현체. 기본값은 OllamaClient 인스턴스 생성.
     """
 
     def __init__(
         self,
         repository_path: Path,
-        client: OllamaClient | None = None,
+        embedding_model: BaseEmbeddingModel | None = None,
     ):
-        self.client = client or OllamaClient()
+        self.embedding_model = embedding_model or OllamaClient()
         self._properties = self._load_properties(repository_path)
         self._candidate_embeddings = self._precompute_embeddings()
 
@@ -51,9 +53,9 @@ class EmbeddingCandidateRetriever(BaseCandidateRetriever):
         query_text = self._build_query(semantic_node)
 
         try:
-            query_embedding = self.client.embed(query_text)
-        except OllamaConnectionError as e:
-            print(f"[EmbeddingRetriever] Ollama 연결 실패, 빈 목록 반환: {e}")
+            query_embedding = self.embedding_model.embed(query_text)
+        except LLMConnectionError as e:
+            print(f"[EmbeddingRetriever] LLM 연결 실패, 빈 목록 반환: {e}")
             return []
 
         node_name_lower = (semantic_node.name or "").lower().strip()
@@ -127,7 +129,7 @@ class EmbeddingCandidateRetriever(BaseCandidateRetriever):
         for item in self._properties:
             text = self._build_candidate_text(item)
             try:
-                embedding = self.client.embed(text)
+                embedding = self.embedding_model.embed(text)
                 embeddings.append(embedding)
             except Exception as e:
                 print(f"[EmbeddingRetriever] 임베딩 실패 ({item.get('idShort', '?')}): {e}")

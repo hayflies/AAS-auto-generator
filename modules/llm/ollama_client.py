@@ -8,11 +8,14 @@ llm_extractor.py와 llm_matcher.py 둘 다 이 클라이언트를 통해 LLM을 
     - 기본 주소: http://localhost:11434
     - 기본 모델: llama3.2
 """
+from __future__ import annotations
 
 import json
-import re
-import urllib.request
 import urllib.error
+import urllib.request
+
+from interfaces.base_embedding import BaseEmbeddingModel
+from interfaces.base_llm import BaseLLM, LLMConnectionError
 
 
 OLLAMA_BASE_URL = "http://localhost:11434"
@@ -20,12 +23,11 @@ DEFAULT_MODEL = "llama3.2"
 REQUEST_TIMEOUT = 120
 
 
-class OllamaConnectionError(Exception):
+class OllamaConnectionError(LLMConnectionError):
     """Ollama 서버에 연결할 수 없을 때 발생하는 예외."""
-    pass
 
 
-class OllamaClient:
+class OllamaClient(BaseLLM, BaseEmbeddingModel):
     """Ollama REST API 클라이언트.
 
     프롬프트를 받아 LLM 응답을 반환한다.
@@ -52,7 +54,7 @@ class OllamaClient:
         self.base_url = base_url.rstrip("/")
         self.timeout = timeout
 
-    def generate(self, prompt: str) -> str:
+    def generate(self, prompt: str, **kwargs: object) -> str:
         """프롬프트를 Ollama에 전송하고 텍스트 응답을 반환한다.
 
         Args:
@@ -65,11 +67,15 @@ class OllamaClient:
             OllamaConnectionError: Ollama 서버에 연결할 수 없을 때.
         """
         url = f"{self.base_url}/api/generate"
-        payload = json.dumps({
-            "model": self.model,
+        payload_data: dict[str, object] = {
+            "model": str(kwargs.get("model", self.model)),
             "prompt": prompt,
-            "stream": False,
-        }).encode("utf-8")
+            "stream": bool(kwargs.get("stream", False)),
+        }
+        options = kwargs.get("options")
+        if isinstance(options, dict):
+            payload_data["options"] = options
+        payload = json.dumps(payload_data).encode("utf-8")
 
         request = urllib.request.Request(
             url,
@@ -90,82 +96,6 @@ class OllamaClient:
                 f"Ollama가 실행 중인지 확인하세요. (주소: {self.base_url})\n"
                 f"원인: {e}"
             ) from e
-
-    def generate_json(self, prompt: str, fallback: dict | None = None) -> dict:
-        """프롬프트를 전송하고 JSON으로 파싱된 응답을 반환한다.
-
-        LLM 응답에서 JSON 블록을 추출해 파싱한다.
-        파싱에 실패하면 fallback을 반환한다.
-
-        Args:
-            prompt: LLM에게 보낼 프롬프트 문자열.
-            fallback: JSON 파싱 실패 시 반환할 기본값. 기본값은 빈 딕셔너리.
-
-        Returns:
-            파싱된 딕셔너리 또는 fallback 값.
-        """
-        if fallback is None:
-            fallback = {}
-
-        try:
-            raw_text = self.generate(prompt)
-            return self._parse_json(raw_text)
-        except OllamaConnectionError:
-            raise
-        except Exception:
-            return fallback
-
-    def generate_json_list(self, prompt: str, fallback: list | None = None) -> list:
-        """프롬프트를 전송하고 JSON 배열로 파싱된 응답을 반환한다.
-
-        Args:
-            prompt: LLM에게 보낼 프롬프트 문자열.
-            fallback: JSON 파싱 실패 시 반환할 기본값. 기본값은 빈 리스트.
-
-        Returns:
-            파싱된 리스트 또는 fallback 값.
-        """
-        if fallback is None:
-            fallback = []
-
-        try:
-            raw_text = self.generate(prompt)
-            result = self._parse_json(raw_text)
-            if isinstance(result, list):
-                return result
-            return fallback
-        except OllamaConnectionError:
-            raise
-        except Exception:
-            return fallback
-
-    def _parse_json(self, text: str) -> dict | list:
-        """텍스트에서 JSON을 추출해 파싱한다.
-
-        LLM이 JSON 외에 설명 텍스트를 함께 반환하는 경우를 처리한다.
-        ```json ... ``` 블록이 있으면 그 안의 내용만 파싱한다.
-        없으면 텍스트 전체에서 첫 번째 JSON 블록을 찾아 파싱한다.
-
-        Args:
-            text: LLM 응답 텍스트.
-
-        Returns:
-            파싱된 딕셔너리 또는 리스트.
-
-        Raises:
-            ValueError: JSON을 파싱할 수 없을 때.
-        """
-        # ```json ... ``` 블록 추출 시도
-        code_block = re.search(r"```(?:json)?\s*([\s\S]*?)```", text)
-        if code_block:
-            return json.loads(code_block.group(1).strip())
-
-        # 텍스트에서 첫 번째 { } 또는 [ ] 블록 추출 시도
-        json_block = re.search(r"(\{[\s\S]*\}|\[[\s\S]*\])", text)
-        if json_block:
-            return json.loads(json_block.group(1).strip())
-
-        raise ValueError(f"JSON을 찾을 수 없습니다. 응답: {text[:200]}")
 
     def embed(self, text: str, model: str | None = None) -> list[float]:
         """텍스트를 임베딩 벡터로 변환한다.

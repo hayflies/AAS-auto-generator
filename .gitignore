@@ -19,3 +19,4 @@ data/input/images/*
 
 # Claude Code 설정 (로컬 전용)
 .claude/
+.venv/

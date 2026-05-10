@@ -28,8 +28,8 @@ from modules.cv import NoOpCVModel
 from modules.dt_integration import InMemoryDTAdapter
 from modules.extraction import LLMExtractor, ManualInputExtractor
 from modules.input_layer import DefaultInputLayer
-from modules.llm.embedding_retriever import EmbeddingCandidateRetriever
-from modules.llm.llm_semantic_builder import LLMSemanticNodeBuilder
+from modules.retrieval.embedding_retriever import EmbeddingCandidateRetriever
+from modules.semantic_node.llm_semantic_builder import LLMSemanticNodeBuilder
 from modules.matching import LLMMatcher, RuleBasedEntityMatcher
 from modules.model_3d import DefaultModelManager
 from modules.retrieval import InMemoryCandidateRetriever
