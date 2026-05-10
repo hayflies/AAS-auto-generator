@@ -30,7 +30,7 @@ def slugify(value: str, fallback: str = "asset") -> str:
 
 def to_id_short(value: str, fallback: str = "GeneratedAsset") -> str:
     """AAS idShort에 어울리는 PascalCase 식별자를 만든다."""
-    tokens = _TOKEN.findall(normalize_label(value))
+    tokens = _TOKEN.findall(normalize_label(value).lower())
     if not tokens:
         return fallback
     head, *tail = tokens

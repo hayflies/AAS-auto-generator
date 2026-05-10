@@ -8,6 +8,7 @@ from typing import Any
 from app.config import PipelineConfig
 from app.pipeline import create_default_pipeline
 from app.sample_data import sample_payload
+from app.text import slugify
 
 
 def main() -> None:
@@ -71,7 +72,7 @@ def _write_outputs(result: dict[str, Any], config: PipelineConfig) -> Path:
     output_dir.mkdir(parents=True, exist_ok=True)
     aas_dir.mkdir(parents=True, exist_ok=True)
 
-    asset_id = result["asset_package"]["asset_id"]
+    asset_id = slugify(result["asset_package"]["asset_id"])
     result_path = output_dir / f"{asset_id}_pipeline_result.json"
     aas_path = aas_dir / f"{asset_id}.aas.json"
 

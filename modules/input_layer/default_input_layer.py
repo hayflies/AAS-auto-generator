@@ -1,10 +1,17 @@
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Any
 
 from app.models import AssetPackage
 from app.text import slugify
 from interfaces.base_input import BaseInputLayer
+from modules.input_layer.document_processor import DocumentProcessor
+
+# 문서 처리가 필요한 파일 확장자
+_PROCESSABLE_EXTENSIONS = {
+    ".pdf", ".jpg", ".jpeg", ".png", ".bmp", ".tiff", ".tif", ".webp"
+}
 
 
 class DefaultInputLayer(BaseInputLayer):
@@ -12,7 +19,19 @@ class DefaultInputLayer(BaseInputLayer):
 
     입력 채널별 차이는 이 계층에서 흡수하고, 이후 단계는 항상
     AssetPackage만 받도록 만드는 것이 역할이다.
+
+    PDF / 이미지 경로가 documents에 포함되어 있으면 DocumentProcessor로
+    텍스트를 추출해서 AssetPackage.documents에 텍스트로 넣는다.
     """
+
+    def __init__(self, processor: DocumentProcessor | None = None):
+        """
+        Args:
+            processor: DocumentProcessor 인스턴스.
+                       None이면 기본 인스턴스를 생성한다.
+                       문서 처리를 완전히 끄려면 False를 전달한다 (테스트용 비권장).
+        """
+        self._processor = processor if processor is not None else DocumentProcessor()
 
     def collect(self, payload: dict[str, Any]) -> AssetPackage:
         """payload에서 자산 기본 정보, 이미지, 문서, 사용자 입력을 수집한다."""
@@ -25,6 +44,10 @@ class DefaultInputLayer(BaseInputLayer):
             raw.get("asset_name")
             or user_inputs.get("asset_name")
             or raw.get("name")
+            or user_inputs.get("manufacturer_product_designation")
+            or user_inputs.get("manufacturer_product_family")
+            or user_inputs.get("brand")
+            or user_inputs.get("manufacturer_name")
             or "Unnamed Asset"
         )
         asset_id = raw.get("asset_id") or user_inputs.get("asset_id") or slugify(asset_name)
@@ -35,7 +58,10 @@ class DefaultInputLayer(BaseInputLayer):
 
         # 입력 시스템마다 필드명이 다를 수 있어 대표 alias를 함께 처리한다.
         images = list(raw.get("images") or raw.get("asset_images") or [])
-        documents = list(raw.get("documents") or raw.get("manual_files") or [])
+        raw_documents = list(raw.get("documents") or raw.get("manual_files") or [])
+
+        # PDF / 이미지 경로는 텍스트로 변환한다. 이미 텍스트인 항목은 그대로 유지한다.
+        documents = self._process_documents(raw_documents)
 
         # downstream extractor가 user_inputs만 보더라도 핵심 식별 정보를 읽을 수 있게 보강한다.
         user_inputs.setdefault("asset_id", asset_id)
@@ -56,3 +82,29 @@ class DefaultInputLayer(BaseInputLayer):
             documents=documents,
             user_inputs=user_inputs,
         )
+
+    def _process_documents(self, raw_documents: list) -> list:
+        """문서 목록을 순회하며 파일 경로는 텍스트로 변환하고, 텍스트는 그대로 유지한다.
+
+        - 파일 경로(.pdf, .jpg 등)인 항목 → DocumentProcessor로 텍스트 추출
+        - 이미 텍스트인 항목 → 그대로 반환
+        - 변환 실패 항목 → 건너뜀 (파이프라인 중단 없음)
+        """
+        processed: list[str] = []
+
+        for item in raw_documents:
+            if not isinstance(item, str):
+                continue
+
+            ext = Path(item).suffix.lower()
+            if ext in _PROCESSABLE_EXTENSIONS:
+                text = self._processor.process(item)
+                if text.strip():
+                    processed.append(text)
+                else:
+                    print(f"[DefaultInputLayer] 문서 변환 결과 없음, 건너뜀: {item}")
+            else:
+                # 이미 텍스트이거나 알 수 없는 형식 → 그대로 사용
+                processed.append(item)
+
+        return processed
