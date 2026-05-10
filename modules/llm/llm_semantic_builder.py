@@ -27,14 +27,19 @@ class LLMSemanticNodeBuilder(BaseSemanticNodeBuilder):
         client: OllamaClient 인스턴스. 기본값은 새 인스턴스 생성.
     """
 
-    def __init__(self, client: OllamaClient | None = None):
+    def __init__(self, client: OllamaClient | None = None, skip_enrichment: bool = False):
         self.client = client or OllamaClient()
+        self.skip_enrichment = skip_enrichment
 
     def build(self, entities: list[ExtractedEntity]) -> list[SemanticNode]:
         """raw entity 목록에 LLM이 생성한 의미 설명을 추가한다."""
         nodes: list[SemanticNode] = []
         for index, entity in enumerate(entities, start=1):
-            definition, affordance = self._enrich(entity)
+            if self.skip_enrichment:
+                definition = f"Asset attribute describing {entity.raw_name}."
+                affordance = f"Used as structured metadata for {entity.raw_name}."
+            else:
+                definition, affordance = self._enrich(entity)
             nodes.append(SemanticNode(
                 semantic_node_id=f"SN_{index:03d}",
                 name=entity.raw_name,

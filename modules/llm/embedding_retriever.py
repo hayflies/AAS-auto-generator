@@ -56,15 +56,38 @@ class EmbeddingCandidateRetriever(BaseCandidateRetriever):
             print(f"[EmbeddingRetriever] Ollama 연결 실패, 빈 목록 반환: {e}")
             return []
 
+        node_name_lower = (semantic_node.name or "").lower().strip()
+
         scored: list[tuple[AASPropertyCandidate, float]] = []
         for item, cand_embedding in zip(self._properties, self._candidate_embeddings):
             if cand_embedding is None:
                 continue
             candidate = self._candidate_from_item(item)
             score = _cosine_similarity(query_embedding, cand_embedding)
+
             # 단위가 정확히 일치하면 소폭 가산
             if semantic_node.unit and candidate.preferred_unit == semantic_node.unit:
                 score = min(score + 0.05, 1.0)
+
+            # ── 알리어스 매칭 부스트 ─────────────────────────────────────
+            # 속성명이 후보의 알리어스와 일치하면 임베딩 유사도에 가산점 부여.
+            # 이렇게 하면 "Manufacturer" → ManufacturerName 처럼 명확한 경우를
+            # 임베딩 노이즈에 상관없이 올바르게 매핑한다.
+            if node_name_lower:
+                alias_boost = 0.0
+                for alias in candidate.aliases:
+                    alias_lower = alias.lower()
+                    if alias_lower == node_name_lower:
+                        alias_boost = 0.30  # 완전 일치: 강한 부스트
+                        break
+                    # 부분 일치: 짧은 단어가 긴 단어 안에 포함되는 경우
+                    elif (node_name_lower in alias_lower or alias_lower in node_name_lower):
+                        # 너무 짧은 단어(2글자 이하)는 false positive 방지
+                        if len(min(node_name_lower, alias_lower, key=len)) > 2:
+                            alias_boost = max(alias_boost, 0.12)
+                score = min(score + alias_boost, 1.0)
+            # ─────────────────────────────────────────────────────────────
+
             candidate.similarity_score = score
             scored.append((candidate, score))
 
@@ -72,15 +95,28 @@ class EmbeddingCandidateRetriever(BaseCandidateRetriever):
         return [candidate for candidate, _ in scored[:top_k]]
 
     def _build_query(self, semantic_node: SemanticNode) -> str:
-        """SemanticNode 정보를 임베딩용 쿼리 텍스트로 조합한다."""
-        parts = [
-            semantic_node.name,
-            semantic_node.conceptual_definition,
-            semantic_node.affordance,
-        ]
+        """SemanticNode 정보를 임베딩용 쿼리 텍스트로 조합한다.
+
+        속성명을 두 번 반복해서 이름이 임베딩 벡터에 더 큰 영향을 주도록 한다.
+        skip_enrichment=True로 생성된 generic 템플릿 문자열은 노이즈가 되므로 제외한다.
+        """
+        name = semantic_node.name or ""
+        # 속성명을 두 번 넣어 임베딩에서 이름 가중치 강화
+        parts = [name, name]
+
+        # 의미 있는 정의만 포함 (skip_enrichment가 생성하는 generic 템플릿은 제외)
+        defn = semantic_node.conceptual_definition or ""
+        is_generic = (
+            defn.startswith("Asset attribute describing ")
+            or defn.startswith("Used as structured metadata for ")
+        )
+        if defn and not is_generic:
+            parts.append(defn)
+
         if semantic_node.unit:
             parts.append(semantic_node.unit)
-        return " ".join(parts)
+
+        return " ".join(filter(None, parts))
 
     def _precompute_embeddings(self) -> list[list[float] | None]:
         """모든 후보에 대한 임베딩을 초기화 시 미리 계산한다.

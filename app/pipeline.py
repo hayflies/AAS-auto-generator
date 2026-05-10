@@ -23,7 +23,7 @@ from interfaces.base_retriever import BaseCandidateRetriever
 from interfaces.base_semantic_builder import BaseSemanticNodeBuilder
 from interfaces.base_validator import BaseDTValidator
 from modules.aas_generation import JsonAASGenerator
-from modules.aas_mapping import DefaultAASMapper
+from modules.aas_mapping import DefaultAASMapper, SemanticAASMapper
 from modules.cv import NoOpCVModel
 from modules.dt_integration import InMemoryDTAdapter
 from modules.extraction import LLMExtractor, ManualInputExtractor
@@ -196,11 +196,11 @@ def create_default_pipeline(config: PipelineConfig | None = None) -> AASAutoGene
         input_layer=DefaultInputLayer(),
         cv_model=NoOpCVModel(),
         extractor=LLMExtractor(),
-        semantic_builder=LLMSemanticNodeBuilder(),
+        semantic_builder=LLMSemanticNodeBuilder(skip_enrichment=True),
         retriever=EmbeddingCandidateRetriever(repository_path),
-        matcher=LLMMatcher(threshold=config.match_threshold),
+        matcher=LLMMatcher(threshold=config.match_threshold, skip_llm=True),
         model_manager=DefaultModelManager(config),
-        mapper=DefaultAASMapper(template_path),
+        mapper=SemanticAASMapper(template_path),
         aas_generator=JsonAASGenerator(),
         dt_adapter=dt_adapter,
         validator=DefaultDTValidator(dt_adapter),
