@@ -9,4 +9,14 @@ data/generated_models/*
 !data/output/.gitkeep
 !data/generated_aas/.gitkeep
 !data/generated_models/.gitkeep
-.venv/ 
+
+# DB 파일 (로컬 전용)
+data/aas_database.db
+
+# 입력 이미지 (로컬 전용)
+data/input/images/*
+!data/input/images/.gitkeep
+
+# Claude Code 설정 (로컬 전용)
+.claude/
+.venv/

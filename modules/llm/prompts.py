@@ -5,11 +5,9 @@
 
 사용처:
     - llm_extractor.py: build_extraction_prompt
-    - llm_matcher.py: build_matching_prompt
+    - llm_matcher.py: build_matching_prompt, build_batch_matching_prompt
     - llm_semantic_builder.py: build_semantic_node_prompt
 """
-
-from __future__ import annotations
 
 
 def build_extraction_prompt(input_text: str) -> str:
@@ -30,20 +28,34 @@ def build_extraction_prompt(input_text: str) -> str:
         response = client.generate_json_list(prompt)
         # [{"raw_name": "Rated Voltage", "raw_value": "24", "raw_unit": "V"}, ...]
     """
-    return f"""You are an industrial asset data extraction expert.
+    return f"""You are an industrial asset data extraction expert specializing in robot and equipment specifications.
 
-Extract all properties from the text below.
-Each property must have a name, value, and unit.
-If there is no unit, set unit to null.
-Property names must be written in English.
+Extract EVERY property from the text below. Be thorough — do not skip any property.
+
+Rules:
+- Extract ALL properties, even if the text is noisy or partially parsed.
+- If a line contains "Label: Value [unit]" or "Label: Value", extract it as a property.
+- If a line contains only a value with a unit (e.g. "13.5 kg", "580 mm"), keep it as-is with raw_name inferred from context.
+- Separate the numeric value from its unit (e.g. "24 VDC" → raw_value="24", raw_unit="VDC").
+- Property names must be in English (translate or normalize if needed).
+- If there is no unit, set raw_unit to null.
+- Do NOT merge or summarize — extract each property as a separate entry.
+- Ignore non-property lines (e.g. table headers like "Item", "Qty", part numbers like "YM070-210-A099-RH").
 
 Return ONLY a JSON array. No explanation, no markdown, no extra text.
 
 Example:
 [
-  {{"raw_name": "Rated Voltage", "raw_value": "24", "raw_unit": "V", "confidence": 0.95}},
-  {{"raw_name": "Weight", "raw_value": "3.5", "raw_unit": "kg", "confidence": 0.90}},
-  {{"raw_name": "Serial Number", "raw_value": "SN-001", "raw_unit": null, "confidence": 0.85}}
+  {{"raw_name": "Manufacturer", "raw_value": "ROBOTIS", "raw_unit": null, "confidence": 0.99}},
+  {{"raw_name": "DOF", "raw_value": "6", "raw_unit": null, "confidence": 0.98}},
+  {{"raw_name": "Payload", "raw_value": "3", "raw_unit": "kg", "confidence": 0.97}},
+  {{"raw_name": "Reach", "raw_value": "580", "raw_unit": "mm", "confidence": 0.97}},
+  {{"raw_name": "Weight", "raw_value": "13.5", "raw_unit": "kg", "confidence": 0.97}},
+  {{"raw_name": "Operating Voltage", "raw_value": "24", "raw_unit": "VDC", "confidence": 0.96}},
+  {{"raw_name": "Repeatability", "raw_value": "0.05", "raw_unit": "mm", "confidence": 0.95}},
+  {{"raw_name": "TCP Speed", "raw_value": "900", "raw_unit": "mm/s", "confidence": 0.95}},
+  {{"raw_name": "Host Interface", "raw_value": "Ethernet", "raw_unit": null, "confidence": 0.94}},
+  {{"raw_name": "Serial Number", "raw_value": "A1B2C3D4", "raw_unit": null, "confidence": 0.85}}
 ]
 
 Text to extract from:
@@ -111,6 +123,113 @@ Example:
 {{"match": true, "score": 0.92, "reason": "both represent the same electrical voltage concept"}}
 
 JSON:"""
+
+
+def build_batch_matching_prompt(semantic_node: dict, candidates: list) -> str:
+    """Semantic Node와 여러 후보를 한 번에 비교하는 프롬프트를 생성한다.
+
+    후보가 많을 때 하나씩 호출하는 대신 한 번에 처리해서
+    Ollama 호출 횟수를 줄인다.
+
+    Args:
+        semantic_node: 추출된 자산 속성 정보.
+        candidates: AAS Property 후보 목록.
+
+    Returns:
+        LLM에 전달할 완성된 프롬프트 문자열.
+
+    Example:
+        prompt = build_batch_matching_prompt(
+            {"name": "Rated Voltage", "value": "24", "unit": "V"},
+            [
+                {"idShort": "NominalVoltage", "description": "..."},
+                {"idShort": "RatedCurrent",   "description": "..."},
+            ]
+        )
+        response = client.generate_json_list(prompt)
+        # [
+        #   {"candidate_id": "NominalVoltage", "match": true,  "score": 0.94},
+        #   {"candidate_id": "RatedCurrent",   "match": false, "score": 0.12},
+        # ]
+    """
+    node_name = semantic_node.get("name", "")
+    node_value = semantic_node.get("value", "")
+    node_unit = semantic_node.get("unit", "")
+    node_definition = semantic_node.get("conceptual_definition", "")
+
+    candidates_text = ""
+    for i, c in enumerate(candidates, start=1):
+        candidate_id = c.get("idShort", c.get("candidate_id", f"candidate_{i}"))
+        candidate_desc = c.get("description", "")
+        candidates_text += (
+            f"\nCandidate {i}:\n"
+            f"  idShort: {candidate_id}\n"
+            f"  Description: {candidate_desc}\n"
+        )
+
+    return f"""You are an AAS (Asset Administration Shell) standard expert.
+
+Determine whether each candidate property matches the given property.
+
+[My Property]
+Name: {node_name}
+Value: {node_value}
+Unit: {node_unit}
+Definition: {node_definition}
+
+[Candidates]
+{candidates_text}
+
+Rules:
+- match is true if the candidate represents the same or equivalent concept as My Property, even if terminology differs.
+- In industrial/AAS context, similar unit + similar physical meaning = match.
+- score is a float between 0.0 and 1.0.
+- Use the exact idShort value as candidate_id.
+
+Return ONLY a JSON array. No explanation, no markdown, no extra text.
+
+Example:
+[
+  {{"candidate_id": "NominalVoltage", "match": true, "score": 0.93}},
+  {{"candidate_id": "RatedCurrent", "match": false, "score": 0.12}}
+]
+
+JSON array:"""
+
+
+def build_text_cleaning_prompt(raw_text: str) -> str:
+    """OCR 또는 PDF에서 추출한 원본 텍스트를 정제하는 프롬프트를 생성한다.
+
+    노이즈(오탈자, 줄 깨짐, 불필요한 기호)를 제거하고
+    산업 자산 속성 텍스트만 남기도록 LLM에 지시한다.
+
+    Args:
+        raw_text: OCR 결과 또는 PDF에서 추출한 원본 텍스트.
+
+    Returns:
+        LLM에 전달할 완성된 프롬프트 문자열.
+
+    Example:
+        prompt = build_text_cleaning_prompt("R4ted V0ltage: 24V\\nW3ight 3.5 kg")
+        response = client.generate(prompt)
+        # "Rated Voltage: 24V\\nWeight: 3.5 kg"
+    """
+    return f"""You are an industrial asset data extraction expert.
+
+The following text was extracted from a nameplate image or PDF document using OCR.
+It may contain noise, typos, garbled characters, or formatting artifacts.
+
+Your task:
+1. Fix obvious OCR errors (e.g. "R4ted" → "Rated", "V0ltage" → "Voltage")
+2. Keep only lines that describe asset properties (name: value, unit)
+3. Remove headers, footers, watermarks, and irrelevant text
+4. Preserve the original key-value structure
+5. Output clean plain text only — no JSON, no markdown, no explanation
+
+Raw text:
+{raw_text}
+
+Cleaned text:"""
 
 
 def build_semantic_node_prompt(name: str, value: str, unit: str | None) -> str:

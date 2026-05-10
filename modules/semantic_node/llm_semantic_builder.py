@@ -13,29 +13,33 @@ from typing import Any
 
 from app.models import ExtractedEntity, SemanticNode
 from interfaces.base_semantic_builder import BaseSemanticNodeBuilder
-from interfaces.base_llm import BaseLLM, LLMConnectionError
-from modules.llm import OllamaClient
+from modules.llm.ollama_client import OllamaClient, OllamaConnectionError
 from modules.llm.prompts import build_semantic_node_prompt
 
 
 class LLMSemanticNodeBuilder(BaseSemanticNodeBuilder):
-    """LLM을 사용해 ExtractedEntity를 SemanticNode로 변환한다.
+    """Ollama LLM을 사용해 ExtractedEntity를 SemanticNode로 변환한다.
 
     각 속성마다 LLM에 conceptual_definition과 affordance 생성을 요청한다.
-    LLM 연결 실패 시 기본 문장으로 fallback한다.
+    Ollama 연결 실패 시 기본 문장으로 fallback한다.
 
     Args:
-        client: BaseLLM 구현체. 기본값은 OllamaClient 인스턴스 생성.
+        client: OllamaClient 인스턴스. 기본값은 새 인스턴스 생성.
     """
 
-    def __init__(self, client: BaseLLM | None = None):
+    def __init__(self, client: OllamaClient | None = None, skip_enrichment: bool = False):
         self.client = client or OllamaClient()
+        self.skip_enrichment = skip_enrichment
 
     def build(self, entities: list[ExtractedEntity]) -> list[SemanticNode]:
         """raw entity 목록에 LLM이 생성한 의미 설명을 추가한다."""
         nodes: list[SemanticNode] = []
         for index, entity in enumerate(entities, start=1):
-            definition, affordance = self._enrich(entity)
+            if self.skip_enrichment:
+                definition = f"Asset attribute describing {entity.raw_name}."
+                affordance = f"Used as structured metadata for {entity.raw_name}."
+            else:
+                definition, affordance = self._enrich(entity)
             nodes.append(SemanticNode(
                 semantic_node_id=f"SN_{index:03d}",
                 name=entity.raw_name,
@@ -62,8 +66,8 @@ class LLMSemanticNodeBuilder(BaseSemanticNodeBuilder):
         )
         try:
             response = self.client.generate_json(prompt, fallback={})
-        except LLMConnectionError as e:
-            print(f"[LLMSemanticNodeBuilder] LLM 연결 실패: {e}")
+        except OllamaConnectionError as e:
+            print(f"[LLMSemanticNodeBuilder] Ollama 연결 실패: {e}")
             response = {}
 
         definition = str(response.get("conceptual_definition") or "").strip()
