@@ -1,0 +1,40 @@
+{
+  "description": "Small gold set for the built-in robot arm sample payload.",
+  "items": [
+    {
+      "semantic_node_id": "SN_001",
+      "source_name": "asset name",
+      "idShort": "AssetName"
+    },
+    {
+      "semantic_node_id": "SN_003",
+      "source_name": "manufacturer",
+      "idShort": "ManufacturerName"
+    },
+    {
+      "semantic_node_id": "SN_004",
+      "source_name": "model name",
+      "idShort": "ManufacturerProductDesignation"
+    },
+    {
+      "semantic_node_id": "SN_005",
+      "source_name": "rated voltage",
+      "idShort": "NominalVoltage"
+    },
+    {
+      "semantic_node_id": "SN_006",
+      "source_name": "rated current",
+      "idShort": "RatedCurrent"
+    },
+    {
+      "semantic_node_id": "SN_007",
+      "source_name": "serial number",
+      "idShort": "SerialNumber"
+    },
+    {
+      "semantic_node_id": "SN_008",
+      "source_name": "weight",
+      "idShort": "Weight"
+    }
+  ]
+}

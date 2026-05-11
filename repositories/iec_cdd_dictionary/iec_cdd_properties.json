@@ -1,0 +1,95 @@
+{
+  "source": {
+    "name": "IEC Common Data Dictionary",
+    "official_url": "https://cdd.iec.ch",
+    "tc3_overview_url": "https://tc3.dvl.iec.ch/tc-activity/common-data-dictionary-cdd/",
+    "legacy_browser_url": "https://www.electropedia.org/cdd/iec61360/iec61360.nsf/Welcome?OpenPage",
+    "notes": "Seeded with IEC 61987 / IEC CDD IRDIs referenced by local IDTA Digital Nameplate templates. Extend from official IEC CDD exports for domain-specific projects."
+  },
+  "properties": [
+    {
+      "irdi": "0112/2///61987#ABN590#002",
+      "preferred_name": "URI of the product",
+      "idShort": "URIOfTheProduct",
+      "definition": "Unique URI that identifies the product or product instance.",
+      "datatype": "URI",
+      "value_type": "xs:anyURI",
+      "unit": null,
+      "submodel_hint": "DigitalNameplate",
+      "element_type": "Property",
+      "aliases": ["uri of the product", "product uri", "product url"]
+    },
+    {
+      "irdi": "0112/2///61987#ABA565#009",
+      "preferred_name": "Manufacturer name",
+      "idShort": "ManufacturerName",
+      "definition": "Name of the manufacturer responsible for the product.",
+      "datatype": "STRING_TRANSLATABLE",
+      "value_type": null,
+      "unit": null,
+      "submodel_hint": "DigitalNameplate",
+      "element_type": "MultiLanguageProperty",
+      "aliases": ["manufacturer", "manufacturer name", "maker", "supplier"]
+    },
+    {
+      "irdi": "0112/2///61987#ABA567#009",
+      "preferred_name": "Manufacturer product designation",
+      "idShort": "ManufacturerProductDesignation",
+      "definition": "Manufacturer-specific product designation or model name.",
+      "datatype": "STRING_TRANSLATABLE",
+      "value_type": null,
+      "unit": null,
+      "submodel_hint": "DigitalNameplate",
+      "element_type": "MultiLanguageProperty",
+      "aliases": ["model", "model name", "product designation", "type designation"]
+    },
+    {
+      "irdi": "0112/2///61987#ABA950#008",
+      "preferred_name": "Order code of manufacturer",
+      "idShort": "OrderCodeOfManufacturer",
+      "definition": "Manufacturer order code or article identifier for the product.",
+      "datatype": "STRING",
+      "value_type": "xs:string",
+      "unit": null,
+      "submodel_hint": "DigitalNameplate",
+      "element_type": "Property",
+      "aliases": ["order code", "article number", "part number", "order number"]
+    },
+    {
+      "irdi": "0112/2///61987#ABA951#009",
+      "preferred_name": "Serial number",
+      "idShort": "SerialNumber",
+      "definition": "Serial identifier assigned to a specific product instance.",
+      "datatype": "STRING",
+      "value_type": "xs:string",
+      "unit": null,
+      "submodel_hint": "DigitalNameplate",
+      "element_type": "Property",
+      "aliases": ["serial number", "serial", "s/n", "sn"]
+    },
+    {
+      "irdi": "0112/2///61987#ABP000#002",
+      "preferred_name": "Year of construction",
+      "idShort": "YearOfConstruction",
+      "definition": "Year in which the product was manufactured or constructed.",
+      "datatype": "STRING",
+      "value_type": "xs:string",
+      "unit": null,
+      "submodel_hint": "DigitalNameplate",
+      "element_type": "Property",
+      "aliases": ["year of construction", "year of manufacture", "manufacture year"]
+    },
+    {
+      "irdi": "0112/2///61987#ABP462#001",
+      "preferred_name": "Country of origin",
+      "idShort": "CountryOfOrigin",
+      "definition": "Country in which the product originated.",
+      "datatype": "STRING",
+      "value_type": "xs:string",
+      "unit": null,
+      "submodel_hint": "DigitalNameplate",
+      "element_type": "Property",
+      "aliases": ["country of origin", "made in", "origin country"]
+    }
+  ]
+}
