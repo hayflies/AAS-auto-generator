@@ -30,17 +30,22 @@ def build_extraction_prompt(input_text: str) -> str:
     """
     return f"""You are an industrial asset data extraction expert specializing in robot and equipment specifications.
 
-Extract EVERY property from the text below. Be thorough — do not skip any property.
+Extract properties from the text below.
 
 Rules:
-- Extract ALL properties, even if the text is noisy or partially parsed.
-- If a line contains "Label: Value [unit]" or "Label: Value", extract it as a property.
-- If a line contains only a value with a unit (e.g. "13.5 kg", "580 mm"), keep it as-is with raw_name inferred from context.
+- Extract ALL clearly readable properties.
 - Separate the numeric value from its unit (e.g. "24 VDC" → raw_value="24", raw_unit="VDC").
 - Property names must be in English (translate or normalize if needed).
 - If there is no unit, set raw_unit to null.
 - Do NOT merge or summarize — extract each property as a separate entry.
 - Ignore non-property lines (e.g. table headers like "Item", "Qty", part numbers like "YM070-210-A099-RH").
+
+SKIP a property if ANY of these are true:
+- The numeric value is missing or replaced by brackets only (e.g. "[Mbps]", "[N/A]", "[TBD]") → SKIP entirely.
+- The value unit clearly contradicts the property name (e.g. a mass unit like "g" or "kg" paired with a dimension name like "Width" or "Length") → SKIP.
+- The value appears to be a hardware resolution or encoder count (e.g. integers like 4096, 1024, 2048 paired with no unit for a joint/angle property) → SKIP; these are not angle ranges.
+- Multiple conflicting values appear for the same property — pick ONLY the one labeled as the primary/nominal specification. If unclear which is primary, set confidence below 0.60.
+- The value is a range expression like "X~Y" or "X to Y" — extract the nominal/maximum value only.
 
 Return ONLY a JSON array. No explanation, no markdown, no extra text.
 
