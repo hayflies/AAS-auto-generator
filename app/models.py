@@ -84,6 +84,7 @@ class SemanticNode:
     source_description: str
     source_reference: str | None = None
     confidence: float = 1.0
+    eclass_irdi: str | None = None  # ECLASS 사전 조회로 채워짐
 
     def to_dict(self) -> dict[str, Any]:
         return _compact(asdict(self))
@@ -101,6 +102,7 @@ class AASPropertyCandidate:
     preferred_unit: str | None = None
     aliases: list[str] = field(default_factory=list)
     similarity_score: float = 0.0
+    eclass_irdi: str | None = None  # properties.json에서 로드됨
 
     def to_dict(self) -> dict[str, Any]:
         return _compact(asdict(self))

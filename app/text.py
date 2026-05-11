@@ -23,14 +23,18 @@ def tokenize(value: str | None) -> set[str]:
 
 
 def slugify(value: str, fallback: str = "asset") -> str:
-    """자산 ID나 파일명에 안전하게 쓸 수 있는 slug를 만든다."""
-    tokens = _TOKEN.findall(normalize_label(value).lower())
+    """자산 ID나 파일명에 안전하게 쓸 수 있는 slug를 만든다.
+
+    전부 대문자인 단어(예: ROBOTIS)는 소문자로 바꾼 뒤 처리해서
+    글자 하나씩 쪼개지는 문제를 방지한다.
+    """
+    tokens = _TOKEN.findall(value.lower().replace("_", " ").replace("-", " "))
     return "_".join(tokens) or fallback
 
 
 def to_id_short(value: str, fallback: str = "GeneratedAsset") -> str:
     """AAS idShort에 어울리는 PascalCase 식별자를 만든다."""
-    tokens = _TOKEN.findall(normalize_label(value))
+    tokens = _TOKEN.findall(normalize_label(value).lower())
     if not tokens:
         return fallback
     head, *tail = tokens

@@ -1,65 +1,89 @@
 # AAS Auto Generator
 
-`description.md`의 설계를 기반으로 한 **LLM 기반 AAS 자동 생성 + 디지털 트윈 등록 파이프라인 뼈대**입니다.
+이미지·PDF → AAS(Asset Administration Shell) JSON 자동 생성 파이프라인
 
-현재 구현은 외부 LLM, OCR, Embedding DB, 3D 생성기, DT Viewer 없이도 샘플 입력이 끝까지 흐르도록 만든 MVP 골격입니다. 각 핵심 기능은 `interfaces/`의 abstract class를 통해 교체할 수 있습니다.
+---
 
-## 전체 흐름
+## 실행 방법
 
-```text
-Input Layer
-→ Optional CV Module
-→ Information Extraction Layer
-→ Semantic Node Builder
-→ Candidate Retrieval Engine
-→ Entity Matching Engine
-→ AAS Mapping Engine
-→ 3D Model Manager
-→ AAS Generator
-→ DT Integration Layer
-→ DT Validation Layer
-```
-
-## 실행
+### 사전 준비
 
 ```bash
+# 1. Ollama 설치 (https://ollama.ai)
+ollama pull llama3.2
+ollama pull nomic-embed-text
+
+# 2. Python 패키지 설치
+pip install -r requirements.txt
+```
+
+### 웹 UI 실행 (권장)
+
+```bash
+python -m uvicorn api:app --reload
+```
+
+브라우저에서 `http://localhost:8000` 접속  
+→ 이미지·PDF 업로드 → Asset Name 입력 → **Generate AAS** 클릭
+
+### CLI 직접 실행
+
+```bash
+# 이미지 파일로 바로 실행
+python run_from_image.py
+
+# 샘플 데이터로 파이프라인 테스트
 python main.py
 ```
 
-샘플이 아닌 JSON을 넣으려면:
-
-```bash
-python main.py --input-json data/input/sample_asset.json
-```
-
-결과 파일은 기본적으로 다음 위치에 생성됩니다.
-
-```text
-data/output/{asset_id}_pipeline_result.json
-data/generated_aas/{asset_id}.aas.json
-```
-
-## 테스트
+### 테스트
 
 ```bash
 python -m unittest
 ```
 
-## 교체 지점
+---
 
-- `interfaces/base_extractor.py`: OCR, 문서 파서, LLM 추출기
-- `interfaces/base_semantic_builder.py`: Semantic Node enricher
-- `interfaces/base_retriever.py`: Embedding/Vector DB 기반 후보 검색기
-- `interfaces/base_matcher.py`: LLM matcher, cross-encoder, classifier
-- `interfaces/base_aas_generator.py`: AAS JSON/AASX 생성기
-- `interfaces/base_model_generator.py`: 기존 모델 로더, TripoSR, Blender, Meshy
-- `interfaces/base_dt_adapter.py`: Three.js, Unity, Isaac Sim, Omniverse 연동
+## 결과물 위치
 
-## 현재 기본 구현
+| 항목 | 경로 |
+|---|---|
+| 웹 UI 생성 결과 | SQLite DB (`data/aas_database.db`) |
+| CLI 실행 결과 | `data/generated_aas/{asset_id}.aas.json` |
+| 파이프라인 전체 결과 | `data/output/{asset_id}_pipeline_result.json` |
 
-- 수동 입력 기반 entity 추출
-- 로컬 JSON repository 기반 후보 검색
-- rule-based entity matching
-- 코드 기반 AAS JSON 생성 및 구조 검증
-- 기존 3D 모델 경로 참조 또는 생성 예정 경로 기록
-- in-memory DT 등록 및 mock sensor validation
+---
+
+## 전체 흐름
+
+```
+이미지 / PDF 업로드
+  → OCR (easyocr)
+  → LLM 속성 추출 (llama3.2)
+  → Semantic Node 변환
+  → 임베딩 후보 검색 (nomic-embed-text)
+  → 의미 매칭
+  → AAS 매핑 (DigitalNameplate / TechnicalData)
+  → AAS JSON 생성
+```
+
+---
+
+## 모듈 구조
+
+```
+app/            파이프라인 오케스트레이터, 설정, 모델
+interfaces/     추상 인터페이스 (교체 지점)
+modules/
+  extraction/   LLM 속성 추출기
+  retrieval/    임베딩 기반 후보 검색기
+  matching/     LLM / 규칙 기반 매처
+  semantic_node/ Semantic Node 빌더
+  aas_mapping/  서브모델 분류 + AAS 매핑
+  aas_generation/ AAS JSON 생성기
+  llm/          Ollama 클라이언트, 프롬프트 템플릿
+repositories/   AAS Property DB (properties.json)
+static/         웹 UI (index.html)
+api.py          FastAPI 백엔드
+db.py           SQLite 헬퍼
+```

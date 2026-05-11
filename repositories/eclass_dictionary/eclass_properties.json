@@ -1,0 +1,99 @@
+{
+  "version": "ECLASS 13.0",
+  "source": "ECLASS e.V. / IDTA DigitalNameplate 1.0 verified IRDIs",
+  "properties": [
+    {
+      "irdi": "0173-1#02-AAO677#002",
+      "preferred_name": "ManufacturerName",
+      "aliases": [
+        "manufacturer", "manufacturer name", "maker", "supplier",
+        "name of manufacturer", "hersteller", "manufacturer_name"
+      ]
+    },
+    {
+      "irdi": "0173-1#02-AAW338#001",
+      "preferred_name": "ManufacturerProductDesignation",
+      "aliases": [
+        "product designation", "manufacturer product designation",
+        "model name", "model", "product name", "type designation",
+        "supplier product designation", "product type"
+      ]
+    },
+    {
+      "irdi": "0173-1#02-AAM556#002",
+      "preferred_name": "SerialNumber",
+      "aliases": [
+        "serial number", "serial", "s/n", "sn", "serialnumber", "serial_number"
+      ]
+    },
+    {
+      "irdi": "0173-1#02-AAP906#001",
+      "preferred_name": "YearOfConstruction",
+      "aliases": [
+        "year of construction", "year of manufacture", "manufacture year",
+        "production year", "year_of_construction"
+      ]
+    },
+    {
+      "irdi": "0173-1#02-AAV232#002",
+      "preferred_name": "HardwareRevision",
+      "aliases": [
+        "hardware revision", "hw revision", "hardware version",
+        "hw version", "hardware_revision"
+      ]
+    },
+    {
+      "irdi": "0173-1#02-AAS207#001",
+      "preferred_name": "SoftwareRevision",
+      "aliases": [
+        "software revision", "firmware revision", "sw revision",
+        "firmware version", "software version", "software_revision"
+      ]
+    },
+    {
+      "irdi": "0173-1#02-AAO730#001",
+      "preferred_name": "CountryOfOrigin",
+      "aliases": [
+        "country of origin", "country code", "country", "made in",
+        "origin country", "product country of origin", "country_code"
+      ]
+    },
+    {
+      "irdi": "0173-1#02-AAO128#001",
+      "preferred_name": "AddressStreet",
+      "aliases": [
+        "street", "street address", "address street", "address"
+      ]
+    },
+    {
+      "irdi": "0173-1#02-AAO129#002",
+      "preferred_name": "AddressZipCode",
+      "aliases": [
+        "zip", "zip code", "postal code", "postcode"
+      ]
+    },
+    {
+      "irdi": "0173-1#02-AAO227#002",
+      "preferred_name": "OrderCodeOfManufacturer",
+      "aliases": [
+        "order code", "article number", "part number", "order number",
+        "product article number", "supplier product number", "sup_prod_num"
+      ]
+    },
+    {
+      "irdi": "0173-1#02-AAS804#002",
+      "preferred_name": "Weight",
+      "aliases": [
+        "weight", "mass", "net weight", "gross weight", "total weight"
+      ]
+    },
+    {
+      "irdi": "0173-1#02-BAE548#006",
+      "preferred_name": "NominalVoltage",
+      "aliases": [
+        "nominal voltage", "rated voltage", "supply voltage",
+        "operating voltage", "input voltage", "voltage", "vdc"
+      ]
+    }
+  ]
+}

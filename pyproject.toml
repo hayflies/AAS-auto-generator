@@ -2,8 +2,12 @@
 name = "aas-auto-generator"
 version = "0.1.0"
 description = "LLM/DDMS-style Asset Administration Shell auto-generation pipeline skeleton."
-requires-python = ">=3.11"
+requires-python = ">=3.9"
 dependencies = []
+
+[project.optional-dependencies]
+cv = ["ultralytics", "pillow"]
+llm = []
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
