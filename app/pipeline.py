@@ -23,17 +23,16 @@ from interfaces.base_retriever import BaseCandidateRetriever
 from interfaces.base_semantic_builder import BaseSemanticNodeBuilder
 from interfaces.base_validator import BaseDTValidator
 from modules.aas_generation import JsonAASGenerator
-from modules.aas_mapping import DefaultAASMapper, SemanticAASMapper
-from modules.cv import NoOpCVModel
+from modules.aas_mapping import TemplateAwareAASMapper
+from modules.cv import NoOpCVModel, YOLOPartDetector
 from modules.dt_integration import InMemoryDTAdapter
 from modules.extraction import LLMExtractor, ManualInputExtractor
 from modules.input_layer import DefaultInputLayer
-from modules.retrieval.embedding_retriever import EmbeddingCandidateRetriever
 from modules.semantic_node.llm_semantic_builder import LLMSemanticNodeBuilder
-from modules.matching import LLMMatcher, RuleBasedEntityMatcher
+from modules.matching import LLMMatcher
 from modules.model_3d import DefaultModelManager
-from modules.retrieval import InMemoryCandidateRetriever
-from modules.semantic_node import DefaultSemanticNodeBuilder
+from modules.normalization import ValueNormalizer
+from modules.retrieval.hybrid_retriever import HybridStandardsCandidateRetriever
 from modules.validation import DefaultDTValidator
 
 
@@ -66,54 +65,67 @@ class AASAutoGenerationPipeline:
     ) -> PipelineResult:
         """입력 payload 하나를 AAS 생성과 DT 검증까지 순차 처리한다."""
 
-        # 1. 외부 입력 형태를 내부 표준 AssetPackage로 정규화한다.
+        # 1~2. 입력 payload를 표준 AssetPackage로 정규화하고 파일 입력은 텍스트로 변환한다.
         asset_package = self.input_layer.collect(payload)
 
-        # 1.5. CV는 선택 모듈이므로 이미지가 없거나 구현체가 없으면 생략된다.
+        # 선택 CV 모듈이다. 명판/OCR 흐름과 독립적으로 자산 유형 힌트만 보강한다.
         cv_output = self._run_optional_cv(asset_package.images)
 
-        # 2~3. 원천 속성을 추출한 뒤 Semantic Node 중간 표현으로 변환한다.
+        # 3. 원천 텍스트/입력에서 속성을 추출하고 Semantic Node로 구조화한다.
         extracted_entities = self.extractor.extract(asset_package, cv_output)
-        semantic_nodes = self.semantic_builder.build(extracted_entities)
+        semantic_nodes = ValueNormalizer().normalize_nodes(
+            self.semantic_builder.build(extracted_entities)
+        )
 
         candidates_by_node: dict[str, list[AASPropertyCandidate]] = {}
         match_results: list[MatchResult] = []
         matched_properties: list[MatchedProperty] = []
 
-        # 4~5. 각 Semantic Node별 후보를 넓게 찾고, matcher가 최종 의미 일치를 판정한다.
+        # 4~6. 표준 후보군을 top-k로 찾고, matcher가 후보군을 재랭킹해 property/eclass를 고른다.
         for node in semantic_nodes:
             candidates = self.retriever.retrieve(node, self.config.top_k_candidates)
             candidates_by_node[node.semantic_node_id] = candidates
-            node_matches = [self.matcher.match(node, candidate) for candidate in candidates]
+            node_matches = self.matcher.match_candidates(node, candidates)
             match_results.extend(node_matches)
 
             best_match = self._best_match(node_matches)
             if best_match and best_match.candidate:
+                candidate = best_match.candidate
                 matched_properties.append(
                     MatchedProperty(
                         semantic_node_id=node.semantic_node_id,
-                        aas_property_id=best_match.candidate.candidate_id,
-                        submodel=best_match.candidate.submodel,
-                        idShort=best_match.candidate.idShort,
+                        aas_property_id=candidate.candidate_id,
+                        submodel=candidate.submodel,
+                        idShort=candidate.idShort,
                         value=node.value,
-                        unit=node.unit or best_match.candidate.preferred_unit,
+                        unit=node.unit or candidate.preferred_unit,
                         match_score=best_match.match_score,
-                        semantic_id=best_match.candidate.semantic_id,
+                        semantic_id=candidate.semantic_id,
+                        eclass_irdi=candidate.eclass_irdi or node.eclass_irdi,
+                        source=candidate.source,
+                        path=candidate.path,
+                        element_type=candidate.element_type,
+                        value_type=candidate.value_type,
+                        cardinality=candidate.cardinality,
+                        definition=candidate.definition,
+                        template_id=candidate.template_id,
+                        review_required=best_match.match_score < self.config.human_review_threshold,
+                        reason=best_match.reason,
                     )
                 )
 
-        # 8. 3D 모델은 AAS 안에 넣지 않고 파일 참조 정보만 준비한다.
+        # 선택 산출물이다. 3D 모델은 AAS 안에 넣지 않고 파일 참조 정보만 준비한다.
         model_info = self.model_manager.generate_model(
             asset_package.images,
             asset_package.to_dict(),
         )
 
-        # 6~7. 매핑 계획을 만든 뒤 코드 기반 generator가 최종 AAS JSON을 생성한다.
+        # 7~9. Submodel Template-aware mapping plan을 만들고 ConceptDescription 포함 AAS를 생성한다.
         mapping_plan = self.mapper.map(asset_package, matched_properties, model_info)
         aas_json = self.aas_generator.generate(mapping_plan)
         aas_validation = self.aas_generator.validate(aas_json)
 
-        # 9~10. 생성된 AAS와 모델 참조를 DT adapter에 등록하고 mock 센서값으로 검증한다.
+        # 생성된 AAS와 모델 참조를 DT adapter에 등록하고 mock 센서값으로 검증한다.
         dt_registration = self.dt_adapter.register_asset(aas_json, model_info.to_dict())
         dt_validation = self.validator.validate(
             dt_registration,
@@ -154,7 +166,17 @@ class AASAutoGenerationPipeline:
         valid_results = [item for item in results if item.match]
         if not valid_results:
             return None
-        return max(valid_results, key=lambda item: item.match_score)
+        return max(valid_results, key=self._match_rank)
+
+    def _match_rank(self, item: MatchResult) -> tuple[float, int]:
+        source = item.candidate.source if item.candidate else ""
+        source_rank = {
+            "submodel_template": 4,
+            "project_repository": 3,
+            "iec_cdd_dictionary": 2,
+            "eclass_dictionary": 1,
+        }.get(source, 0)
+        return (item.match_score, source_rank)
 
     def _default_sensor_values(self, user_inputs: dict[str, Any]) -> dict[str, Any]:
         """사용자 입력에 테스트 센서값이 없을 때 DT 검증용 기본값을 제공한다."""
@@ -178,7 +200,7 @@ def create_default_pipeline(config: PipelineConfig | None = None) -> AASAutoGene
     """
 
     config = config or PipelineConfig()
-    repository_path = (
+    project_property_path = (
         config.project_root
         / "repositories"
         / "aas_property_repository"
@@ -190,18 +212,131 @@ def create_default_pipeline(config: PipelineConfig | None = None) -> AASAutoGene
         / "submodel_templates"
         / "default_submodels.json"
     )
+    template_root = (
+        config.project_root
+        / "repositories"
+        / "submodel_templates"
+        / "admin_shell_io_submodel_templates"
+        / "published"
+    )
+    eclass_path = (
+        config.project_root
+        / "repositories"
+        / "eclass_dictionary"
+        / "eclass_properties.json"
+    )
+    iec_cdd_path = (
+        config.project_root
+        / "repositories"
+        / "iec_cdd_dictionary"
+        / "iec_cdd_properties.json"
+    )
     dt_adapter = InMemoryDTAdapter(config)
     return AASAutoGenerationPipeline(
         config=config,
         input_layer=DefaultInputLayer(),
         cv_model=NoOpCVModel(),
-        extractor=LLMExtractor(),
+        extractor=ManualInputExtractor(),
         semantic_builder=LLMSemanticNodeBuilder(skip_enrichment=True),
-        retriever=EmbeddingCandidateRetriever(repository_path),
+        retriever=HybridStandardsCandidateRetriever(
+            template_root=template_root,
+            eclass_path=eclass_path,
+            iec_cdd_path=iec_cdd_path,
+            project_property_path=project_property_path,
+            use_embeddings=False,
+        ),
         matcher=LLMMatcher(threshold=config.match_threshold, skip_llm=True),
         model_manager=DefaultModelManager(config),
-        mapper=SemanticAASMapper(template_path),
+        mapper=TemplateAwareAASMapper(
+            default_submodels_path=template_path,
+            template_root=template_root,
+            review_threshold=config.human_review_threshold,
+        ),
         aas_generator=JsonAASGenerator(),
         dt_adapter=dt_adapter,
         validator=DefaultDTValidator(dt_adapter),
     )
+
+
+def create_llm_pipeline(config: PipelineConfig | None = None) -> AASAutoGenerationPipeline:
+    """Ollama extraction/enrichment pipeline with the same standards-aware mapping."""
+
+    config = config or PipelineConfig()
+    pipeline = create_default_pipeline(config)
+    ollama_available = False
+    try:
+        from modules.llm import OllamaClient
+
+        client = OllamaClient()
+        ollama_available = client.is_available()
+    except Exception:
+        client = None
+
+    if not ollama_available:
+        print("[Pipeline] Ollama unavailable, llm pipeline falls back to deterministic matching.")
+
+    pipeline.extractor = LLMExtractor(client=client) if ollama_available and client else ManualInputExtractor()
+    pipeline.semantic_builder = LLMSemanticNodeBuilder(
+        client=client,
+        skip_enrichment=not ollama_available,
+    )
+    pipeline.matcher = LLMMatcher(
+        client=client,
+        threshold=config.match_threshold,
+        skip_llm=not ollama_available,
+    )
+    pipeline.mapper = TemplateAwareAASMapper(
+        default_submodels_path=config.project_root
+        / "repositories"
+        / "submodel_templates"
+        / "default_submodels.json",
+        template_root=config.project_root
+        / "repositories"
+        / "submodel_templates"
+        / "admin_shell_io_submodel_templates"
+        / "published",
+        review_threshold=config.human_review_threshold,
+        llm_client=client,
+        use_llm_template_selection=ollama_available,
+    )
+    try:
+        pipeline.retriever = HybridStandardsCandidateRetriever(
+            template_root=config.project_root
+            / "repositories"
+            / "submodel_templates"
+            / "admin_shell_io_submodel_templates"
+            / "published",
+            eclass_path=config.project_root / "repositories" / "eclass_dictionary" / "eclass_properties.json",
+            iec_cdd_path=config.project_root / "repositories" / "iec_cdd_dictionary" / "iec_cdd_properties.json",
+            project_property_path=config.project_root
+            / "repositories"
+            / "aas_property_repository"
+            / "properties.json",
+            embedding_model=client,
+            use_embeddings=ollama_available and client is not None,
+        )
+    except Exception as exc:
+        print(f"[Pipeline] Ollama embedding retriever unavailable, lexical fallback kept: {exc}")
+    return pipeline
+
+
+def create_yolo_pipeline(config: PipelineConfig | None = None) -> AASAutoGenerationPipeline:
+    """Compatibility factory for CLI modes that want CV later."""
+
+    pipeline = create_default_pipeline(config)
+    try:
+        pipeline.cv_model = YOLOPartDetector()
+    except Exception as exc:
+        print(f"[Pipeline] YOLO unavailable, NoOpCVModel kept: {exc}")
+    return pipeline
+
+
+def create_llm_yolo_pipeline(config: PipelineConfig | None = None) -> AASAutoGenerationPipeline:
+    """Compatibility factory for LLM + CV mode."""
+
+    pipeline = create_llm_pipeline(config)
+    try:
+        pipeline.cv_model = YOLOPartDetector()
+    except Exception as exc:
+        print(f"[Pipeline] YOLO unavailable, NoOpCVModel kept: {exc}")
+    return pipeline

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """LLM 프롬프트 템플릿 모음.
 
 이 모듈은 Extraction, Matching, Semantic Node 단계에서 사용하는 프롬프트 템플릿을 관리한다.
@@ -164,11 +166,21 @@ def build_batch_matching_prompt(semantic_node: dict, candidates: list) -> str:
 
     candidates_text = ""
     for i, c in enumerate(candidates, start=1):
-        candidate_id = c.get("idShort", c.get("candidate_id", f"candidate_{i}"))
+        candidate_id = c.get("candidate_id", f"candidate_{i}")
+        id_short = c.get("idShort", candidate_id)
         candidate_desc = c.get("description", "")
+        candidate_submodel = c.get("submodel", "")
+        candidate_semantic_id = c.get("semantic_id", "")
+        candidate_unit = c.get("preferred_unit", "")
+        candidate_source = c.get("source", "")
         candidates_text += (
             f"\nCandidate {i}:\n"
-            f"  idShort: {candidate_id}\n"
+            f"  candidate_id: {candidate_id}\n"
+            f"  idShort: {id_short}\n"
+            f"  Submodel: {candidate_submodel}\n"
+            f"  Semantic ID: {candidate_semantic_id}\n"
+            f"  Preferred unit: {candidate_unit}\n"
+            f"  Source: {candidate_source}\n"
             f"  Description: {candidate_desc}\n"
         )
 
@@ -189,14 +201,15 @@ Rules:
 - match is true if the candidate represents the same or equivalent concept as My Property, even if terminology differs.
 - In industrial/AAS context, similar unit + similar physical meaning = match.
 - score is a float between 0.0 and 1.0.
-- Use the exact idShort value as candidate_id.
+- Return the exact candidate_id field shown for each candidate.
+- Prefer a Submodel Template or project AAS property candidate over a raw ECLASS/IEC dictionary candidate when both describe the same concept.
 
 Return ONLY a JSON array. No explanation, no markdown, no extra text.
 
 Example:
 [
-  {{"candidate_id": "NominalVoltage", "match": true, "score": 0.93}},
-  {{"candidate_id": "RatedCurrent", "match": false, "score": 0.12}}
+  {{"candidate_id": "AAS_PROP_NOMINAL_VOLTAGE", "match": true, "score": 0.93, "reason": "same voltage concept"}},
+  {{"candidate_id": "AAS_PROP_RATED_CURRENT", "match": false, "score": 0.12, "reason": "current is not voltage"}}
 ]
 
 JSON array:"""
@@ -235,6 +248,65 @@ Raw text:
 {raw_text}
 
 Cleaned text:"""
+
+
+def build_submodel_template_selection_prompt(
+    asset: dict,
+    property_item: dict,
+    options: list[dict],
+) -> str:
+    """MatchedProperty를 어떤 Submodel Template/Submodel에 둘지 판단하는 프롬프트."""
+    option_lines = []
+    for index, option in enumerate(options, start=1):
+        option_lines.append(
+            "\n".join(
+                [
+                    f"Option {index}:",
+                    f"  submodel: {option.get('submodel', '')}",
+                    f"  description: {option.get('description', '')}",
+                    f"  evidence: {option.get('evidence', '')}",
+                ]
+            )
+        )
+    options_text = "\n\n".join(option_lines)
+
+    return f"""You are an AAS (Asset Administration Shell) submodel template placement expert.
+
+Choose the best Submodel for the property below.
+
+[Asset]
+name: {asset.get("asset_name", "")}
+type: {asset.get("asset_type", "")}
+manufacturer: {asset.get("manufacturer", "")}
+
+[Property]
+idShort: {property_item.get("idShort", "")}
+value: {property_item.get("value", "")}
+unit: {property_item.get("unit", "")}
+definition: {property_item.get("definition", "")}
+semanticId: {property_item.get("semanticId", "")}
+eclassIrdi: {property_item.get("eclassIrdi", "")}
+currentSubmodel: {property_item.get("currentSubmodel", "")}
+source: {property_item.get("source", "")}
+path: {property_item.get("path", "")}
+
+[Allowed Submodel Options]
+{options_text}
+
+Rules:
+- Select exactly one submodel from the allowed options.
+- DigitalNameplate is for identity, manufacturer, model, serial, product designation, certificates, and static nameplate information.
+- TechnicalData is for technical specifications, ratings, dimensions, performance, electrical/mechanical limits, and ECLASS/IEC CDD technical properties.
+- ProvisionOf3DModels is only for 3D model files or geometry references.
+- OperationalData is for runtime state, sensor values, status, and time-varying telemetry.
+- Prefer the option whose evidence says the semanticId or idShort exists in a loaded template.
+- If the currentSubmodel is wrong, correct it.
+- If confidence is below 0.70, set review_required=true.
+
+Return ONLY this JSON object:
+{{"selected_submodel": "...", "confidence": 0.0, "review_required": true, "reason": "short reason"}}
+
+JSON:"""
 
 
 def build_semantic_node_prompt(name: str, value: str, unit: str | None) -> str:

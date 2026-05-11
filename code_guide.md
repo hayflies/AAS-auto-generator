@@ -1,231 +1,168 @@
-# AAS-auto-generator 코드 가이드
+# AAS-auto-generator Code Guide
 
-이 문서는 `AAS-auto-generator` 저장소의 하위 디렉토리와 주요 소스코드가 어떤 역할을 하는지 설명합니다.
+이 문서는 현재 코드 기준의 프로젝트 구조와 파이프라인 흐름을 설명합니다. 과거 MVP용 mapper/retriever 설명은 제외하고, 현재 사용 중인 최종 구조만 정리합니다.
 
-## 전체 구조
-
-이 프로젝트는 **입력 자산 정보 → 의미 노드 생성 → AAS 속성 매칭 → AAS JSON 생성 → DT 등록/검증** 흐름을 가진 MVP 파이프라인입니다.
-
-전체 실행 흐름은 다음과 같습니다.
+## Core Flow
 
 ```text
-Input Layer
-→ Optional CV Module
-→ Information Extraction Layer
-→ Semantic Node Builder
-→ Candidate Retrieval Engine
-→ Entity Matching Engine
-→ AAS Mapping Engine
-→ 3D Model Manager
-→ AAS Generator
-→ DT Integration Layer
-→ DT Validation Layer
+raw payload
+→ DefaultInputLayer
+→ DocumentProcessor
+→ Extractor
+→ LLMSemanticNodeBuilder + ValueNormalizer
+→ HybridStandardsCandidateRetriever
+→ LLMMatcher.match_candidates
+→ Best Match Selection
+→ TemplateAwareAASMapper
+→ JsonAASGenerator
+→ InMemoryDTAdapter + DefaultDTValidator
 ```
 
-핵심 오케스트레이터는 `app/pipeline.py`입니다. `interfaces/`는 교체 가능한 추상 계약을 정의하고, `modules/`는 현재 외부 서비스 없이 동작하는 기본 구현체를 제공합니다.
+## Data Contracts
 
-## 최상위 파일
+주요 데이터 구조는 [app/models.py](/Users/hayfly/PycharmProjects/AAS-auto-generator/app/models.py)에 있습니다.
 
-- `main.py`: CLI 실행 진입점입니다. 실제 실행 로직은 `app/main.py`에 있습니다.
-- `README.md`: 프로젝트 개요, 실행 방법, 테스트 방법, 교체 가능한 모듈 설명이 정리되어 있습니다.
-- `pyproject.toml`: 프로젝트 메타데이터와 테스트 설정입니다. 현재 외부 의존성은 없습니다.
-- `description.md`: 시스템 설계 설명 문서입니다.
-- `code_guide.md`: 저장소 구조와 코드 역할을 설명하는 현재 문서입니다.
+| Model | 역할 |
+|---|---|
+| `AssetPackage` | 이미지, 문서 텍스트, 사용자 입력을 묶은 표준 입력 |
+| `ExtractedEntity` | LLM/manual extractor가 추출한 raw property |
+| `SemanticNode` | 매칭 전 의미 중간 표현, `eclass_irdi` 포함 |
+| `AASPropertyCandidate` | Submodel Template/ECLASS/IEC CDD에서 로드된 후보 |
+| `MatchResult` | Semantic Node와 후보 property의 일치 판단 결과 |
+| `MatchedProperty` | 최종 선택된 AAS property 매핑 결과 |
+| `PipelineResult` | 전체 단계 산출물을 보존하는 실행 결과 |
 
 ## app/
 
-애플리케이션의 중심 계층입니다. 파이프라인 조립, 실행 설정, 데이터 모델, CLI 처리, 샘플 데이터, 문자열 유틸리티가 들어 있습니다.
-
-- `app/pipeline.py`: 전체 파이프라인을 조립하고 순서대로 실행하는 오케스트레이터입니다. `create_default_pipeline()`에서 기본 구현체들을 연결합니다.
-- `app/main.py`: CLI 인자 처리, 입력 JSON 로드, 파이프라인 실행, 결과 파일 저장을 담당합니다.
-- `app/models.py`: `AssetPackage`, `SemanticNode`, `MatchedProperty`, `ModelInfo`, `PipelineResult` 등 전 단계에서 공유하는 데이터 모델을 정의합니다.
-- `app/config.py`: 출력 경로, 후보 개수, 매칭 임계값, DT viewer URL 같은 실행 설정을 관리합니다.
-- `app/sample_data.py`: 외부 OCR, LLM, 3D 생성기 없이도 전체 흐름을 테스트할 수 있는 샘플 Robot Arm 입력 데이터를 제공합니다.
-- `app/text.py`: 라벨 정규화, 토큰화, slug 생성, AAS `idShort` 생성 같은 문자열 유틸리티를 제공합니다.
+- [app/pipeline.py](/Users/hayfly/PycharmProjects/AAS-auto-generator/app/pipeline.py): 전체 composition root와 실행 순서를 정의합니다.
+- [app/main.py](/Users/hayfly/PycharmProjects/AAS-auto-generator/app/main.py): CLI 진입점입니다. `--pipeline default|llm|yolo|llm-yolo`를 선택합니다.
+- [app/config.py](/Users/hayfly/PycharmProjects/AAS-auto-generator/app/config.py): 경로, top-k, threshold, output directory 설정입니다.
+- [app/models.py](/Users/hayfly/PycharmProjects/AAS-auto-generator/app/models.py): 단계 간 dataclass 계약입니다.
+- [app/text.py](/Users/hayfly/PycharmProjects/AAS-auto-generator/app/text.py): label normalization, tokenization, slug/idShort 유틸입니다.
 
 ## interfaces/
 
-각 기능의 추상 인터페이스를 정의하는 디렉토리입니다.
+각 단계 교체를 위한 추상 계약입니다.
 
-현재 구현체가 바뀌더라도 전체 파이프라인 구조가 유지되도록 `BaseInputLayer`, `BaseInformationExtractor`, `BaseCandidateRetriever`, `BaseEntityMatcher`, `BaseAASMapper`, `BaseAASGenerator`, `BaseModelGenerator`, `BaseDTAdapter`, `BaseDTValidator` 등을 제공합니다.
+| Interface | 구현 예 |
+|---|---|
+| `BaseInputLayer` | `DefaultInputLayer` |
+| `BaseInformationExtractor` | `ManualInputExtractor`, `LLMExtractor` |
+| `BaseSemanticNodeBuilder` | `LLMSemanticNodeBuilder` |
+| `BaseCandidateRetriever` | `HybridStandardsCandidateRetriever` |
+| `BaseEntityMatcher` | `LLMMatcher` |
+| `BaseAASMapper` | `TemplateAwareAASMapper` |
+| `BaseAASGenerator` | `JsonAASGenerator` |
+| `BaseLLM`, `BaseEmbeddingModel` | `OllamaClient` |
 
-향후 OCR, LLM, Vector DB, 3D 생성기, DT 서버 연동을 붙일 때는 이 인터페이스를 구현한 클래스로 교체하면 됩니다.
+`BaseEntityMatcher`는 단건 `match()`와 후보군 `match_candidates()`를 모두 제공합니다. LLM 경로는 `match_candidates()`로 top-k 후보를 batch reranking합니다.
 
-주요 파일은 다음과 같습니다.
+## modules/input_layer/
 
-- `base_input.py`: 입력 수집 계층 계약입니다.
-- `base_cv.py`: 이미지 분류/세그멘테이션 같은 선택적 CV 계층 계약입니다.
-- `base_extractor.py`: 정보 추출 계층 계약입니다.
-- `base_semantic_builder.py`: 추출된 raw entity를 semantic node로 바꾸는 계층 계약입니다.
-- `base_retriever.py`: AAS Property 후보 검색 계층 계약입니다.
-- `base_matcher.py`: semantic node와 후보 property의 의미 매칭 계약입니다.
-- `base_mapper.py`: 매칭 결과를 AAS mapping plan으로 바꾸는 계층 계약입니다.
-- `base_aas_generator.py`: mapping plan에서 최종 AAS 산출물을 생성하는 계층 계약입니다.
-- `base_model_generator.py`: 3D 모델 생성 또는 참조 정보 생성 계약입니다.
-- `base_dt_adapter.py`: 디지털 트윈 등록 및 센서값 적용 계약입니다.
-- `base_validator.py`: DT 동작 검증 계약입니다.
-- `base_llm.py`: LLM text generation, JSON object/list 응답 파싱, LLM 연결/응답 형식 오류 계약입니다.
-- `base_embedding.py`: 향후 sentence-transformers, OpenAI embedding, FAISS/Chroma 연동으로 교체할 때 쓰는 임베딩 계약입니다.
+- `default_input_layer.py`
+  - payload alias를 `AssetPackage`로 정규화합니다.
+  - `documents`, `manual_files`, 이미지/PDF 경로, 자유 텍스트 필드를 처리합니다.
+  - 자유 텍스트 필드: `text`, `input_text`, `free_text`, `manual_text`, `user_text`, `raw_text`
+- `document_processor.py`
+  - PDF: `pdfplumber`
+  - Image OCR: `easyocr`
+  - OCR/PDF text cleaning: Ollama LLM 사용 가능 시 수행
 
-## modules/
+## modules/extraction/
 
-`interfaces/`에 정의된 계약의 기본 구현체들이 들어 있습니다. 현재는 외부 서비스 없이 동작하는 MVP 구현입니다.
+- `manual_input_extractor.py`: 외부 의존 없는 default extractor입니다. AssetPackage의 기본 자산 필드와 수동 입력 속성을 `ExtractedEntity`로 만듭니다.
+- `llm_extractor.py`: LLM으로 텍스트에서 property JSON array를 추출합니다. OCR 노이즈, 낮은 confidence, 단위-only 값, encoder resolution 오인식을 필터링합니다.
 
-### modules/input_layer/
+## modules/semantic_node/
 
-입력 payload를 내부 표준 모델인 `AssetPackage`로 정규화합니다.
+- `llm_semantic_builder.py`
+  - `ExtractedEntity`를 `SemanticNode`로 변환합니다.
+  - Ollama 사용 가능 시 conceptual definition과 affordance를 생성합니다.
+  - 사용 불가 시 fallback 문장을 씁니다.
+  - `repositories/eclass_dictionary/eclass_properties.json`의 alias로 `eclass_irdi`를 보강합니다.
 
-- `default_input_layer.py`: `raw_asset_package`, `user_inputs`, `asset_images`, `manual_files` 같은 입력 형태를 받아 자산 ID, 이름, 타입, 이미지, 문서, 사용자 입력을 표준 구조로 만듭니다.
+## modules/normalization/
 
-### modules/cv/
+- `value_normalizer.py`: 값/단위/value type을 후속 매칭에 맞게 정규화합니다.
 
-선택적 CV 단계입니다.
+## modules/standards/
 
-- `noop_cv.py`: 실제 CV 모델 없이 이미지 파일명에서 `robot`, `pump`, `motor`, `conveyor` 같은 힌트를 찾아 자산 타입을 약하게 추론합니다. 세그멘테이션은 현재 수행하지 않습니다.
-- `yolo_part_detector.py`: YOLOv8 weight 파일로 로봇 부품을 탐지하고 crop 이미지를 `data/output/cv_crops`에 저장합니다. `--pipeline yolo` 또는 `--pipeline llm-yolo`에서 명시적으로 사용합니다.
-- `models/`: YOLO 모델 weight와 학습 데이터 설정 파일을 보관합니다.
+- `candidate_sources.py`
+  - `SubmodelTemplateRepository`: `published/**/*.json`에서 Submodel element 후보를 로드합니다.
+  - `EclassDictionaryRepository`: 로컬 ECLASS seed를 후보로 로드합니다.
+  - `IecCddDictionaryRepository`: 로컬 IEC CDD seed를 후보로 로드합니다.
+  - `CandidateSourceRegistry`: 위 후보들을 통합하고 중복을 제거합니다.
 
-### modules/extraction/
+## modules/retrieval/
 
-입력 데이터에서 AAS 매핑 후보가 될 원천 속성을 추출합니다.
+- `hybrid_retriever.py`: 현재 표준 후보 검색 엔진입니다.
+  - exact `eclass_irdi`/`semantic_id` 우선
+  - lexical score
+  - optional Ollama embedding
+  - source priority, unit compatibility, value type compatibility 기반 rerank
+- `embedding_retriever.py`, `in_memory_retriever.py`: 이전/대체 구현체입니다. 현재 기본 composition에는 `HybridStandardsCandidateRetriever`가 사용됩니다.
 
-- `manual_input_extractor.py`: 사용자 입력 필드에서 `ExtractedEntity` 목록을 만듭니다. OCR, 문서 파서, LLM extractor가 붙기 전의 기본 구현입니다.
-- `llm_extractor.py`: Ollama LLM을 사용해 자산 텍스트와 사용자 입력에서 `ExtractedEntity` 목록을 추출합니다. 기본 파이프라인이 아니라 선택형 LLM 파이프라인에서 사용합니다.
+## modules/matching/
 
-### modules/semantic_node/
+- `llm_matcher.py`
+  - `skip_llm=True`: 후보 similarity score로 threshold matching
+  - `skip_llm=False`: top-k 후보군을 LLM에 넘겨 batch reranking
+  - score가 threshold 이상인 후보만 `MatchResult.match=True`
 
-추출된 속성을 AAS 매핑 전 중간 표현인 `SemanticNode`로 변환합니다.
+## modules/aas_mapping/
 
-- `default_builder.py`: 각 속성에 개념 정의, affordance, value type, confidence 같은 의미 정보를 붙입니다. 현재는 사전 기반 규칙으로 동작합니다.
-- `llm_semantic_builder.py`: Ollama LLM으로 각 속성의 개념 정의와 DT/AAS 용도를 동적으로 생성합니다.
+- `template_aware_mapper.py`: 현재 AAS mapping engine입니다.
+  - 낮은 match score는 reject/review 처리합니다.
+  - Submodel 후보를 생성합니다.
+    - 현재 후보의 submodel
+    - semanticId/eclassIrdi/idShort가 존재하는 Submodel Template
+    - core submodel heuristic
+  - default pipeline에서는 deterministic selector를 사용합니다.
+  - llm pipeline에서는 Ollama가 가능할 때 LLM Submodel Template selector를 사용합니다.
+  - 결과에 `diagnostics`, `reviewQueue`, `placement` 근거를 남깁니다.
+- `default_mapper.py`, `semantic_mapper.py`: 대체/이전 mapper입니다. 현재 기본 composition에는 사용하지 않습니다.
 
-### modules/retrieval/
+## modules/aas_generation/
 
-Semantic Node와 유사한 AAS Property 후보를 검색합니다.
+- `json_generator.py`
+  - mapping plan을 AAS JSON으로 변환합니다.
+  - `assetAdministrationShells`, `submodels`, `conceptDescriptions`를 생성합니다.
+  - `eclassIrdi`는 `supplementalSemanticIds`와 ConceptDescription에 반영합니다.
+  - 필수 필드 중심의 lightweight validation을 수행합니다.
 
-- `in_memory_retriever.py`: `repositories/aas_property_repository/properties.json`을 메모리에 로드한 뒤, 토큰 겹침 기반 점수로 후보 Top-K를 반환합니다.
-- `embedding_retriever.py`: Ollama embedding API로 Semantic Node와 AAS Property 후보 간 코사인 유사도를 계산합니다.
+## modules/cv/
 
-### modules/matching/
+- `noop_cv.py`: default CV adapter입니다.
+- `yolo_part_detector.py`: YOLOv8 기반 부품 탐지/crop adapter입니다. `ultralytics`와 weight 파일이 필요하며 실패 시 pipeline factory에서 fallback합니다.
 
-검색된 후보 중 실제 매칭 여부를 판단합니다.
+## Runtime Entrypoints
 
-- `rule_based_matcher.py`: 후보 검색 점수, 이름 토큰 겹침, 단위 일치 여부를 조합해 match 여부와 점수를 계산합니다.
-- `llm_matcher.py`: Ollama LLM으로 Semantic Node와 AAS Property 후보가 같은 의미인지 판단합니다.
-
-### modules/llm/
-
-LLM 계층 공통 인프라입니다. 계층별 구현체는 `extraction`, `semantic_node`, `retrieval`, `matching` 디렉토리에 두고, 이 디렉토리에는 공유 코드만 둡니다.
-
-- `ollama_client.py`: Ollama REST API 호출, JSON 응답 파싱, embedding 요청을 담당하는 공통 클라이언트입니다.
-- `prompts.py`: extraction, semantic node, matching 단계에서 쓰는 프롬프트 템플릿입니다.
-- `README.md`: Ollama 기반 선택형 구현체 사용 방법과 모델 준비 절차를 설명합니다.
-
-### modules/aas_mapping/
-
-매칭된 속성을 AAS Submodel 구조에 배치하는 mapping plan을 만듭니다.
-
-- `default_mapper.py`: `MatchedProperty` 목록과 `ModelInfo`를 받아 `DigitalNameplate`, `TechnicalData`, `ProvisionOf3DModels`, `OperationalData` 같은 Submodel에 property를 배치합니다. 이 단계에서는 아직 최종 AAS JSON을 직접 만들지 않습니다.
-
-### modules/aas_generation/
-
-Mapping plan을 실제 AAS JSON 구조로 변환합니다.
-
-- `json_generator.py`: `assetAdministrationShells`, `submodels`, `conceptDescriptions` 구조를 생성합니다. 또한 필수 필드가 존재하는지 간단히 검증합니다.
-
-### modules/model_3d/
-
-DT 환경에 연결할 3D 모델 참조 정보를 준비합니다.
-
-- `default_model_manager.py`: 기존 모델 경로가 있으면 해당 파일을 참조하고, 없으면 추후 3D 생성 adapter가 채울 `.glb` 대상 경로를 만듭니다.
-
-### modules/dt_integration/
-
-생성된 AAS와 3D 모델 정보를 디지털 트윈 계층에 등록합니다.
-
-- `in_memory_adapter.py`: 실제 Three.js, Unity, Isaac Sim 서버 없이도 동작하도록 메모리 registry에 DT 자산을 등록합니다. 센서값 적용 결과도 mock 방식으로 계산합니다.
-
-### modules/validation/
-
-DT 등록 결과에 mock sensor 값을 적용해 동작 검증을 수행합니다.
-
-- `default_validator.py`: movement, state change, visual update 검증 결과를 `ValidationResult`로 감쌉니다.
+- [api.py](/Users/hayfly/PycharmProjects/AAS-auto-generator/api.py): FastAPI 업로드/생성/조회/삭제 API와 정적 UI 서빙
+- [run_from_image.py](/Users/hayfly/PycharmProjects/AAS-auto-generator/run_from_image.py): 이미지/PDF 폴더 또는 파일 지정 실행
+- [main.py](/Users/hayfly/PycharmProjects/AAS-auto-generator/main.py): CLI wrapper
 
 ## repositories/
 
-파이프라인이 참조하는 로컬 지식 저장소입니다.
+```text
+repositories/
+  eclass_dictionary/eclass_properties.json
+  iec_cdd_dictionary/iec_cdd_properties.json
+  submodel_templates/default_submodels.json
+  submodel_templates/admin_shell_io_submodel_templates/
+```
 
-- `repositories/aas_property_repository/properties.json`: AAS Property 후보 목록입니다. 예를 들어 `AssetName`, `ManufacturerName`, `NominalVoltage`, `RatedCurrent`, `Weight`, `OperationalStatus` 같은 후보가 정의되어 있습니다.
-- `repositories/submodel_templates/default_submodels.json`: 기본 Submodel 템플릿입니다. 현재 `DigitalNameplate`, `TechnicalData`, `ProvisionOf3DModels`, `OperationalData`가 정의되어 있습니다.
-- `repositories/concept_descriptions/`: 향후 ConceptDescription 데이터를 넣기 위한 확장 위치입니다.
-- `repositories/eclass_dictionary/`: 향후 ECLASS 사전 데이터를 넣기 위한 확장 위치입니다.
+`admin_shell_io_submodel_templates/published`는 IDTA Submodel Template 후보 공간입니다. 전체 snapshot은 약 130MB이며 JSON/AASX/PDF를 포함합니다.
 
-## schemas/
+## Tests
 
-주요 입력과 중간 산출물의 JSON Schema를 보관합니다.
+- `tests/test_pipeline.py`: default pipeline end-to-end
+- `tests/test_llm_client.py`: Ollama client/parsing mock
+- `tests/test_llm_extractor.py`: extractor conversion/filtering
+- `tests/test_llm_matcher.py`: matcher threshold/reranking behavior
+- `tests/test_template_aware_mapper.py`: LLM Submodel placement correction
 
-- `asset_package.schema.json`: 표준 자산 입력 묶음 구조입니다.
-- `semantic_node.schema.json`: Semantic Node 구조입니다.
-- `matched_property.schema.json`: 최종 매칭된 property 구조입니다.
-- `aas_mapping_plan.schema.json`: AAS mapping plan 구조입니다.
-- `model_info.schema.json`: 3D 모델 참조 정보 구조입니다.
+실행:
 
-이 스키마들은 입력 검증, 중간 결과 검증, API 문서화에 활용할 수 있습니다.
-
-## data/
-
-실행 입력과 생성 결과가 저장되는 작업 데이터 디렉토리입니다.
-
-- `data/input/`: 샘플 입력 JSON 또는 이미지/문서 경로가 들어가는 위치입니다.
-- `data/output/`: 전체 파이프라인 실행 결과 JSON이 저장됩니다. 예: `{asset_id}_pipeline_result.json`
-- `data/generated_aas/`: 생성된 AAS JSON 파일이 저장됩니다. 예: `{asset_id}.aas.json`
-- `data/generated_models/`: 생성 또는 참조되는 3D 모델 파일 위치입니다.
-
-## tests/
-
-파이프라인 동작을 검증하는 테스트 코드가 들어 있습니다.
-
-- `tests/test_pipeline.py`: 샘플 입력이 전체 MVP 파이프라인을 통과하는지 확인합니다. AAS JSON 생성, 주요 속성 매칭, 3D 모델 참조 포함, DT 검증 통과 여부를 테스트합니다.
-
-## 기타 디렉토리
-
-- `.venv/`: Python 가상환경입니다. 애플리케이션 소스코드는 아닙니다.
-- `.idea/`: PyCharm IDE 설정입니다. 애플리케이션 로직과 직접 관련 없습니다.
-
-## 핵심 실행 흐름 상세
-
-1. `DefaultInputLayer`가 입력 payload를 `AssetPackage`로 정규화합니다.
-2. 이미지가 있으면 `NoOpCVModel`이 선택적으로 자산 타입 힌트를 반환합니다.
-3. `ManualInputExtractor`가 사용자 입력에서 `ExtractedEntity`를 추출합니다.
-4. `DefaultSemanticNodeBuilder`가 `ExtractedEntity`를 `SemanticNode`로 변환합니다.
-5. `InMemoryCandidateRetriever`가 각 Semantic Node에 대해 AAS Property 후보를 검색합니다.
-6. `RuleBasedEntityMatcher`가 후보와 Semantic Node의 의미 일치 점수를 계산합니다.
-7. `DefaultModelManager`가 3D 모델 참조 정보를 만듭니다.
-8. `DefaultAASMapper`가 매칭된 property와 모델 정보를 AAS mapping plan으로 배치합니다.
-9. `JsonAASGenerator`가 mapping plan에서 최종 AAS JSON을 생성하고 검증합니다.
-10. `InMemoryDTAdapter`가 AAS와 모델 정보를 mock DT registry에 등록합니다.
-11. `DefaultDTValidator`가 mock sensor 값으로 DT 동작 검증 결과를 만듭니다.
-
-## 파이프라인 선택 모드
-
-- `default`: 외부 런타임 의존성 없이 `NoOpCVModel`, `ManualInputExtractor`, `DefaultSemanticNodeBuilder`, `InMemoryCandidateRetriever`, `RuleBasedEntityMatcher`를 사용합니다.
-- `llm`: Ollama 기반 `LLMExtractor`, `LLMSemanticNodeBuilder`, `EmbeddingCandidateRetriever`, `LLMMatcher`를 사용합니다.
-- `yolo`: YOLO CV만 켜고 나머지는 기본 구현을 사용합니다.
-- `llm-yolo`: YOLO CV와 Ollama 기반 LLM/embedding 구현을 함께 사용합니다.
-
-## 확장 포인트
-
-현재 구현은 MVP 골격이므로 다음 기능들은 기존 인터페이스를 구현한 새 클래스로 교체할 수 있습니다.
-
-- OCR/문서 파서/LLM 추출기: `interfaces/base_extractor.py`
-- Semantic Node 보강기: `interfaces/base_semantic_builder.py`
-- Embedding/Vector DB 후보 검색기: `interfaces/base_retriever.py`
-- LLM matcher 또는 cross-encoder matcher: `interfaces/base_matcher.py`
-- AASX 또는 공식 schema 기반 AAS 생성기: `interfaces/base_aas_generator.py`
-- TripoSR, Blender, Meshy 같은 3D 모델 생성기: `interfaces/base_model_generator.py`
-- Three.js, Unity, Isaac Sim, Omniverse 연동 adapter: `interfaces/base_dt_adapter.py`
-- 실제 센서/MQTT/REST/WebSocket 기반 검증기: `interfaces/base_validator.py`
-
-## 요약
-
-`AAS-auto-generator`는 `app/pipeline.py`를 중심으로 전체 흐름을 조립하고, `interfaces/`를 통해 각 단계를 교체 가능하게 유지합니다. `modules/`는 현재 동작 가능한 기본 구현을 제공하고, `repositories/`는 매칭용 로컬 지식베이스, `schemas/`는 데이터 계약, `data/`는 입력/출력 저장소, `tests/`는 MVP 파이프라인 검증 역할을 합니다.
+```bash
+python3 -m unittest
+```

@@ -59,6 +59,7 @@ class DefaultInputLayer(BaseInputLayer):
         # 입력 시스템마다 필드명이 다를 수 있어 대표 alias를 함께 처리한다.
         images = list(raw.get("images") or raw.get("asset_images") or [])
         raw_documents = list(raw.get("documents") or raw.get("manual_files") or [])
+        raw_documents.extend(self._free_text_inputs(raw))
 
         # PDF / 이미지 경로는 텍스트로 변환한다. 이미 텍스트인 항목은 그대로 유지한다.
         documents = self._process_documents(raw_documents)
@@ -82,6 +83,17 @@ class DefaultInputLayer(BaseInputLayer):
             documents=documents,
             user_inputs=user_inputs,
         )
+
+    def _free_text_inputs(self, raw: dict[str, Any]) -> list[str]:
+        """사용자가 payload에 직접 넣은 임의 텍스트 입력을 문서 텍스트로 흡수한다."""
+        text_values: list[str] = []
+        for key in ("text", "input_text", "free_text", "manual_text", "user_text", "raw_text"):
+            value = raw.get(key)
+            if isinstance(value, str) and value.strip():
+                text_values.append(value.strip())
+            elif isinstance(value, list):
+                text_values.extend(str(item).strip() for item in value if str(item).strip())
+        return text_values
 
     def _process_documents(self, raw_documents: list) -> list:
         """문서 목록을 순회하며 파일 경로는 텍스트로 변환하고, 텍스트는 그대로 유지한다.

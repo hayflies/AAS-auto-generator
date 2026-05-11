@@ -17,7 +17,7 @@ ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT))
 
 from app.config import PipelineConfig
-from app.pipeline import create_default_pipeline
+from app.pipeline import create_llm_pipeline
 from app.text import slugify
 from db import delete_result, get_result, init_db, list_results, save_result
 
@@ -71,7 +71,7 @@ async def generate_aas(
 
         try:
             config = PipelineConfig()
-            pipeline = create_default_pipeline(config)
+            pipeline = create_llm_pipeline(config)
             result = pipeline.run(payload)
         except Exception as exc:
             raise HTTPException(status_code=500, detail=f"파이프라인 오류: {exc}") from exc

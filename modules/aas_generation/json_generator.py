@@ -72,12 +72,17 @@ class JsonAASGenerator(BaseAASGenerator):
         for index, submodel in enumerate(submodels or []):
             self._require(submodel, ["id", "idShort", "submodelElements"], errors, f"submodel[{index}]")
             for element_index, element in enumerate(submodel.get("submodelElements", [])):
-                self._require(
-                    element,
-                    ["modelType", "idShort", "valueType", "value"],
-                    errors,
-                    f"submodel[{index}].element[{element_index}]",
-                )
+                model_type = element.get("modelType")
+                required = ["modelType", "idShort"]
+                if model_type == "Property":
+                    required.extend(["valueType", "value"])
+                elif model_type == "MultiLanguageProperty":
+                    required.append("value")
+                elif model_type == "File":
+                    required.extend(["contentType", "value"])
+                elif model_type == "Range":
+                    required.append("valueType")
+                self._require(element, required, errors, f"submodel[{index}].element[{element_index}]")
 
         return {"is_valid": not errors, "errors": errors}
 
@@ -96,12 +101,41 @@ class JsonAASGenerator(BaseAASGenerator):
 
     def _property_element(self, item: dict[str, Any]) -> dict[str, Any]:
         """Mapping Plan의 property 항목을 AAS Property element로 변환한다."""
-        element: dict[str, Any] = {
-            "modelType": "Property",
-            "idShort": item["idShort"],
-            "valueType": self._value_type(item.get("value")),
-            "value": str(item.get("value", "")),
-        }
+        element_type = item.get("elementType") or "Property"
+        if element_type == "MultiLanguageProperty":
+            element = {
+                "modelType": "MultiLanguageProperty",
+                "idShort": item["idShort"],
+                "value": [
+                    {
+                        "language": "en",
+                        "text": str(item.get("value", "")),
+                    }
+                ],
+            }
+        elif element_type == "File":
+            element = {
+                "modelType": "File",
+                "idShort": item["idShort"],
+                "contentType": self._content_type(str(item.get("value", ""))),
+                "value": str(item.get("value", "")),
+            }
+        elif element_type == "Range" and self._range_bounds(item.get("value")):
+            minimum, maximum = self._range_bounds(item.get("value")) or ("", "")
+            element = {
+                "modelType": "Range",
+                "idShort": item["idShort"],
+                "valueType": item.get("valueType") or "xs:double",
+                "min": minimum,
+                "max": maximum,
+            }
+        else:
+            element = {
+                "modelType": "Property",
+                "idShort": item["idShort"],
+                "valueType": item.get("valueType") or self._value_type(item.get("value")),
+                "value": str(item.get("value", "")),
+            }
         if item.get("semanticId"):
             element["semanticId"] = {
                 "type": "ExternalReference",
@@ -112,6 +146,18 @@ class JsonAASGenerator(BaseAASGenerator):
                     }
                 ],
             }
+        if item.get("eclassIrdi") and item.get("eclassIrdi") != item.get("semanticId"):
+            element["supplementalSemanticIds"] = [
+                {
+                    "type": "ExternalReference",
+                    "keys": [
+                        {
+                            "type": "GlobalReference",
+                            "value": item["eclassIrdi"],
+                        }
+                    ],
+                }
+            ]
         if item.get("unit"):
             element["qualifiers"] = [
                 {
@@ -120,6 +166,14 @@ class JsonAASGenerator(BaseAASGenerator):
                     "value": item["unit"],
                 }
             ]
+        if item.get("mappingStatus"):
+            element.setdefault("qualifiers", []).append(
+                {
+                    "type": "mappingStatus",
+                    "valueType": "xs:string",
+                    "value": item["mappingStatus"],
+                }
+            )
         return element
 
     def _concept_descriptions(self, mapping_plan: dict[str, Any]) -> list[dict[str, Any]]:
@@ -128,18 +182,63 @@ class JsonAASGenerator(BaseAASGenerator):
         descriptions: list[dict[str, Any]] = []
         for submodel in mapping_plan["submodels"]:
             for item in submodel.get("properties", []):
-                semantic_id = item.get("semanticId")
-                if not semantic_id or semantic_id in seen:
-                    continue
-                seen.add(semantic_id)
-                descriptions.append(
-                    {
-                        "modelType": "ConceptDescription",
-                        "id": semantic_id,
-                        "idShort": item["idShort"],
-                    }
-                )
+                for semantic_id in self._semantic_ids(item):
+                    if semantic_id in seen:
+                        continue
+                    seen.add(semantic_id)
+                    descriptions.append(
+                        {
+                            "modelType": "ConceptDescription",
+                            "id": semantic_id,
+                            "idShort": item["idShort"],
+                            "embeddedDataSpecifications": [
+                                {
+                                    "dataSpecification": {
+                                        "type": "ExternalReference",
+                                        "keys": [
+                                            {
+                                                "type": "GlobalReference",
+                                                "value": "https://admin-shell.io/DataSpecificationTemplates/DataSpecificationIEC61360/3/0",
+                                            }
+                                        ],
+                                    },
+                                    "dataSpecificationContent": self._iec61360_content(item),
+                                }
+                            ],
+                        }
+                    )
         return descriptions
+
+    def _semantic_ids(self, item: dict[str, Any]) -> list[str]:
+        ids: list[str] = []
+        for key in ("semanticId", "eclassIrdi"):
+            value = item.get(key)
+            if value and value not in ids:
+                ids.append(value)
+        return ids
+
+    def _iec61360_content(self, item: dict[str, Any]) -> dict[str, Any]:
+        content = {
+            "modelType": "DataSpecificationIec61360",
+            "preferredName": [
+                {
+                    "language": "en",
+                    "text": item["idShort"],
+                }
+            ],
+        }
+        if item.get("definition"):
+            content["definition"] = [
+                {
+                    "language": "en",
+                    "text": item["definition"],
+                }
+            ]
+        if item.get("unit"):
+            content["unit"] = item["unit"]
+        if item.get("valueType"):
+            content["dataType"] = item["valueType"]
+        return content
 
     def _require(
         self,
@@ -162,3 +261,24 @@ class JsonAASGenerator(BaseAASGenerator):
         if isinstance(value, float):
             return "xs:double"
         return "xs:string"
+
+    def _range_bounds(self, value: Any) -> tuple[str, str] | None:
+        if not isinstance(value, str):
+            return None
+        for separator in ("~", " to ", "-"):
+            if separator in value:
+                left, right = value.split(separator, 1)
+                return left.strip(), right.strip()
+        return None
+
+    def _content_type(self, path: str) -> str:
+        lower = path.lower()
+        if lower.endswith(".glb"):
+            return "model/gltf-binary"
+        if lower.endswith(".gltf"):
+            return "model/gltf+json"
+        if lower.endswith(".stp") or lower.endswith(".step"):
+            return "model/step"
+        if lower.endswith(".pdf"):
+            return "application/pdf"
+        return "application/octet-stream"

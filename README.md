@@ -1,89 +1,197 @@
 # AAS Auto Generator
 
-이미지·PDF → AAS(Asset Administration Shell) JSON 자동 생성 파이프라인
+명판 이미지, PDF, 자유 텍스트를 입력받아 AAS(Asset Administration Shell) JSON을 생성하는 파이프라인입니다.
 
----
+핵심 원칙은 LLM이 최종 AAS JSON을 직접 쓰지 않게 하는 것입니다. LLM은 텍스트 정제, 속성 추출, Semantic Node 보강, 후보 재랭킹, 선택적 Submodel 배치 판단에만 사용하고, 최종 AAS 구조는 코드 기반 generator가 생성합니다.
 
-## 실행 방법
+## Architecture
 
-### 사전 준비
+```text
+Input
+- nameplate image
+- PDF datasheet/manual
+- free text
+
+        |
+        v
+
+DefaultInputLayer
+Output: AssetPackage
+- 입력 필드 alias 정규화
+- image/PDF/free text 수집
+- 파일 입력은 DocumentProcessor로 텍스트화
+
+        |
+        v
+
+DocumentProcessor
+Output: cleaned text
+- PDF: pdfplumber
+- Image OCR: easyocr
+- OCR/PDF text cleaning: Ollama LLM, 사용 가능할 때
+
+        |
+        v
+
+Extractor
+Output: ExtractedEntity[]
+- default: ManualInputExtractor
+- llm: LLMExtractor
+
+        |
+        v
+
+LLMSemanticNodeBuilder + ValueNormalizer
+Output: SemanticNode[]
+- name/value/unit/value_type 정규화
+- conceptual_definition, affordance 생성 또는 fallback
+- ECLASS alias 사전으로 eclass_irdi 보강
+
+        |
+        v
+
+HybridStandardsCandidateRetriever
+Input: SemanticNode
+Sources:
+- repositories/submodel_templates/admin_shell_io_submodel_templates/published/**/*.json
+- repositories/eclass_dictionary/eclass_properties.json
+- repositories/iec_cdd_dictionary/iec_cdd_properties.json
+Output: top-k AASPropertyCandidate[]
+- ECLASS/semanticId exact match 우선
+- lexical search
+- Ollama embedding search, llm pipeline에서 Ollama 사용 가능할 때
+
+        |
+        v
+
+LLMMatcher.match_candidates
+Input: SemanticNode + top-k candidates
+Output: MatchResult[]
+- default: similarity_score threshold
+- llm: top-k 후보군 batch reranking
+
+        |
+        v
+
+Best Match Selection
+Output: MatchedProperty[]
+- AAS property
+- semanticId
+- eclassIrdi
+- templateId/source/path
+
+        |
+        v
+
+TemplateAwareAASMapper
+Output: AAS mapping plan
+- Submodel 후보 생성
+- default: deterministic template selector
+- llm: Ollama 기반 Submodel Template selector
+- diagnostics/reviewQueue 생성
+
+        |
+        v
+
+JsonAASGenerator
+Output:
+- AAS JSON
+- ConceptDescriptions
+- supplementalSemanticIds for ECLASS IRDI
+- validation result
+```
+
+## Pipeline Modes
+
+| Mode | Factory | 외부 의존 | 설명 |
+|---|---|---|---|
+| default | `create_default_pipeline()` | 없음 | 수동 입력, lexical/IRDI 검색, deterministic matching/placement |
+| llm | `create_llm_pipeline()` | Ollama | LLM extraction, Semantic Node enrichment, embedding retrieval, LLM reranking, LLM Submodel placement |
+| yolo | `create_yolo_pipeline()` | ultralytics | default + YOLO CV adapter, 불가 시 NoOp fallback |
+| llm-yolo | `create_llm_yolo_pipeline()` | Ollama, ultralytics | llm + YOLO, 사용 불가한 모듈은 fallback |
+
+## Input Payload
+
+```json
+{
+  "asset_id": "robot_arm_a",
+  "asset_name": "Robot Arm A",
+  "manufacturer": "ROBOTIS",
+  "asset_type": "robot_arm",
+  "asset_images": ["data/input/nameplate.jpg"],
+  "manual_files": ["data/input/datasheet.pdf"],
+  "free_text": "Rated voltage: 24 V\nPayload: 3 kg"
+}
+```
+
+지원하는 자유 텍스트 필드:
+
+```text
+text, input_text, free_text, manual_text, user_text, raw_text
+```
+
+## Run
+
+### Web UI
 
 ```bash
-# 1. Ollama 설치 (https://ollama.ai)
+python3 -m uvicorn api:app --reload
+```
+
+```text
+http://localhost:8000
+```
+
+### CLI
+
+```bash
+python3 main.py --input-json data/input/sample_asset.json
+python3 main.py --pipeline llm --input-json data/input/sample_asset.json
+python3 main.py --pipeline llm-yolo --input-json data/input/sample_asset.json
+```
+
+### Image/PDF Folder Runner
+
+```bash
+python3 run_from_image.py
+python3 run_from_image.py --files data/input/nameplate.jpg --name "Robot Arm" --manufacturer "ROBOTIS"
+```
+
+## Dependencies
+
+필수 테스트 경로는 표준 라이브러리 중심으로 동작합니다. 기능별 의존성은 아래처럼 설치합니다.
+
+```bash
 ollama pull llama3.2
 ollama pull nomic-embed-text
 
-# 2. Python 패키지 설치
-pip install -r requirements.txt
+python3 -m pip install fastapi uvicorn
+python3 -m pip install pdfplumber easyocr pillow numpy
+python3 -m pip install -e ".[cv]"
 ```
 
-### 웹 UI 실행 (권장)
+현재 `requirements.txt`는 없습니다. OCR/PDF/YOLO/Ollama가 없으면 해당 단계는 fallback 또는 빈 결과로 처리됩니다.
 
-```bash
-python -m uvicorn api:app --reload
-```
+## Outputs
 
-브라우저에서 `http://localhost:8000` 접속  
-→ 이미지·PDF 업로드 → Asset Name 입력 → **Generate AAS** 클릭
-
-### CLI 직접 실행
-
-```bash
-# 이미지 파일로 바로 실행
-python run_from_image.py
-
-# 샘플 데이터로 파이프라인 테스트
-python main.py
-```
-
-### 테스트
-
-```bash
-python -m unittest
-```
-
----
-
-## 결과물 위치
-
-| 항목 | 경로 |
+| Output | Path |
 |---|---|
-| 웹 UI 생성 결과 | SQLite DB (`data/aas_database.db`) |
-| CLI 실행 결과 | `data/generated_aas/{asset_id}.aas.json` |
-| 파이프라인 전체 결과 | `data/output/{asset_id}_pipeline_result.json` |
+| Web DB | `data/aas_database.db` |
+| AAS JSON | `data/generated_aas/{asset_id}.aas.json` |
+| Pipeline result | `data/output/{asset_id}_pipeline_result.json` |
+| YOLO crops | `data/output/cv_crops/` |
 
----
+## Local Standards Repository
 
-## 전체 흐름
+- `repositories/submodel_templates/admin_shell_io_submodel_templates/`: admin-shell-io Submodel Templates `main` snapshot
+- `repositories/submodel_templates/default_submodels.json`: core submodel set used by the generator
+- `repositories/eclass_dictionary/eclass_properties.json`: local ECLASS alias/IRDI seed
+- `repositories/iec_cdd_dictionary/iec_cdd_properties.json`: local IEC CDD seed
 
+## Test
+
+```bash
+python3 -m unittest
 ```
-이미지 / PDF 업로드
-  → OCR (easyocr)
-  → LLM 속성 추출 (llama3.2)
-  → Semantic Node 변환
-  → 임베딩 후보 검색 (nomic-embed-text)
-  → 의미 매칭
-  → AAS 매핑 (DigitalNameplate / TechnicalData)
-  → AAS JSON 생성
-```
 
----
-
-## 모듈 구조
-
-```
-app/            파이프라인 오케스트레이터, 설정, 모델
-interfaces/     추상 인터페이스 (교체 지점)
-modules/
-  extraction/   LLM 속성 추출기
-  retrieval/    임베딩 기반 후보 검색기
-  matching/     LLM / 규칙 기반 매처
-  semantic_node/ Semantic Node 빌더
-  aas_mapping/  서브모델 분류 + AAS 매핑
-  aas_generation/ AAS JSON 생성기
-  llm/          Ollama 클라이언트, 프롬프트 템플릿
-repositories/   AAS Property DB (properties.json)
-static/         웹 UI (index.html)
-api.py          FastAPI 백엔드
-db.py           SQLite 헬퍼
-```
+현재 검증 기준: `32 tests OK`.

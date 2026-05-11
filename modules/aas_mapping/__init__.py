@@ -2,5 +2,6 @@
 
 from modules.aas_mapping.default_mapper import DefaultAASMapper
 from modules.aas_mapping.semantic_mapper import SemanticAASMapper
+from modules.aas_mapping.template_aware_mapper import TemplateAwareAASMapper
 
-__all__ = ["DefaultAASMapper", "SemanticAASMapper"]
+__all__ = ["DefaultAASMapper", "SemanticAASMapper", "TemplateAwareAASMapper"]

@@ -103,6 +103,15 @@ class AASPropertyCandidate:
     aliases: list[str] = field(default_factory=list)
     similarity_score: float = 0.0
     eclass_irdi: str | None = None  # properties.json에서 로드됨
+    source: str = "project_repository"
+    path: str | None = None
+    element_type: str = "Property"
+    value_type: str | None = None
+    cardinality: str | None = None
+    definition: str | None = None
+    template_id: str | None = None
+    allowed_values: list[str] = field(default_factory=list)
+    source_priority: float = 0.0
 
     def to_dict(self) -> dict[str, Any]:
         return _compact(asdict(self))
@@ -141,6 +150,17 @@ class MatchedProperty:
     unit: str | None
     match_score: float
     semantic_id: str | None = None
+    eclass_irdi: str | None = None
+    source: str | None = None
+    path: str | None = None
+    element_type: str = "Property"
+    value_type: str | None = None
+    cardinality: str | None = None
+    definition: str | None = None
+    template_id: str | None = None
+    review_required: bool = False
+    mapping_status: str = "mapped"
+    reason: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return _compact(asdict(self))

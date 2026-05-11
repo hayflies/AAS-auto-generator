@@ -15,6 +15,7 @@ class PipelineConfig:
     project_root: Path = Path(__file__).resolve().parents[1]
     top_k_candidates: int = 5
     match_threshold: float = 0.45
+    human_review_threshold: float = 0.78
     output_dir: Path | None = None
     generated_aas_dir: Path | None = None
     generated_models_dir: Path | None = None

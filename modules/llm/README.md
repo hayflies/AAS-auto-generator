@@ -1,6 +1,6 @@
-# LLM 공통 인프라와 선택형 구현
+# LLM 공통 인프라와 현재 파이프라인 연결
 
-Ollama 기반 로컬 LLM을 사용해 AAS 자동 생성 파이프라인의 일부 단계를 확장합니다.
+Ollama 기반 로컬 LLM을 사용해 AAS 자동 생성 파이프라인의 문서 정제, 속성 추출, 의미 보강, 매칭, embedding 검색을 지원합니다.
 `modules/llm/`에는 공통 클라이언트와 프롬프트만 두고, 계층별 구현체는 프로젝트 구조에 맞춰 각 디렉토리에 배치합니다.
 
 ---
@@ -8,15 +8,17 @@ Ollama 기반 로컬 LLM을 사용해 AAS 자동 생성 파이프라인의 일�
 ## 파이프라인에서의 위치
 
 ```
-[Input Layer]               
+[Input Layer / DocumentProcessor]
         ↓
-[LLMExtractor]              ← modules/extraction
+[OCR/PDF text cleaning]       ← modules/llm/prompts.py
         ↓
-[LLMSemanticNodeBuilder]    ← modules/semantic_node
+[LLMExtractor]                ← modules/extraction
+        ↓
+[LLMSemanticNodeBuilder]      ← modules/semantic_node
         ↓
 [EmbeddingCandidateRetriever] ← modules/retrieval
         ↓
-[LLMMatcher]                ← modules/matching
+[LLMMatcher 또는 skip_llm 매칭] ← modules/matching
         ↓
 [AAS 생성 → DT 등록]        
 ```
@@ -77,8 +79,10 @@ client.is_available()                     # 서버 상태 확인
 | 함수 | 사용처 |
 |---|---|
 | `build_extraction_prompt(input_text)` | `llm_extractor.py` |
+| `build_text_cleaning_prompt(raw_text)` | `document_processor.py` |
 | `build_semantic_node_prompt(name, value, unit)` | `llm_semantic_builder.py` |
 | `build_matching_prompt(node, candidate)` | `llm_matcher.py` |
+| `build_batch_matching_prompt(node, candidates)` | 현재 직접 호출 없음, batch matching 확장용 |
 
 ---
 
@@ -89,7 +93,7 @@ client.is_available()                     # 서버 상태 확인
 자산 정보 텍스트를 LLM이 읽고 속성 목록으로 구조화합니다.
 
 ```
-입력:  AssetPackage (asset_name, manufacturer, user_inputs, documents 등)
+입력:  AssetPackage (asset_name, manufacturer, documents 등)
 출력:  list[ExtractedEntity]
 
 예시 입력 텍스트:
@@ -103,6 +107,7 @@ client.is_available()                     # 서버 상태 확인
 **특이사항:**
 - LLM 응답이 빈 리스트일 경우 최대 3회 재시도
 - `raw_name` / `name` 키 모두 처리 (llama3.2 혼용 대응)
+- bracket-only 값, 단위만 추출된 값, encoder resolution, 치수+무게단위 오분류, 낮은 confidence 항목을 필터링
 
 ---
 
@@ -111,6 +116,7 @@ client.is_available()                     # 서버 상태 확인
 **인터페이스:** `BaseSemanticNodeBuilder`
 
 추출된 속성마다 LLM이 개념 정의(conceptual_definition)와 용도(affordance)를 동적으로 생성합니다.
+현재 기본 파이프라인에서는 처리 시간을 줄이기 위해 `skip_enrichment=True`를 사용합니다.
 
 ```
 입력:  list[ExtractedEntity]
@@ -129,6 +135,7 @@ client.is_available()                     # 서버 상태 확인
 **기존 대비 개선점:**
 - `DefaultSemanticNodeBuilder`: 31개 하드코딩 사전 — 없는 속성은 기본 문장만 반환
 - `LLMSemanticNodeBuilder`: 어떤 속성이든 LLM이 동적으로 의미 생성
+- ECLASS 사전을 로드해 속성명/alias를 `eclass_irdi`로 보강
 
 ---
 
@@ -152,9 +159,10 @@ client.is_available()                     # 서버 상태 확인
 - `EmbeddingCandidateRetriever`: 벡터 코사인 유사도 — 같은 의미 다른 단어도 검색 가능
 
 **동작 방식:**
-1. 초기화 시 `properties.json`의 모든 후보 임베딩을 미리 계산해 캐싱
-2. `retrieve()` 호출 시 쿼리 임베딩 생성 후 코사인 유사도 계산
-3. `nomic-embed-text` 없으면 `llama3.2`로 자동 fallback
+1. `SemanticNode.eclass_irdi`가 있으면 같은 IRDI 후보를 score 1.0으로 우선 반환
+2. IRDI 매칭이 없으면 초기화 시 캐싱한 후보 임베딩과 query embedding의 코사인 유사도 계산
+3. 단위 일치와 alias exact/partial match에 boost 적용
+4. `nomic-embed-text` 없으면 `llama3.2`로 자동 fallback
 
 ---
 
@@ -183,19 +191,22 @@ node_matches = [self.matcher.match(node, candidate) for candidate in candidates]
 **특이사항:**
 - llama3.2는 `match` boolean과 `score`를 모순되게 반환하는 경우가 있어 **score 기준으로 판단**
 - `score >= threshold` 이면 match=True (기본 threshold: 0.45)
+- 현재 기본 파이프라인은 `skip_llm=True`로 LLM matching 호출을 생략하고 embedding score threshold를 사용
 
 ---
 
-## 파이프라인 연결 방법
+## 현재 기본 파이프라인 연결
 
-`app/pipeline.py`의 `create_llm_pipeline()` 함수를 사용합니다.
+`app/pipeline.py`의 `create_default_pipeline()`이 현재 LLM/embedding 구현을 기본으로 연결합니다.
 
-```python
-from app.pipeline import create_llm_pipeline
-
-pipeline = create_llm_pipeline()
-result = pipeline.run(payload)
+```text
+LLMExtractor
+→ LLMSemanticNodeBuilder(skip_enrichment=True)
+→ EmbeddingCandidateRetriever
+→ LLMMatcher(skip_llm=True)
 ```
+
+`app/main.py`에는 `create_llm_pipeline()` import가 남아 있지만 현재 `app/pipeline.py`에는 해당 factory가 정의되어 있지 않습니다. CLI의 `--pipeline llm/yolo/llm-yolo` 경로는 추가 정리가 필요합니다.
 
 ---
 
@@ -205,15 +216,15 @@ result = pipeline.run(payload)
 # LLM 모듈 단위 테스트
 python -m unittest tests/test_llm_client.py tests/test_llm_extractor.py tests/test_llm_matcher.py -v
 
-# 전체 파이프라인 통합 테스트
-python main.py
+# 이미지/PDF 경로 통합 실행
+python run_from_image.py
 ```
 
 **테스트 결과 예시:**
 ```
-test_llm_client.py     10/10
-test_llm_extractor.py  8/8
-test_llm_matcher.py    8/8
+test_llm_client.py     mock 기반 요청/JSON 파싱/embedding 검증
+test_llm_extractor.py  LLM 응답 → ExtractedEntity 변환 검증
+test_llm_matcher.py    threshold와 MatchResult 구조 검증
 
 기본 파이프라인 실행:
   semantic_nodes     = 8

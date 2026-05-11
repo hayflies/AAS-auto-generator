@@ -70,14 +70,33 @@ class LLMSemanticNodeBuilder(BaseSemanticNodeBuilder):
             return {}
 
         lookup: dict[str, str] = {}
-        for entry in data.get("properties", []):
-            irdi = entry.get("irdi", "").strip()
+        entries = LLMSemanticNodeBuilder._dictionary_entries(data)
+        for entry in entries:
+            irdi = str(entry.get("irdi") or "").strip()
             if not irdi:
                 continue
-            lookup[entry.get("preferred_name", "").lower()] = irdi
+            preferred_name = entry.get("preferred_name", "")
+            if preferred_name:
+                lookup[preferred_name.lower()] = irdi
             for alias in entry.get("aliases", []):
                 lookup[alias.lower()] = irdi
         return lookup
+
+    @staticmethod
+    def _dictionary_entries(data: Any) -> list[dict[str, Any]]:
+        """Support both project JSON shapes: {"properties": [...]} and loose lists."""
+        entries: list[dict[str, Any]] = []
+        if isinstance(data, dict):
+            properties = data.get("properties")
+            if isinstance(properties, list):
+                return LLMSemanticNodeBuilder._dictionary_entries(properties)
+            if "irdi" in data:
+                return [data]
+            return []
+        if isinstance(data, list):
+            for item in data:
+                entries.extend(LLMSemanticNodeBuilder._dictionary_entries(item))
+        return entries
 
     def build(self, entities: list[ExtractedEntity]) -> list[SemanticNode]:
         """raw entity 목록에 LLM이 생성한 의미 설명과 ECLASS IRDI를 추가한다."""
