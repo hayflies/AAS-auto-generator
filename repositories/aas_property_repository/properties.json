@@ -6,7 +6,13 @@
       "description": "Human-readable name of the asset.",
       "submodel": "DigitalNameplate",
       "semantic_id": "https://admin-shell.io/idta/nameplate/AssetName/1/0",
-      "aliases": ["asset name", "name", "device name", "product name"]
+      "aliases": [
+        "asset name",
+        "name",
+        "device name",
+        "product name"
+      ],
+      "eclass_irdi": null
     },
     {
       "candidate_id": "AAS_PROP_MANUFACTURER",
@@ -14,7 +20,17 @@
       "description": "Name of the manufacturer or supplier who produced the asset.",
       "submodel": "DigitalNameplate",
       "semantic_id": "https://admin-shell.io/idta/nameplate/ManufacturerName/1/0",
-      "aliases": ["manufacturer", "maker", "supplier", "manufacturer name", "name of manufacturer", "vdi2770 organisation name", "organisation name", "manufacturer_name"]
+      "aliases": [
+        "manufacturer",
+        "maker",
+        "supplier",
+        "manufacturer name",
+        "name of manufacturer",
+        "vdi2770 organisation name",
+        "organisation name",
+        "manufacturer_name"
+      ],
+      "eclass_irdi": "0173-1#02-AAO677#002"
     },
     {
       "candidate_id": "AAS_PROP_MODEL_NAME",
@@ -22,7 +38,15 @@
       "description": "Manufacturer-specific model name or product designation.",
       "submodel": "DigitalNameplate",
       "semantic_id": "https://admin-shell.io/idta/nameplate/ManufacturerProductDesignation/1/0",
-      "aliases": ["model name", "model", "product designation", "manufacturer product designation", "supplier product designation", "product type"]
+      "aliases": [
+        "model name",
+        "model",
+        "product designation",
+        "manufacturer product designation",
+        "supplier product designation",
+        "product type"
+      ],
+      "eclass_irdi": "0173-1#02-AAW338#001"
     },
     {
       "candidate_id": "AAS_PROP_SERIAL_NUMBER",
@@ -30,7 +54,14 @@
       "description": "Unique serial number assigned to this specific asset instance.",
       "submodel": "DigitalNameplate",
       "semantic_id": "https://admin-shell.io/idta/nameplate/SerialNumber/1/0",
-      "aliases": ["serial number", "serial", "s/n", "sn", "serial_number"]
+      "aliases": [
+        "serial number",
+        "serial",
+        "s/n",
+        "sn",
+        "serial_number"
+      ],
+      "eclass_irdi": "0173-1#02-AAM556#002"
     },
     {
       "candidate_id": "AAS_PROP_PRODUCT_DESCRIPTION",
@@ -38,7 +69,14 @@
       "description": "Detailed description of the product by the manufacturer.",
       "submodel": "DigitalNameplate",
       "semantic_id": "https://admin-shell.io/idta/nameplate/ManufacturerProductDescription/1/0",
-      "aliases": ["product description", "manufacturer product description", "description", "supplier product description", "device description"]
+      "aliases": [
+        "product description",
+        "manufacturer product description",
+        "description",
+        "supplier product description",
+        "device description"
+      ],
+      "eclass_irdi": null
     },
     {
       "candidate_id": "AAS_PROP_PRODUCT_FAMILY",
@@ -46,7 +84,15 @@
       "description": "Product family or product line this asset belongs to.",
       "submodel": "DigitalNameplate",
       "semantic_id": "https://admin-shell.io/idta/nameplate/ManufacturerProductFamily/1/0",
-      "aliases": ["product family", "manufacturer product family", "product line", "family", "temperature transmitter", "manufacturer_product_family"]
+      "aliases": [
+        "product family",
+        "manufacturer product family",
+        "product line",
+        "family",
+        "temperature transmitter",
+        "manufacturer_product_family"
+      ],
+      "eclass_irdi": null
     },
     {
       "candidate_id": "AAS_PROP_YEAR_OF_CONSTRUCTION",
@@ -54,7 +100,14 @@
       "description": "Year in which the asset was manufactured or constructed.",
       "submodel": "DigitalNameplate",
       "semantic_id": "https://admin-shell.io/idta/nameplate/YearOfConstruction/1/0",
-      "aliases": ["year of construction", "year of manufacture", "manufacture year", "production year", "year_of_construction"]
+      "aliases": [
+        "year of construction",
+        "year of manufacture",
+        "manufacture year",
+        "production year",
+        "year_of_construction"
+      ],
+      "eclass_irdi": "0173-1#02-AAP906#001"
     },
     {
       "candidate_id": "AAS_PROP_DATE_OF_MANUFACTURE",
@@ -62,7 +115,15 @@
       "description": "Date on which the asset was manufactured.",
       "submodel": "DigitalNameplate",
       "semantic_id": "https://admin-shell.io/idta/nameplate/DateOfManufacture/1/0",
-      "aliases": ["date of manufacture", "manufacture date", "production date", "date_of_manufacture", "delivery date", "delivery_date"]
+      "aliases": [
+        "date of manufacture",
+        "manufacture date",
+        "production date",
+        "date_of_manufacture",
+        "delivery date",
+        "delivery_date"
+      ],
+      "eclass_irdi": null
     },
     {
       "candidate_id": "AAS_PROP_HARDWARE_REVISION",
@@ -70,7 +131,14 @@
       "description": "Hardware revision or version of the asset.",
       "submodel": "DigitalNameplate",
       "semantic_id": "https://admin-shell.io/idta/nameplate/HardwareRevision/1/0",
-      "aliases": ["hardware revision", "hw revision", "hardware version", "hw version", "hardware_revision"]
+      "aliases": [
+        "hardware revision",
+        "hw revision",
+        "hardware version",
+        "hw version",
+        "hardware_revision"
+      ],
+      "eclass_irdi": "0173-1#02-AAV232#002"
     },
     {
       "candidate_id": "AAS_PROP_SOFTWARE_REVISION",
@@ -78,7 +146,15 @@
       "description": "Firmware or software revision installed on the asset.",
       "submodel": "DigitalNameplate",
       "semantic_id": "https://admin-shell.io/idta/nameplate/SoftwareRevision/1/0",
-      "aliases": ["software revision", "firmware revision", "sw revision", "firmware version", "software version", "software_revision"]
+      "aliases": [
+        "software revision",
+        "firmware revision",
+        "sw revision",
+        "firmware version",
+        "software version",
+        "software_revision"
+      ],
+      "eclass_irdi": "0173-1#02-AAS207#001"
     },
     {
       "candidate_id": "AAS_PROP_COUNTRY_OF_ORIGIN",
@@ -86,7 +162,16 @@
       "description": "Country where the asset was manufactured.",
       "submodel": "DigitalNameplate",
       "semantic_id": "https://admin-shell.io/idta/nameplate/CountryOfOrigin/1/0",
-      "aliases": ["country of origin", "country code", "product country of origin", "made in", "origin country", "country_code", "product_country_of_origin"]
+      "aliases": [
+        "country of origin",
+        "country code",
+        "product country of origin",
+        "made in",
+        "origin country",
+        "country_code",
+        "product_country_of_origin"
+      ],
+      "eclass_irdi": "0173-1#02-AAO730#001"
     },
     {
       "candidate_id": "AAS_PROP_BRAND",
@@ -94,7 +179,13 @@
       "description": "Brand name under which the product is marketed.",
       "submodel": "DigitalNameplate",
       "semantic_id": "https://admin-shell.io/idta/nameplate/Brand/1/0",
-      "aliases": ["brand", "brand name", "trade name", "trademark"]
+      "aliases": [
+        "brand",
+        "brand name",
+        "trade name",
+        "trademark"
+      ],
+      "eclass_irdi": null
     },
     {
       "candidate_id": "AAS_PROP_BATCH_NUMBER",
@@ -102,7 +193,13 @@
       "description": "Batch or lot number of the manufactured asset.",
       "submodel": "DigitalNameplate",
       "semantic_id": "https://admin-shell.io/idta/nameplate/BatchNumber/1/0",
-      "aliases": ["batch number", "lot number", "batch", "lot"]
+      "aliases": [
+        "batch number",
+        "lot number",
+        "batch",
+        "lot"
+      ],
+      "eclass_irdi": null
     },
     {
       "candidate_id": "AAS_PROP_ORDER_NUMBER",
@@ -110,7 +207,17 @@
       "description": "Manufacturer order code or article number for this product.",
       "submodel": "DigitalNameplate",
       "semantic_id": "https://admin-shell.io/idta/nameplate/OrderCodeOfManufacturer/1/0",
-      "aliases": ["order code", "article number", "part number", "product article number", "sup prod num", "supplier product number", "order number", "sup_prod_num"]
+      "aliases": [
+        "order code",
+        "article number",
+        "part number",
+        "product article number",
+        "sup prod num",
+        "supplier product number",
+        "order number",
+        "sup_prod_num"
+      ],
+      "eclass_irdi": "0173-1#02-AAO227#002"
     },
     {
       "candidate_id": "AAS_PROP_CE_MARKING",
@@ -118,7 +225,15 @@
       "description": "Indicates whether the product carries CE conformity marking.",
       "submodel": "DigitalNameplate",
       "semantic_id": "https://admin-shell.io/idta/nameplate/CeQualification/1/0",
-      "aliases": ["ce qualification", "ce marking", "ce", "ce qualification present", "conformity marking", "ce_qualification_present"]
+      "aliases": [
+        "ce qualification",
+        "ce marking",
+        "ce",
+        "ce qualification present",
+        "conformity marking",
+        "ce_qualification_present"
+      ],
+      "eclass_irdi": null
     },
     {
       "candidate_id": "AAS_PROP_ECLASS",
@@ -126,7 +241,14 @@
       "description": "ECLASS classification code for the product category.",
       "submodel": "DigitalNameplate",
       "semantic_id": "https://admin-shell.io/idta/nameplate/EclassClassification/1/0",
-      "aliases": ["eclass classification", "eclass", "product classification", "classification code", "eclass_classification"]
+      "aliases": [
+        "eclass classification",
+        "eclass",
+        "product classification",
+        "classification code",
+        "eclass_classification"
+      ],
+      "eclass_irdi": null
     },
     {
       "candidate_id": "AAS_PROP_INSTALLATION_ID",
@@ -134,7 +256,14 @@
       "description": "Identifier assigned at the installation site.",
       "submodel": "DigitalNameplate",
       "semantic_id": "https://example.org/aas/nameplate/InstallationId",
-      "aliases": ["installation id", "install id", "site id", "location id", "installation_id"]
+      "aliases": [
+        "installation id",
+        "install id",
+        "site id",
+        "location id",
+        "installation_id"
+      ],
+      "eclass_irdi": null
     },
     {
       "candidate_id": "AAS_PROP_EMAIL",
@@ -142,7 +271,13 @@
       "description": "Contact email address of the manufacturer or supplier.",
       "submodel": "DigitalNameplate",
       "semantic_id": "https://admin-shell.io/idta/nameplate/Email/1/0",
-      "aliases": ["email", "email address", "contact email", "e-mail"]
+      "aliases": [
+        "email",
+        "email address",
+        "contact email",
+        "e-mail"
+      ],
+      "eclass_irdi": null
     },
     {
       "candidate_id": "AAS_PROP_PHONE",
@@ -150,7 +285,15 @@
       "description": "Contact phone number of the manufacturer or supplier.",
       "submodel": "DigitalNameplate",
       "semantic_id": "https://admin-shell.io/idta/nameplate/PhoneNumber/1/0",
-      "aliases": ["phone number", "phone", "telephone", "tel", "contact phone", "phone_number"]
+      "aliases": [
+        "phone number",
+        "phone",
+        "telephone",
+        "tel",
+        "contact phone",
+        "phone_number"
+      ],
+      "eclass_irdi": null
     },
     {
       "candidate_id": "AAS_PROP_URL",
@@ -158,7 +301,17 @@
       "description": "Website URL or product page URL.",
       "submodel": "DigitalNameplate",
       "semantic_id": "https://admin-shell.io/idta/nameplate/URL/1/0",
-      "aliases": ["url", "website", "web address", "link", "additional link", "additional link address", "product url", "additional_link_address"]
+      "aliases": [
+        "url",
+        "website",
+        "web address",
+        "link",
+        "additional link",
+        "additional link address",
+        "product url",
+        "additional_link_address"
+      ],
+      "eclass_irdi": null
     },
     {
       "candidate_id": "AAS_PROP_ADDRESS_STREET",
@@ -166,7 +319,13 @@
       "description": "Street address of the manufacturer.",
       "submodel": "DigitalNameplate",
       "semantic_id": "https://admin-shell.io/idta/nameplate/AddressStreet/1/0",
-      "aliases": ["street", "street address", "address street", "address"]
+      "aliases": [
+        "street",
+        "street address",
+        "address street",
+        "address"
+      ],
+      "eclass_irdi": "0173-1#02-AAO128#001"
     },
     {
       "candidate_id": "AAS_PROP_ADDRESS_ZIP",
@@ -174,7 +333,13 @@
       "description": "Postal code or ZIP code of the manufacturer address.",
       "submodel": "DigitalNameplate",
       "semantic_id": "https://admin-shell.io/idta/nameplate/AddressZipCode/1/0",
-      "aliases": ["zip", "zip code", "postal code", "postcode"]
+      "aliases": [
+        "zip",
+        "zip code",
+        "postal code",
+        "postcode"
+      ],
+      "eclass_irdi": "0173-1#02-AAO129#002"
     },
     {
       "candidate_id": "AAS_PROP_ADDRESS_CITY",
@@ -182,7 +347,14 @@
       "description": "City of the manufacturer address.",
       "submodel": "DigitalNameplate",
       "semantic_id": "https://admin-shell.io/idta/nameplate/AddressCity/1/0",
-      "aliases": ["city", "city town", "town", "municipality", "city_town"]
+      "aliases": [
+        "city",
+        "city town",
+        "town",
+        "municipality",
+        "city_town"
+      ],
+      "eclass_irdi": null
     },
     {
       "candidate_id": "AAS_PROP_ADDRESS_STATE",
@@ -190,7 +362,15 @@
       "description": "State or region of the manufacturer address.",
       "submodel": "DigitalNameplate",
       "semantic_id": "https://admin-shell.io/idta/nameplate/AddressState/1/0",
-      "aliases": ["state", "state county", "region", "province", "county", "state_county"]
+      "aliases": [
+        "state",
+        "state county",
+        "region",
+        "province",
+        "county",
+        "state_county"
+      ],
+      "eclass_irdi": null
     },
     {
       "candidate_id": "AAS_PROP_ASSET_TYPE",
@@ -198,7 +378,13 @@
       "description": "Functional type or class of the asset.",
       "submodel": "TechnicalData",
       "semantic_id": "https://example.org/aas/technical/AssetType",
-      "aliases": ["asset type", "device type", "equipment type", "product type"]
+      "aliases": [
+        "asset type",
+        "device type",
+        "equipment type",
+        "product type"
+      ],
+      "eclass_irdi": null
     },
     {
       "candidate_id": "AAS_PROP_NOMINAL_VOLTAGE",
@@ -207,7 +393,14 @@
       "submodel": "TechnicalData",
       "semantic_id": "https://example.org/aas/technical/NominalVoltage",
       "preferred_unit": "V",
-      "aliases": ["rated voltage", "nominal voltage", "operating voltage", "supply voltage", "input voltage"]
+      "aliases": [
+        "rated voltage",
+        "nominal voltage",
+        "operating voltage",
+        "supply voltage",
+        "input voltage"
+      ],
+      "eclass_irdi": "0173-1#02-BAE548#006"
     },
     {
       "candidate_id": "AAS_PROP_RATED_CURRENT",
@@ -216,7 +409,14 @@
       "submodel": "TechnicalData",
       "semantic_id": "https://example.org/aas/technical/RatedCurrent",
       "preferred_unit": "A",
-      "aliases": ["rated current", "nominal current", "operating current", "supply current", "input current"]
+      "aliases": [
+        "rated current",
+        "nominal current",
+        "operating current",
+        "supply current",
+        "input current"
+      ],
+      "eclass_irdi": null
     },
     {
       "candidate_id": "AAS_PROP_WEIGHT",
@@ -225,7 +425,13 @@
       "submodel": "TechnicalData",
       "semantic_id": "https://example.org/aas/technical/Weight",
       "preferred_unit": "kg",
-      "aliases": ["weight", "mass", "net weight", "gross weight"]
+      "aliases": [
+        "weight",
+        "mass",
+        "net weight",
+        "gross weight"
+      ],
+      "eclass_irdi": "0173-1#02-AAS804#002"
     },
     {
       "candidate_id": "AAS_PROP_POWER",
@@ -234,7 +440,14 @@
       "submodel": "TechnicalData",
       "semantic_id": "https://example.org/aas/technical/PowerConsumption",
       "preferred_unit": "W",
-      "aliases": ["power", "power consumption", "rated power", "nominal power", "wattage"]
+      "aliases": [
+        "power",
+        "power consumption",
+        "rated power",
+        "nominal power",
+        "wattage"
+      ],
+      "eclass_irdi": null
     },
     {
       "candidate_id": "AAS_PROP_FREQUENCY",
@@ -243,7 +456,13 @@
       "submodel": "TechnicalData",
       "semantic_id": "https://example.org/aas/technical/Frequency",
       "preferred_unit": "Hz",
-      "aliases": ["frequency", "supply frequency", "line frequency", "grid frequency"]
+      "aliases": [
+        "frequency",
+        "supply frequency",
+        "line frequency",
+        "grid frequency"
+      ],
+      "eclass_irdi": null
     },
     {
       "candidate_id": "AAS_PROP_LENGTH",
@@ -252,7 +471,12 @@
       "submodel": "TechnicalData",
       "semantic_id": "https://example.org/aas/technical/Length",
       "preferred_unit": "mm",
-      "aliases": ["length", "depth", "dimension l"]
+      "aliases": [
+        "length",
+        "depth",
+        "dimension l"
+      ],
+      "eclass_irdi": null
     },
     {
       "candidate_id": "AAS_PROP_WIDTH",
@@ -261,7 +485,11 @@
       "submodel": "TechnicalData",
       "semantic_id": "https://example.org/aas/technical/Width",
       "preferred_unit": "mm",
-      "aliases": ["width", "dimension w"]
+      "aliases": [
+        "width",
+        "dimension w"
+      ],
+      "eclass_irdi": null
     },
     {
       "candidate_id": "AAS_PROP_HEIGHT",
@@ -270,7 +498,11 @@
       "submodel": "TechnicalData",
       "semantic_id": "https://example.org/aas/technical/Height",
       "preferred_unit": "mm",
-      "aliases": ["height", "dimension h"]
+      "aliases": [
+        "height",
+        "dimension h"
+      ],
+      "eclass_irdi": null
     },
     {
       "candidate_id": "AAS_PROP_IP_RATING",
@@ -278,7 +510,14 @@
       "description": "Ingress protection rating (IP code) of the asset enclosure.",
       "submodel": "TechnicalData",
       "semantic_id": "https://example.org/aas/technical/IPRating",
-      "aliases": ["ip rating", "ip code", "ingress protection", "protection class", "degree of protection"]
+      "aliases": [
+        "ip rating",
+        "ip code",
+        "ingress protection",
+        "protection class",
+        "degree of protection"
+      ],
+      "eclass_irdi": null
     },
     {
       "candidate_id": "AAS_PROP_AMBIENT_TEMP_MIN",
@@ -287,7 +526,14 @@
       "submodel": "TechnicalData",
       "semantic_id": "https://example.org/aas/technical/AmbientTemperatureMin",
       "preferred_unit": "°C",
-      "aliases": ["ambient temperature min", "min ambient temperature", "minimum ambient temperature", "operating temperature min", "min operating temperature"]
+      "aliases": [
+        "ambient temperature min",
+        "min ambient temperature",
+        "minimum ambient temperature",
+        "operating temperature min",
+        "min operating temperature"
+      ],
+      "eclass_irdi": null
     },
     {
       "candidate_id": "AAS_PROP_AMBIENT_TEMP_MAX",
@@ -296,7 +542,14 @@
       "submodel": "TechnicalData",
       "semantic_id": "https://example.org/aas/technical/AmbientTemperatureMax",
       "preferred_unit": "°C",
-      "aliases": ["ambient temperature max", "max ambient temperature", "maximum ambient temperature", "operating temperature max", "max operating temperature"]
+      "aliases": [
+        "ambient temperature max",
+        "max ambient temperature",
+        "maximum ambient temperature",
+        "operating temperature max",
+        "max operating temperature"
+      ],
+      "eclass_irdi": null
     },
     {
       "candidate_id": "AAS_PROP_STORAGE_TEMP_MIN",
@@ -305,7 +558,12 @@
       "submodel": "TechnicalData",
       "semantic_id": "https://example.org/aas/technical/StorageTemperatureMin",
       "preferred_unit": "°C",
-      "aliases": ["storage temperature min", "min storage temperature", "minimum storage temperature"]
+      "aliases": [
+        "storage temperature min",
+        "min storage temperature",
+        "minimum storage temperature"
+      ],
+      "eclass_irdi": null
     },
     {
       "candidate_id": "AAS_PROP_STORAGE_TEMP_MAX",
@@ -314,7 +572,12 @@
       "submodel": "TechnicalData",
       "semantic_id": "https://example.org/aas/technical/StorageTemperatureMax",
       "preferred_unit": "°C",
-      "aliases": ["storage temperature max", "max storage temperature", "maximum storage temperature"]
+      "aliases": [
+        "storage temperature max",
+        "max storage temperature",
+        "maximum storage temperature"
+      ],
+      "eclass_irdi": null
     },
     {
       "candidate_id": "AAS_PROP_HUMIDITY",
@@ -323,7 +586,13 @@
       "submodel": "TechnicalData",
       "semantic_id": "https://example.org/aas/technical/RelativeHumidity",
       "preferred_unit": "%",
-      "aliases": ["humidity", "relative humidity", "max humidity", "rh"]
+      "aliases": [
+        "humidity",
+        "relative humidity",
+        "max humidity",
+        "rh"
+      ],
+      "eclass_irdi": null
     },
     {
       "candidate_id": "AAS_PROP_PRESSURE",
@@ -332,7 +601,14 @@
       "submodel": "TechnicalData",
       "semantic_id": "https://example.org/aas/technical/Pressure",
       "preferred_unit": "bar",
-      "aliases": ["pressure", "operating pressure", "process pressure", "max pressure", "rated pressure"]
+      "aliases": [
+        "pressure",
+        "operating pressure",
+        "process pressure",
+        "max pressure",
+        "rated pressure"
+      ],
+      "eclass_irdi": null
     },
     {
       "candidate_id": "AAS_PROP_MEASURING_RANGE_MIN",
@@ -340,7 +616,14 @@
       "description": "Minimum value of the measurement range.",
       "submodel": "TechnicalData",
       "semantic_id": "https://example.org/aas/technical/MeasuringRangeMin",
-      "aliases": ["measuring range min", "min measuring range", "range min", "lower range", "min range"]
+      "aliases": [
+        "measuring range min",
+        "min measuring range",
+        "range min",
+        "lower range",
+        "min range"
+      ],
+      "eclass_irdi": null
     },
     {
       "candidate_id": "AAS_PROP_MEASURING_RANGE_MAX",
@@ -348,7 +631,14 @@
       "description": "Maximum value of the measurement range.",
       "submodel": "TechnicalData",
       "semantic_id": "https://example.org/aas/technical/MeasuringRangeMax",
-      "aliases": ["measuring range max", "max measuring range", "range max", "upper range", "max range"]
+      "aliases": [
+        "measuring range max",
+        "max measuring range",
+        "range max",
+        "upper range",
+        "max range"
+      ],
+      "eclass_irdi": null
     },
     {
       "candidate_id": "AAS_PROP_ACCURACY",
@@ -356,7 +646,14 @@
       "description": "Measurement accuracy or error tolerance of the device.",
       "submodel": "TechnicalData",
       "semantic_id": "https://example.org/aas/technical/Accuracy",
-      "aliases": ["accuracy", "measurement accuracy", "tolerance", "error", "precision"]
+      "aliases": [
+        "accuracy",
+        "measurement accuracy",
+        "tolerance",
+        "error",
+        "precision"
+      ],
+      "eclass_irdi": null
     },
     {
       "candidate_id": "AAS_PROP_RESOLUTION",
@@ -364,7 +661,12 @@
       "description": "Smallest detectable change in measured value.",
       "submodel": "TechnicalData",
       "semantic_id": "https://example.org/aas/technical/Resolution",
-      "aliases": ["resolution", "measurement resolution", "sensitivity"]
+      "aliases": [
+        "resolution",
+        "measurement resolution",
+        "sensitivity"
+      ],
+      "eclass_irdi": null
     },
     {
       "candidate_id": "AAS_PROP_RESPONSE_TIME",
@@ -373,7 +675,13 @@
       "submodel": "TechnicalData",
       "semantic_id": "https://example.org/aas/technical/ResponseTime",
       "preferred_unit": "ms",
-      "aliases": ["response time", "reaction time", "settling time", "time constant"]
+      "aliases": [
+        "response time",
+        "reaction time",
+        "settling time",
+        "time constant"
+      ],
+      "eclass_irdi": null
     },
     {
       "candidate_id": "AAS_PROP_OUTPUT_SIGNAL",
@@ -381,7 +689,14 @@
       "description": "Type or range of the output signal (e.g., 4-20mA).",
       "submodel": "TechnicalData",
       "semantic_id": "https://example.org/aas/technical/OutputSignal",
-      "aliases": ["output signal", "output type", "signal output", "analog output", "signal type"]
+      "aliases": [
+        "output signal",
+        "output type",
+        "signal output",
+        "analog output",
+        "signal type"
+      ],
+      "eclass_irdi": null
     },
     {
       "candidate_id": "AAS_PROP_COMMUNICATION",
@@ -389,7 +704,20 @@
       "description": "Communication protocol or fieldbus interface supported by the device.",
       "submodel": "TechnicalData",
       "semantic_id": "https://example.org/aas/technical/CommunicationProtocol",
-      "aliases": ["communication protocol", "protocol", "interface", "bus", "fieldbus", "hart", "profibus", "foundation fieldbus", "modbus", "profinet", "ethernet"]
+      "aliases": [
+        "communication protocol",
+        "protocol",
+        "interface",
+        "bus",
+        "fieldbus",
+        "hart",
+        "profibus",
+        "foundation fieldbus",
+        "modbus",
+        "profinet",
+        "ethernet"
+      ],
+      "eclass_irdi": null
     },
     {
       "candidate_id": "AAS_PROP_PROCESS_CONNECTION",
@@ -397,7 +725,14 @@
       "description": "Type of process connection (fitting, thread, flange).",
       "submodel": "TechnicalData",
       "semantic_id": "https://example.org/aas/technical/ProcessConnection",
-      "aliases": ["process connection", "connection type", "fitting type", "thread type", "flange"]
+      "aliases": [
+        "process connection",
+        "connection type",
+        "fitting type",
+        "thread type",
+        "flange"
+      ],
+      "eclass_irdi": null
     },
     {
       "candidate_id": "AAS_PROP_MOUNTING",
@@ -405,7 +740,14 @@
       "description": "Mounting type or installation method of the asset.",
       "submodel": "TechnicalData",
       "semantic_id": "https://example.org/aas/technical/MountingType",
-      "aliases": ["mounting type", "mounting", "installation type", "mounting method", "field mounting"]
+      "aliases": [
+        "mounting type",
+        "mounting",
+        "installation type",
+        "mounting method",
+        "field mounting"
+      ],
+      "eclass_irdi": null
     },
     {
       "candidate_id": "AAS_PROP_MATERIAL",
@@ -413,7 +755,13 @@
       "description": "Primary material used in the asset construction.",
       "submodel": "TechnicalData",
       "semantic_id": "https://example.org/aas/technical/Material",
-      "aliases": ["material", "housing material", "body material", "construction material"]
+      "aliases": [
+        "material",
+        "housing material",
+        "body material",
+        "construction material"
+      ],
+      "eclass_irdi": null
     },
     {
       "candidate_id": "AAS_PROP_EXPLOSION_PROTECTION",
@@ -421,7 +769,16 @@
       "description": "Explosion protection classification or Ex/ATEX/SIL rating.",
       "submodel": "TechnicalData",
       "semantic_id": "https://example.org/aas/technical/ExplosionProtection",
-      "aliases": ["explosion protection", "ex rating", "atex", "iec ex", "hazardous area", "sil", "safety integrity level"]
+      "aliases": [
+        "explosion protection",
+        "ex rating",
+        "atex",
+        "iec ex",
+        "hazardous area",
+        "sil",
+        "safety integrity level"
+      ],
+      "eclass_irdi": null
     },
     {
       "candidate_id": "AAS_PROP_DISPLAY",
@@ -429,7 +786,14 @@
       "description": "Type or presence of a local display or indicator on the device.",
       "submodel": "TechnicalData",
       "semantic_id": "https://example.org/aas/technical/Display",
-      "aliases": ["display", "lcd display", "indicator", "local display", "local indicator"]
+      "aliases": [
+        "display",
+        "lcd display",
+        "indicator",
+        "local display",
+        "local indicator"
+      ],
+      "eclass_irdi": null
     },
     {
       "candidate_id": "AAS_PROP_DOC_TYPE",
@@ -437,7 +801,14 @@
       "description": "Type of the document (e.g., Manual, Certificate, Datasheet).",
       "submodel": "HandoverDocumentation",
       "semantic_id": "https://admin-shell.io/idta/vdi2770/DocumentType/1/0",
-      "aliases": ["document type", "doc type", "document classification", "vdi2770 type", "document_type"]
+      "aliases": [
+        "document type",
+        "doc type",
+        "document classification",
+        "vdi2770 type",
+        "document_type"
+      ],
+      "eclass_irdi": null
     },
     {
       "candidate_id": "AAS_PROP_DOC_ID",
@@ -445,7 +816,15 @@
       "description": "Unique identifier of the document.",
       "submodel": "HandoverDocumentation",
       "semantic_id": "https://admin-shell.io/idta/vdi2770/DocumentId/1/0",
-      "aliases": ["document id", "doc id", "document identifier", "vdi2770 id", "document number", "document_id"]
+      "aliases": [
+        "document id",
+        "doc id",
+        "document identifier",
+        "vdi2770 id",
+        "document number",
+        "document_id"
+      ],
+      "eclass_irdi": null
     },
     {
       "candidate_id": "AAS_PROP_DOC_TITLE",
@@ -453,7 +832,15 @@
       "description": "Title or name of the document.",
       "submodel": "HandoverDocumentation",
       "semantic_id": "https://admin-shell.io/idta/vdi2770/DocumentTitle/1/0",
-      "aliases": ["document title", "doc title", "title", "vdi2770 title", "manual title", "vdi2770_title"]
+      "aliases": [
+        "document title",
+        "doc title",
+        "title",
+        "vdi2770 title",
+        "manual title",
+        "vdi2770_title"
+      ],
+      "eclass_irdi": null
     },
     {
       "candidate_id": "AAS_PROP_DOC_STATUS",
@@ -461,7 +848,15 @@
       "description": "Release or approval status of the document.",
       "submodel": "HandoverDocumentation",
       "semantic_id": "https://admin-shell.io/idta/vdi2770/DocumentStatus/1/0",
-      "aliases": ["document status", "status", "release status", "vdi2770 status value", "approval status", "vdi2770_status_value"]
+      "aliases": [
+        "document status",
+        "status",
+        "release status",
+        "vdi2770 status value",
+        "approval status",
+        "vdi2770_status_value"
+      ],
+      "eclass_irdi": null
     },
     {
       "candidate_id": "AAS_PROP_DOC_LANGUAGE",
@@ -469,7 +864,14 @@
       "description": "Language code of the document content.",
       "submodel": "HandoverDocumentation",
       "semantic_id": "https://admin-shell.io/idta/vdi2770/DocumentLanguage/1/0",
-      "aliases": ["document language", "language", "language code", "document version language code", "document_version_language_code"]
+      "aliases": [
+        "document language",
+        "language",
+        "language code",
+        "document version language code",
+        "document_version_language_code"
+      ],
+      "eclass_irdi": null
     },
     {
       "candidate_id": "AAS_PROP_DOC_VERSION",
@@ -477,7 +879,15 @@
       "description": "Version identifier of the document.",
       "submodel": "HandoverDocumentation",
       "semantic_id": "https://admin-shell.io/idta/vdi2770/DocumentVersionId/1/0",
-      "aliases": ["document version", "version id", "document version id", "revision", "edition", "document_version_id"]
+      "aliases": [
+        "document version",
+        "version id",
+        "document version id",
+        "revision",
+        "edition",
+        "document_version_id"
+      ],
+      "eclass_irdi": null
     },
     {
       "candidate_id": "AAS_PROP_DOC_FILENAME",
@@ -485,7 +895,15 @@
       "description": "File name of the associated document file.",
       "submodel": "HandoverDocumentation",
       "semantic_id": "https://admin-shell.io/idta/vdi2770/DocumentFileName/1/0",
-      "aliases": ["file name", "document file name", "vdi2770 file name", "filename", "document file", "vdi2770_file_name"]
+      "aliases": [
+        "file name",
+        "document file name",
+        "vdi2770 file name",
+        "filename",
+        "document file",
+        "vdi2770_file_name"
+      ],
+      "eclass_irdi": null
     },
     {
       "candidate_id": "AAS_PROP_DOC_FORMAT",
@@ -493,7 +911,15 @@
       "description": "MIME type or file format of the document.",
       "submodel": "HandoverDocumentation",
       "semantic_id": "https://admin-shell.io/idta/vdi2770/DocumentFileFormat/1/0",
-      "aliases": ["file format", "document file format", "vdi2770 file format", "mime type", "format", "vdi2770_file_format"]
+      "aliases": [
+        "file format",
+        "document file format",
+        "vdi2770 file format",
+        "mime type",
+        "format",
+        "vdi2770_file_format"
+      ],
+      "eclass_irdi": null
     },
     {
       "candidate_id": "AAS_PROP_DOC_CLASS_ID",
@@ -501,7 +927,15 @@
       "description": "Classification code of the document (e.g., VDI 2770 class).",
       "submodel": "HandoverDocumentation",
       "semantic_id": "https://admin-shell.io/idta/vdi2770/DocumentClassId/1/0",
-      "aliases": ["document class id", "class id", "classification id", "document classification class id", "class code", "document_classification_class_id"]
+      "aliases": [
+        "document class id",
+        "class id",
+        "classification id",
+        "document classification class id",
+        "class code",
+        "document_classification_class_id"
+      ],
+      "eclass_irdi": null
     },
     {
       "candidate_id": "AAS_PROP_DOC_CLASS_NAME",
@@ -509,7 +943,14 @@
       "description": "Human-readable name of the document classification.",
       "submodel": "HandoverDocumentation",
       "semantic_id": "https://admin-shell.io/idta/vdi2770/DocumentClassName/1/0",
-      "aliases": ["document class name", "class name", "vdi2770 class name", "classification name", "vdi2770_class_name"]
+      "aliases": [
+        "document class name",
+        "class name",
+        "vdi2770 class name",
+        "classification name",
+        "vdi2770_class_name"
+      ],
+      "eclass_irdi": null
     },
     {
       "candidate_id": "AAS_PROP_SUPPLIER_NAME",
@@ -517,7 +958,14 @@
       "description": "Name of the supplier providing the document or product.",
       "submodel": "HandoverDocumentation",
       "semantic_id": "https://admin-shell.io/idta/vdi2770/SupplierName/1/0",
-      "aliases": ["supplier name", "name of supplier", "vdi2770 organisation name", "document supplier", "name_of_supplier"]
+      "aliases": [
+        "supplier name",
+        "name of supplier",
+        "vdi2770 organisation name",
+        "document supplier",
+        "name_of_supplier"
+      ],
+      "eclass_irdi": null
     },
     {
       "candidate_id": "AAS_PROP_DOC_ROLE",
@@ -525,7 +973,15 @@
       "description": "Role of the organisation in relation to the document (e.g., Manufacturer, Responsible).",
       "submodel": "HandoverDocumentation",
       "semantic_id": "https://admin-shell.io/idta/vdi2770/DocumentRole/1/0",
-      "aliases": ["document role", "role", "contact info role", "vdi2770 role", "organisation role", "contact_info_role"]
+      "aliases": [
+        "document role",
+        "role",
+        "contact info role",
+        "vdi2770 role",
+        "organisation role",
+        "contact_info_role"
+      ],
+      "eclass_irdi": null
     },
     {
       "candidate_id": "AAS_PROP_DOC_REFERENCED_OBJECT",
@@ -533,7 +989,13 @@
       "description": "Type of object referenced by the document (e.g., Product, Component).",
       "submodel": "HandoverDocumentation",
       "semantic_id": "https://admin-shell.io/idta/vdi2770/ReferencedObjectType/1/0",
-      "aliases": ["referenced object type", "object type", "vdi2770 referenced object type", "vdi2770_referenced_object_type"]
+      "aliases": [
+        "referenced object type",
+        "object type",
+        "vdi2770 referenced object type",
+        "vdi2770_referenced_object_type"
+      ],
+      "eclass_irdi": null
     },
     {
       "candidate_id": "AAS_PROP_TEMPERATURE",
@@ -542,7 +1004,13 @@
       "submodel": "OperationalData",
       "semantic_id": "https://example.org/aas/operation/Temperature",
       "preferred_unit": "°C",
-      "aliases": ["temperature", "temp", "process temperature", "measured temperature"]
+      "aliases": [
+        "temperature",
+        "temp",
+        "process temperature",
+        "measured temperature"
+      ],
+      "eclass_irdi": null
     },
     {
       "candidate_id": "AAS_PROP_ROTATION_ANGLE",
@@ -551,7 +1019,12 @@
       "submodel": "OperationalData",
       "semantic_id": "https://example.org/aas/operation/RotationAngle",
       "preferred_unit": "deg",
-      "aliases": ["rotation angle", "angle", "joint angle"]
+      "aliases": [
+        "rotation angle",
+        "angle",
+        "joint angle"
+      ],
+      "eclass_irdi": null
     },
     {
       "candidate_id": "AAS_PROP_STATUS",
@@ -559,7 +1032,14 @@
       "description": "Current operational status or mode of the asset.",
       "submodel": "OperationalData",
       "semantic_id": "https://example.org/aas/operation/OperationalStatus",
-      "aliases": ["status", "state", "mode", "operational status", "device status"]
+      "aliases": [
+        "status",
+        "state",
+        "mode",
+        "operational status",
+        "device status"
+      ],
+      "eclass_irdi": null
     },
     {
       "candidate_id": "AAS_PROP_PROCESS_VALUE",
@@ -567,7 +1047,14 @@
       "description": "Current process measurement value from the sensor.",
       "submodel": "OperationalData",
       "semantic_id": "https://example.org/aas/operation/ProcessValue",
-      "aliases": ["process value", "measured value", "pv", "current value", "sensor value"]
+      "aliases": [
+        "process value",
+        "measured value",
+        "pv",
+        "current value",
+        "sensor value"
+      ],
+      "eclass_irdi": null
     },
     {
       "candidate_id": "AAS_PROP_SETPOINT",
@@ -575,7 +1062,13 @@
       "description": "Target or desired setpoint value for the process.",
       "submodel": "OperationalData",
       "semantic_id": "https://example.org/aas/operation/SetPoint",
-      "aliases": ["setpoint", "set point", "target value", "sp"]
+      "aliases": [
+        "setpoint",
+        "set point",
+        "target value",
+        "sp"
+      ],
+      "eclass_irdi": null
     },
     {
       "candidate_id": "AAS_PROP_ALARM_STATUS",
@@ -583,7 +1076,14 @@
       "description": "Active alarm or fault status of the device.",
       "submodel": "OperationalData",
       "semantic_id": "https://example.org/aas/operation/AlarmStatus",
-      "aliases": ["alarm status", "alarm", "fault", "error status", "fault status"]
+      "aliases": [
+        "alarm status",
+        "alarm",
+        "fault",
+        "error status",
+        "fault status"
+      ],
+      "eclass_irdi": null
     },
     {
       "candidate_id": "AAS_PROP_FLOW_RATE",
@@ -592,7 +1092,13 @@
       "submodel": "OperationalData",
       "semantic_id": "https://example.org/aas/operation/FlowRate",
       "preferred_unit": "m3/h",
-      "aliases": ["flow rate", "flow", "volume flow", "mass flow"]
+      "aliases": [
+        "flow rate",
+        "flow",
+        "volume flow",
+        "mass flow"
+      ],
+      "eclass_irdi": null
     },
     {
       "candidate_id": "AAS_PROP_DOF",
@@ -600,7 +1106,17 @@
       "description": "Number of independent degrees of freedom (axes) of the robot arm.",
       "submodel": "TechnicalData",
       "semantic_id": "https://example.org/aas/robot/DegreesOfFreedom",
-      "aliases": ["dof", "degrees of freedom", "axes", "number of axes", "joint count", "axis count", "6 dof", "7 dof"]
+      "aliases": [
+        "dof",
+        "degrees of freedom",
+        "axes",
+        "number of axes",
+        "joint count",
+        "axis count",
+        "6 dof",
+        "7 dof"
+      ],
+      "eclass_irdi": null
     },
     {
       "candidate_id": "AAS_PROP_PAYLOAD",
@@ -609,7 +1125,17 @@
       "submodel": "TechnicalData",
       "semantic_id": "https://example.org/aas/robot/Payload",
       "preferred_unit": "kg",
-      "aliases": ["payload", "max payload", "rated payload", "load capacity", "maximum payload", "payload capacity", "rated load", "max load"]
+      "aliases": [
+        "payload",
+        "max payload",
+        "rated payload",
+        "load capacity",
+        "maximum payload",
+        "payload capacity",
+        "rated load",
+        "max load"
+      ],
+      "eclass_irdi": null
     },
     {
       "candidate_id": "AAS_PROP_REACH",
@@ -618,7 +1144,16 @@
       "submodel": "TechnicalData",
       "semantic_id": "https://example.org/aas/robot/MaxReach",
       "preferred_unit": "mm",
-      "aliases": ["reach", "max reach", "working radius", "arm reach", "maximum reach", "working range", "working space"]
+      "aliases": [
+        "reach",
+        "max reach",
+        "working radius",
+        "arm reach",
+        "maximum reach",
+        "working range",
+        "working space"
+      ],
+      "eclass_irdi": null
     },
     {
       "candidate_id": "AAS_PROP_REPEATABILITY",
@@ -627,7 +1162,15 @@
       "submodel": "TechnicalData",
       "semantic_id": "https://example.org/aas/robot/Repeatability",
       "preferred_unit": "mm",
-      "aliases": ["repeatability", "positional repeatability", "position repeatability", "repeat accuracy", "tcp repeatability", "pose repeatability"]
+      "aliases": [
+        "repeatability",
+        "positional repeatability",
+        "position repeatability",
+        "repeat accuracy",
+        "tcp repeatability",
+        "pose repeatability"
+      ],
+      "eclass_irdi": null
     },
     {
       "candidate_id": "AAS_PROP_TCP_SPEED",
@@ -636,7 +1179,17 @@
       "submodel": "TechnicalData",
       "semantic_id": "https://example.org/aas/robot/MaxTCPSpeed",
       "preferred_unit": "mm/s",
-      "aliases": ["tcp speed", "max tcp speed", "tool speed", "end effector speed", "maximum tcp speed", "tcp velocity", "linear speed", "tip speed"]
+      "aliases": [
+        "tcp speed",
+        "max tcp speed",
+        "tool speed",
+        "end effector speed",
+        "maximum tcp speed",
+        "tcp velocity",
+        "linear speed",
+        "tip speed"
+      ],
+      "eclass_irdi": null
     },
     {
       "candidate_id": "AAS_PROP_HOST_INTERFACE",
@@ -644,7 +1197,15 @@
       "description": "Host communication interface type used to connect to the robot controller.",
       "submodel": "TechnicalData",
       "semantic_id": "https://example.org/aas/robot/HostInterface",
-      "aliases": ["host interface", "communication interface", "controller interface", "pc interface", "host connection", "interface type"]
+      "aliases": [
+        "host interface",
+        "communication interface",
+        "controller interface",
+        "pc interface",
+        "host connection",
+        "interface type"
+      ],
+      "eclass_irdi": null
     },
     {
       "candidate_id": "AAS_PROP_BAUDRATE",
@@ -653,7 +1214,14 @@
       "submodel": "TechnicalData",
       "semantic_id": "https://example.org/aas/technical/CommunicationBaudrate",
       "preferred_unit": "bps",
-      "aliases": ["baudrate", "baud rate", "communication baudrate", "serial baudrate", "baud"]
+      "aliases": [
+        "baudrate",
+        "baud rate",
+        "communication baudrate",
+        "serial baudrate",
+        "baud"
+      ],
+      "eclass_irdi": null
     },
     {
       "candidate_id": "AAS_PROP_NUMBER_OF_JOINTS",
@@ -661,7 +1229,14 @@
       "description": "Total number of joints or articulations in the robot arm.",
       "submodel": "TechnicalData",
       "semantic_id": "https://example.org/aas/robot/NumberOfJoints",
-      "aliases": ["number of joints", "joints", "joint count", "robot joints", "articulations"]
+      "aliases": [
+        "number of joints",
+        "joints",
+        "joint count",
+        "robot joints",
+        "articulations"
+      ],
+      "eclass_irdi": null
     },
     {
       "candidate_id": "AAS_PROP_JOINT_RANGE",
@@ -670,7 +1245,14 @@
       "submodel": "TechnicalData",
       "semantic_id": "https://example.org/aas/robot/JointRange",
       "preferred_unit": "deg",
-      "aliases": ["joint range", "range of motion", "joint limit", "rotation range", "working angle"]
+      "aliases": [
+        "joint range",
+        "range of motion",
+        "joint limit",
+        "rotation range",
+        "working angle"
+      ],
+      "eclass_irdi": null
     },
     {
       "candidate_id": "AAS_PROP_OPERATING_VOLTAGE",
@@ -679,7 +1261,16 @@
       "submodel": "TechnicalData",
       "semantic_id": "https://example.org/aas/technical/OperatingVoltage",
       "preferred_unit": "V",
-      "aliases": ["operating voltage", "supply voltage", "input voltage", "vdc", "rated voltage", "voltage", "power supply voltage"]
+      "aliases": [
+        "operating voltage",
+        "supply voltage",
+        "input voltage",
+        "vdc",
+        "rated voltage",
+        "voltage",
+        "power supply voltage"
+      ],
+      "eclass_irdi": "0173-1#02-BAE548#006"
     },
     {
       "candidate_id": "AAS_PROP_MAX_JOINT_TORQUE",
@@ -688,7 +1279,14 @@
       "submodel": "TechnicalData",
       "semantic_id": "https://example.org/aas/robot/MaxJointTorque",
       "preferred_unit": "Nm",
-      "aliases": ["joint torque", "max torque", "maximum torque", "rated torque", "torque capacity"]
+      "aliases": [
+        "joint torque",
+        "max torque",
+        "maximum torque",
+        "rated torque",
+        "torque capacity"
+      ],
+      "eclass_irdi": null
     },
     {
       "candidate_id": "AAS_PROP_ROBOT_TYPE",
@@ -696,7 +1294,18 @@
       "description": "Type or kinematic structure of the robot (e.g., articulated, SCARA, delta).",
       "submodel": "TechnicalData",
       "semantic_id": "https://example.org/aas/robot/RobotType",
-      "aliases": ["robot type", "robot structure", "kinematic type", "arm type", "articulated", "scara", "delta robot", "collaborative robot", "cobot"]
+      "aliases": [
+        "robot type",
+        "robot structure",
+        "kinematic type",
+        "arm type",
+        "articulated",
+        "scara",
+        "delta robot",
+        "collaborative robot",
+        "cobot"
+      ],
+      "eclass_irdi": null
     },
     {
       "candidate_id": "AAS_PROP_PROTECTION_CLASS",
@@ -704,7 +1313,14 @@
       "description": "Electrical protection class of the device.",
       "submodel": "TechnicalData",
       "semantic_id": "https://example.org/aas/technical/ProtectionClass",
-      "aliases": ["protection class", "insulation class", "electrical protection class", "class i", "class ii"]
+      "aliases": [
+        "protection class",
+        "insulation class",
+        "electrical protection class",
+        "class i",
+        "class ii"
+      ],
+      "eclass_irdi": null
     }
   ]
 }

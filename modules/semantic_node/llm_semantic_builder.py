@@ -9,6 +9,8 @@ DefaultSemanticNodeBuilder는 31개 하드코딩 사전에 없는 속성은 기�
 
 from __future__ import annotations
 
+import json
+from pathlib import Path
 from typing import Any
 
 from app.models import ExtractedEntity, SemanticNode
@@ -16,23 +18,69 @@ from interfaces.base_semantic_builder import BaseSemanticNodeBuilder
 from modules.llm.ollama_client import OllamaClient, OllamaConnectionError
 from modules.llm.prompts import build_semantic_node_prompt
 
+# ECLASS 사전 기본 경로
+_ECLASS_DICT_PATH = (
+    Path(__file__).parents[2]
+    / "repositories"
+    / "eclass_dictionary"
+    / "eclass_properties.json"
+)
+
 
 class LLMSemanticNodeBuilder(BaseSemanticNodeBuilder):
     """Ollama LLM을 사용해 ExtractedEntity를 SemanticNode로 변환한다.
 
     각 속성마다 LLM에 conceptual_definition과 affordance 생성을 요청한다.
     Ollama 연결 실패 시 기본 문장으로 fallback한다.
+    초기화 시 ECLASS 사전을 로드해 속성명 → IRDI 역인덱스를 구성한다.
 
     Args:
         client: OllamaClient 인스턴스. 기본값은 새 인스턴스 생성.
+        skip_enrichment: True이면 LLM enrichment를 생략한다.
+        eclass_dict_path: ECLASS 사전 JSON 파일 경로. 기본값은 repositories/eclass_dictionary.
     """
 
-    def __init__(self, client: OllamaClient | None = None, skip_enrichment: bool = False):
+    def __init__(
+        self,
+        client: OllamaClient | None = None,
+        skip_enrichment: bool = False,
+        eclass_dict_path: Path | None = None,
+    ):
         self.client = client or OllamaClient()
         self.skip_enrichment = skip_enrichment
+        self._eclass_lookup: dict[str, str] = self._load_eclass_dict(
+            eclass_dict_path or _ECLASS_DICT_PATH
+        )
+        if self._eclass_lookup:
+            print(f"[LLMSemanticNodeBuilder] ECLASS 사전 로드 완료: {len(self._eclass_lookup)}개 alias")
+
+    @staticmethod
+    def _load_eclass_dict(path: Path) -> dict[str, str]:
+        """ECLASS 사전에서 alias → IRDI 역인덱스를 빌드한다.
+
+        파일이 없으면 빈 dict를 반환해 파이프라인이 계속 동작하도록 한다.
+        """
+        if not path.exists():
+            return {}
+        try:
+            with path.open(encoding="utf-8") as f:
+                data = json.load(f)
+        except (json.JSONDecodeError, OSError) as e:
+            print(f"[LLMSemanticNodeBuilder] ECLASS 사전 로드 실패: {e}")
+            return {}
+
+        lookup: dict[str, str] = {}
+        for entry in data.get("properties", []):
+            irdi = entry.get("irdi", "").strip()
+            if not irdi:
+                continue
+            lookup[entry.get("preferred_name", "").lower()] = irdi
+            for alias in entry.get("aliases", []):
+                lookup[alias.lower()] = irdi
+        return lookup
 
     def build(self, entities: list[ExtractedEntity]) -> list[SemanticNode]:
-        """raw entity 목록에 LLM이 생성한 의미 설명을 추가한다."""
+        """raw entity 목록에 LLM이 생성한 의미 설명과 ECLASS IRDI를 추가한다."""
         nodes: list[SemanticNode] = []
         for index, entity in enumerate(entities, start=1):
             if self.skip_enrichment:
@@ -40,6 +88,12 @@ class LLMSemanticNodeBuilder(BaseSemanticNodeBuilder):
                 affordance = f"Used as structured metadata for {entity.raw_name}."
             else:
                 definition, affordance = self._enrich(entity)
+
+            # ECLASS 사전 조회 — 이름 기반 alias 매칭 (대소문자 무관)
+            eclass_irdi = self._eclass_lookup.get(entity.raw_name.lower())
+            if eclass_irdi:
+                print(f"[LLMSemanticNodeBuilder] IRDI 매칭: {entity.raw_name} → {eclass_irdi}")
+
             nodes.append(SemanticNode(
                 semantic_node_id=f"SN_{index:03d}",
                 name=entity.raw_name,
@@ -51,6 +105,7 @@ class LLMSemanticNodeBuilder(BaseSemanticNodeBuilder):
                 source_description=f"Extracted from {entity.source}.",
                 source_reference=entity.source_reference,
                 confidence=entity.confidence,
+                eclass_irdi=eclass_irdi,
             ))
         return nodes
 

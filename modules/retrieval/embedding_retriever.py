@@ -49,7 +49,29 @@ class EmbeddingCandidateRetriever(BaseCandidateRetriever):
         semantic_node: SemanticNode,
         top_k: int,
     ) -> list[AASPropertyCandidate]:
-        """SemanticNode와 코사인 유사도가 높은 후보 Top-K를 반환한다."""
+        """SemanticNode와 코사인 유사도가 높은 후보 Top-K를 반환한다.
+
+        SemanticNode에 eclass_irdi가 있으면 IRDI 정확 일치를 최우선으로 확인한다.
+        IRDI 일치 후보가 있으면 임베딩 계산을 생략하고 score=1.0으로 즉시 반환한다.
+        IRDI가 없거나 일치 후보가 없으면 기존 임베딩 코사인 유사도 방식으로 fallback한다.
+        """
+        # ── IRDI 우선 매칭 ────────────────────────────────────────────────
+        if semantic_node.eclass_irdi:
+            irdi_candidates = [
+                self._candidate_from_item(item)
+                for item in self._properties
+                if item.get("eclass_irdi") == semantic_node.eclass_irdi
+            ]
+            if irdi_candidates:
+                for c in irdi_candidates:
+                    c.similarity_score = 1.0
+                print(
+                    f"[EmbeddingRetriever] IRDI 일치: {semantic_node.name} "
+                    f"→ {irdi_candidates[0].idShort} ({semantic_node.eclass_irdi})"
+                )
+                return irdi_candidates[:top_k]
+        # ─────────────────────────────────────────────────────────────────
+
         query_text = self._build_query(semantic_node)
 
         try:
@@ -164,6 +186,7 @@ class EmbeddingCandidateRetriever(BaseCandidateRetriever):
             semantic_id=item.get("semantic_id"),
             preferred_unit=item.get("preferred_unit"),
             aliases=list(item.get("aliases", [])),
+            eclass_irdi=item.get("eclass_irdi"),
         )
 
 
