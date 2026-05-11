@@ -30,7 +30,7 @@
         "organisation name",
         "manufacturer_name"
       ],
-      "eclass_irdi": "0173-1#02-AAO677#002"
+      "eclass_irdi": "0173-1#02-AAO677#004"
     },
     {
       "candidate_id": "AAS_PROP_MODEL_NAME",
@@ -46,7 +46,7 @@
         "supplier product designation",
         "product type"
       ],
-      "eclass_irdi": "0173-1#02-AAW338#001"
+      "eclass_irdi": "0173-1#02-AAW338#003"
     },
     {
       "candidate_id": "AAS_PROP_SERIAL_NUMBER",
@@ -61,7 +61,7 @@
         "sn",
         "serial_number"
       ],
-      "eclass_irdi": "0173-1#02-AAM556#002"
+      "eclass_irdi": "0173-1#02-AAM556#004"
     },
     {
       "candidate_id": "AAS_PROP_PRODUCT_DESCRIPTION",
@@ -107,7 +107,7 @@
         "production year",
         "year_of_construction"
       ],
-      "eclass_irdi": "0173-1#02-AAP906#001"
+      "eclass_irdi": "0173-1#02-AAP906#003"
     },
     {
       "candidate_id": "AAS_PROP_DATE_OF_MANUFACTURE",
@@ -138,7 +138,7 @@
         "hw version",
         "hardware_revision"
       ],
-      "eclass_irdi": "0173-1#02-AAV232#002"
+      "eclass_irdi": "0173-1#02-AAN270#004"
     },
     {
       "candidate_id": "AAS_PROP_SOFTWARE_REVISION",
@@ -154,7 +154,7 @@
         "software version",
         "software_revision"
       ],
-      "eclass_irdi": "0173-1#02-AAS207#001"
+      "eclass_irdi": "0173-1#02-AAM737#004"
     },
     {
       "candidate_id": "AAS_PROP_COUNTRY_OF_ORIGIN",
@@ -171,7 +171,7 @@
         "country_code",
         "product_country_of_origin"
       ],
-      "eclass_irdi": "0173-1#02-AAO730#001"
+      "eclass_irdi": "0173-1#02-AAO259#007"
     },
     {
       "candidate_id": "AAS_PROP_BRAND",
@@ -217,7 +217,7 @@
         "order number",
         "sup_prod_num"
       ],
-      "eclass_irdi": "0173-1#02-AAO227#002"
+      "eclass_irdi": "0173-1#02-AAO227#004"
     },
     {
       "candidate_id": "AAS_PROP_CE_MARKING",
