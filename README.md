@@ -1,197 +1,133 @@
 # AAS Auto Generator
 
-명판 이미지, PDF, 자유 텍스트를 입력받아 AAS(Asset Administration Shell) JSON을 생성하는 파이프라인입니다.
+비정형 자산 정보(명판 이미지, PDF, 자유 텍스트)를 입력받아 LLM과 DDMS 기반 entity matching을 결합하여 AAS(Asset Administration Shell) JSON을 자동 생성하고 디지털 트윈에 등록·검증하는 end-to-end 파이프라인입니다.
 
-핵심 원칙은 LLM이 최종 AAS JSON을 직접 쓰지 않게 하는 것입니다. LLM은 텍스트 정제, 속성 추출, Semantic Node 보강, 후보 재랭킹, 선택적 Submodel 배치 판단에만 사용하고, 최종 AAS 구조는 코드 기반 generator가 생성합니다.
+## 시스템 개요
 
-## Architecture
+핵심 아이디어는 LLM이 최종 AAS JSON을 직접 쓰지 않는 것입니다. LLM은 텍스트 정제, 속성 추출, Semantic Node 보강, 후보 재랭킹, Submodel 배치 판단에만 사용하고, 최종 AAS 구조는 코드 기반 generator가 생성합니다.
+
+### 파이프라인 흐름
+
+```
+비정형 입력 (이미지 / PDF / 텍스트)
+    ↓
+[1] 입력 처리 — EasyOCR / pdfplumber / 텍스트 파싱 → AssetPackage
+    ↓
+[2] 속성 추출 — Ollama LLM(llama3.2)으로 키-값 속성 추출 + 가비지 필터 5종
+    ↓
+[3] Semantic Node 생성 — LLM 의미 설명 생성 + ECLASS IRDI 사전 조회
+    ↓
+[4] DDMS 계층적 매칭
+      ① ECLASS IRDI 정확 매칭 (score=1.0, 임베딩 스킵)
+      ② 임베딩 코사인 유사도 + alias 부스트 (nomic-embed-text)
+      ③ LLM 정밀 매핑 (fallback)
+    ↓
+[5] AAS 구조 생성 — IDTA 서브모델 템플릿(DigitalNameplate / TechnicalData) 배치
+    ↓
+[6] 디지털 트윈 등록 및 동작 검증
+```
+
+### 가비지 필터 (OCR 노이즈 제거)
+
+| 필터 | 설명 |
+|---|---|
+| 괄호 단독값 | `[Mbps]`처럼 괄호만으로 구성된 값 제거 |
+| 숫자 부재 | 숫자 없는 값(단위만 추출된 경우) 제거 |
+| 인코더 해상도 | 단위 없는 Dynamixel 해상도 값(1024·2048·4096·1008·512·256) 제거 |
+| 치수-질량 모순 | Width/Height 등 치수 키워드에 g·kg 단위 부여 시 제거 |
+| 신뢰도 임계값 | confidence < 0.60 제거 |
+
+### ECLASS IRDI 기반 결정론적 매칭
+
+IDTA 공식 템플릿(Digital Nameplate 3/0, TechnicalData 1/2)에서 수집한 21개 표준 속성 IRDI를 사용합니다. 속성명이 IRDI 사전의 alias와 일치하면 임베딩 계산 없이 score=1.0으로 즉시 매핑됩니다. IRDI가 없는 로봇 특화 속성(DOF, Payload 등)은 임베딩 fallback으로 처리합니다.
+
+## 검증 결과
+
+3종 산업용 로봇 실증 검증:
+
+| 자산 | F1 Score | 서브모델 분류 정확도 |
+|---|---|---|
+| OMY-Pro | 0.947 | 100% |
+| ROBOTIS Hand E1-I | 1.000 | 100% |
+| OMX-M6 | 0.889 | 100% |
+| **평균** | **0.930** | **100%** |
+
+처리 시간: 수작업 평균 35분 → 자동화 약 114초 (**94.6% 단축**)
+
+## 아키텍처 상세
 
 ```text
 Input
-- nameplate image
-- PDF datasheet/manual
-- free text
-
-        |
-        v
-
-DefaultInputLayer
-Output: AssetPackage
-- 입력 필드 alias 정규화
-- image/PDF/free text 수집
-- 파일 입력은 DocumentProcessor로 텍스트화
-
-        |
-        v
-
-DocumentProcessor
-Output: cleaned text
-- PDF: pdfplumber
-- Image OCR: easyocr
-- OCR/PDF text cleaning: Ollama LLM, 사용 가능할 때
-
-        |
-        v
-
-Extractor
-Output: ExtractedEntity[]
-- default: ManualInputExtractor
-- llm: LLMExtractor
-
-        |
-        v
-
-LLMSemanticNodeBuilder + ValueNormalizer
-Output: SemanticNode[]
-- name/value/unit/value_type 정규화
-- conceptual_definition, affordance 생성 또는 fallback
-- ECLASS alias 사전으로 eclass_irdi 보강
-
-        |
-        v
-
-HybridStandardsCandidateRetriever
-Input: SemanticNode
-Sources:
-- repositories/submodel_templates/admin_shell_io_submodel_templates/published/**/*.json
-- repositories/eclass_dictionary/eclass_properties.json
-- repositories/iec_cdd_dictionary/iec_cdd_properties.json
-Output: top-k AASPropertyCandidate[]
-- ECLASS/semanticId exact match 우선
-- lexical search
-- Ollama embedding search, llm pipeline에서 Ollama 사용 가능할 때
-
-        |
-        v
-
-LLMMatcher.match_candidates
-Input: SemanticNode + top-k candidates
-Output: MatchResult[]
-- default: similarity_score threshold
-- llm: top-k 후보군 batch reranking
-
-        |
-        v
-
-Best Match Selection
-Output: MatchedProperty[]
-- AAS property
-- semanticId
-- eclassIrdi
-- templateId/source/path
-
-        |
-        v
-
-TemplateAwareAASMapper
-Output: AAS mapping plan
-- Submodel 후보 생성
-- default: deterministic template selector
-- llm: Ollama 기반 Submodel Template selector
-- diagnostics/reviewQueue 생성
-
-        |
-        v
-
-JsonAASGenerator
-Output:
-- AAS JSON
-- ConceptDescriptions
-- supplementalSemanticIds for ECLASS IRDI
-- validation result
+→ DefaultInputLayer          # 입력 alias 정규화, DocumentProcessor 호출
+→ DocumentProcessor          # PDF(pdfplumber) / Image OCR(easyocr)
+→ LLMExtractor               # Ollama LLM 속성 추출 + 가비지 필터
+→ LLMSemanticNodeBuilder     # ECLASS IRDI 할당 + 의미 설명 생성
+→ HybridStandardsCandidateRetriever  # IRDI 매칭 → 임베딩 → lexical
+→ LLMMatcher.match_candidates        # 후보 재랭킹
+→ TemplateAwareAASMapper     # Submodel 배치 (deterministic / LLM)
+→ JsonAASGenerator           # AAS JSON + ConceptDescriptions 생성
+→ DT 등록 및 검증
 ```
 
 ## Pipeline Modes
 
-| Mode | Factory | 외부 의존 | 설명 |
-|---|---|---|---|
-| default | `create_default_pipeline()` | 없음 | 수동 입력, lexical/IRDI 검색, deterministic matching/placement |
-| llm | `create_llm_pipeline()` | Ollama | LLM extraction, Semantic Node enrichment, embedding retrieval, LLM reranking, LLM Submodel placement |
-| yolo | `create_yolo_pipeline()` | ultralytics | default + YOLO CV adapter, 불가 시 NoOp fallback |
-| llm-yolo | `create_llm_yolo_pipeline()` | Ollama, ultralytics | llm + YOLO, 사용 불가한 모듈은 fallback |
+| Mode | 설명 | 외부 의존 |
+|---|---|---|
+| `default` | 수동 입력, lexical/IRDI 검색, deterministic 매칭 | 없음 |
+| `llm` | LLM 추출, 임베딩 검색, LLM 재랭킹·배치 | Ollama |
+| `yolo` | default + YOLO CV 명판 탐지 | ultralytics |
+| `llm-yolo` | llm + YOLO | Ollama, ultralytics |
 
-## Input Payload
+## 실행 방법
 
-```json
-{
-  "asset_id": "robot_arm_a",
-  "asset_name": "Robot Arm A",
-  "manufacturer": "ROBOTIS",
-  "asset_type": "robot_arm",
-  "asset_images": ["data/input/nameplate.jpg"],
-  "manual_files": ["data/input/datasheet.pdf"],
-  "free_text": "Rated voltage: 24 V\nPayload: 3 kg"
-}
-```
-
-지원하는 자유 텍스트 필드:
-
-```text
-text, input_text, free_text, manual_text, user_text, raw_text
-```
-
-## Run
-
-### Web UI
-
-```bash
-python3 -m uvicorn api:app --reload
-```
-
-```text
-http://localhost:8000
-```
-
-### CLI
-
-```bash
-python3 main.py --input-json data/input/sample_asset.json
-python3 main.py --pipeline llm --input-json data/input/sample_asset.json
-python3 main.py --pipeline llm-yolo --input-json data/input/sample_asset.json
-```
-
-### Image/PDF Folder Runner
-
-```bash
-python3 run_from_image.py
-python3 run_from_image.py --files data/input/nameplate.jpg --name "Robot Arm" --manufacturer "ROBOTIS"
-```
-
-## Dependencies
-
-필수 테스트 경로는 표준 라이브러리 중심으로 동작합니다. 기능별 의존성은 아래처럼 설치합니다.
+### 사전 준비
 
 ```bash
 ollama pull llama3.2
 ollama pull nomic-embed-text
-
-python3 -m pip install fastapi uvicorn
-python3 -m pip install pdfplumber easyocr pillow numpy
-python3 -m pip install -e ".[cv]"
+pip install fastapi uvicorn pdfplumber easyocr pillow numpy
 ```
 
-현재 `requirements.txt`는 없습니다. OCR/PDF/YOLO/Ollama가 없으면 해당 단계는 fallback 또는 빈 결과로 처리됩니다.
-
-## Outputs
-
-| Output | Path |
-|---|---|
-| Web DB | `data/aas_database.db` |
-| AAS JSON | `data/generated_aas/{asset_id}.aas.json` |
-| Pipeline result | `data/output/{asset_id}_pipeline_result.json` |
-| YOLO crops | `data/output/cv_crops/` |
-
-## Local Standards Repository
-
-- `repositories/submodel_templates/admin_shell_io_submodel_templates/`: admin-shell-io Submodel Templates `main` snapshot
-- `repositories/submodel_templates/default_submodels.json`: core submodel set used by the generator
-- `repositories/eclass_dictionary/eclass_properties.json`: local ECLASS alias/IRDI seed
-- `repositories/iec_cdd_dictionary/iec_cdd_properties.json`: local IEC CDD seed
-
-## Test
+### 웹 UI 실행
 
 ```bash
-python3 -m unittest
+python -m uvicorn api:app --reload
 ```
 
-현재 검증 기준: `32 tests OK`.
+브라우저에서 `http://localhost:8000` 접속 → 이미지·PDF 업로드 → **Generate AAS** 클릭
+
+### CLI 실행
+
+```bash
+python main.py --input-json data/input/sample_asset.json
+python main.py --pipeline llm --input-json data/input/sample_asset.json
+```
+
+### 이미지/PDF 직접 실행
+
+```bash
+python run_from_image.py
+python run_from_image.py --files data/input/nameplate.jpg --name "Robot Arm" --manufacturer "ROBOTIS"
+```
+
+## 출력 결과
+
+| 항목 | 경로 |
+|---|---|
+| 웹 UI 생성 결과 | `data/aas_database.db` |
+| AAS JSON | `data/generated_aas/{asset_id}.aas.json` |
+| 파이프라인 전체 결과 | `data/output/{asset_id}_pipeline_result.json` |
+
+## 로컬 표준 데이터
+
+| 경로 | 내용 |
+|---|---|
+| `repositories/submodel_templates/admin_shell_io_submodel_templates/` | IDTA 공식 Submodel Templates 전체 |
+| `repositories/eclass_dictionary/eclass_properties.json` | ECLASS IRDI 사전 (21개 속성, 공식 템플릿 기반) |
+| `repositories/iec_cdd_dictionary/iec_cdd_properties.json` | IEC CDD 속성 사전 |
+
+## 테스트
+
+```bash
+python -m unittest
+```
