@@ -6,7 +6,8 @@ llm_extractor.py와 llm_matcher.py 둘 다 이 클라이언트를 통해 LLM을 
 사용 전제:
     - Ollama가 로컬에 설치되어 실행 중이어야 한다.
     - 기본 주소: http://localhost:11434
-    - 기본 모델: llama3.2
+    - 기본 LLM 모델: qwen2.5:7b
+    - 기본 임베딩 모델: mxbai-embed-large
 """
 from __future__ import annotations
 
@@ -19,7 +20,8 @@ from interfaces.base_llm import BaseLLM, LLMConnectionError
 
 
 OLLAMA_BASE_URL = "http://localhost:11434"
-DEFAULT_MODEL = "llama3.2"
+DEFAULT_MODEL = "qwen2.5:7b"
+DEFAULT_EMBED_MODEL = "mxbai-embed-large"
 REQUEST_TIMEOUT = 120
 
 
@@ -34,7 +36,7 @@ class OllamaClient(BaseLLM, BaseEmbeddingModel):
     JSON 파싱을 시도하고, 실패하면 원본 텍스트를 반환한다.
 
     Args:
-        model: 사용할 Ollama 모델 이름. 기본값은 llama3.2.
+        model: 사용할 Ollama 모델 이름. 기본값은 qwen2.5:7b.
         base_url: Ollama 서버 주소. 기본값은 http://localhost:11434.
         timeout: 요청 타임아웃(초). 기본값은 120.
 
@@ -101,12 +103,12 @@ class OllamaClient(BaseLLM, BaseEmbeddingModel):
         """텍스트를 임베딩 벡터로 변환한다.
 
         Ollama /api/embeddings 엔드포인트를 호출한다.
-        model을 지정하지 않으면 nomic-embed-text를 먼저 시도하고,
-        실패하면 self.model(llama3.2)로 fallback한다.
+        model을 지정하지 않으면 mxbai-embed-large를 먼저 시도하고,
+        실패하면 self.model(qwen2.5:7b)로 fallback한다.
 
         Args:
             text: 임베딩할 텍스트.
-            model: 사용할 임베딩 모델. 기본값은 nomic-embed-text.
+            model: 사용할 임베딩 모델. 기본값은 mxbai-embed-large.
 
         Returns:
             float 리스트 (임베딩 벡터).
@@ -115,7 +117,7 @@ class OllamaClient(BaseLLM, BaseEmbeddingModel):
             OllamaConnectionError: 서버에 연결할 수 없을 때.
             ValueError: 임베딩 응답이 비어있을 때.
         """
-        embed_model = model or "nomic-embed-text"
+        embed_model = model or DEFAULT_EMBED_MODEL
         url = f"{self.base_url}/api/embeddings"
         payload = json.dumps({
             "model": embed_model,
