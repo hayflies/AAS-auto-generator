@@ -36,6 +36,14 @@ class OllamaClientTest(unittest.TestCase):
         with patch("urllib.request.urlopen", return_value=_FakeResponse({"models": []})):
             self.assertTrue(self.client.is_available())
 
+    def test_ollama_has_model(self) -> None:
+        """Ollama /api/tags 모델 목록에서 지정 모델을 찾는다."""
+        with patch(
+            "urllib.request.urlopen",
+            return_value=_FakeResponse({"models": [{"name": "nomic-embed-text"}]}),
+        ):
+            self.assertTrue(self.client.has_model("nomic-embed-text"))
+
     def test_generate_returns_nonempty_string(self) -> None:
         """간단한 프롬프트에 대해 비어있지 않은 응답을 반환한다."""
         with patch("urllib.request.urlopen", return_value=_FakeResponse({"response": "hello"})):
@@ -110,6 +118,18 @@ class OllamaClientTest(unittest.TestCase):
             result = self.client.embed("Rated Voltage")
         self.assertEqual([0.1, 0.2, 0.3], result)
 
+    def test_embed_supports_api_embed_response_shape(self) -> None:
+        """Ollama /api/embed 응답 형식에서도 첫 번째 벡터를 반환한다."""
+        with patch(
+            "urllib.request.urlopen",
+            return_value=_FakeResponse({"embeddings": [[0.1, 0.2, 0.3]]}),
+        ):
+            result = self.client.embed("Rated Voltage")
+        self.assertEqual([0.1, 0.2, 0.3], result)
+
+    def test_default_embedding_model_is_nomic(self) -> None:
+        """기본 embedding 모델은 nomic-embed-text이다."""
+        self.assertEqual("nomic-embed-text", self.client.embedding_model)
 
 if __name__ == "__main__":
     unittest.main()

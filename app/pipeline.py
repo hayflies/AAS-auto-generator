@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import Any
 
-from app.config import PipelineConfig
+from app.config import DEFAULT_EMBEDDING_MODEL, PipelineConfig, SEMANTIC_NODE_LLM_MODEL
 from app.models import (
     AASPropertyCandidate,
     CVOutput,
@@ -12,6 +12,7 @@ from app.models import (
     PipelineResult,
 )
 from interfaces.base_aas_generator import BaseAASGenerator
+from interfaces.base_embedding import BaseEmbeddingModel
 from interfaces.base_cv import BaseCVModel
 from interfaces.base_dt_adapter import BaseDTAdapter
 from interfaces.base_extractor import BaseInformationExtractor
@@ -22,18 +23,26 @@ from interfaces.base_model_generator import BaseModelGenerator
 from interfaces.base_retriever import BaseCandidateRetriever
 from interfaces.base_semantic_builder import BaseSemanticNodeBuilder
 from interfaces.base_validator import BaseDTValidator
+from interfaces.base_llm import BaseLLM
 from modules.aas_generation import JsonAASGenerator
 from modules.aas_mapping import TemplateAwareAASMapper
 from modules.cv import NoOpCVModel, YOLOPartDetector
 from modules.dt_integration import InMemoryDTAdapter
 from modules.extraction import LLMExtractor, ManualInputExtractor
 from modules.input_layer import DefaultInputLayer
+from modules.input_layer.document_processor import DocumentProcessor
+from modules.semantic_node.default_builder import DefaultSemanticNodeBuilder
 from modules.semantic_node.llm_semantic_builder import LLMSemanticNodeBuilder
 from modules.matching import LLMMatcher
 from modules.model_3d import DefaultModelManager
 from modules.normalization import ValueNormalizer
 from modules.retrieval.hybrid_retriever import HybridStandardsCandidateRetriever
-from modules.validation import DefaultDTValidator
+from modules.dt_validation import DefaultDTValidator
+from modules.validation import DefaultMappingValidator
+
+
+class PipelineConfigurationError(RuntimeError):
+    """Raised when a configured concrete pipeline module is unavailable."""
 
 
 @dataclass
@@ -54,6 +63,7 @@ class AASAutoGenerationPipeline:
     model_manager: BaseModelGenerator
     mapper: BaseAASMapper
     aas_generator: BaseAASGenerator
+    mapping_validator: DefaultMappingValidator
     dt_adapter: BaseDTAdapter
     validator: BaseDTValidator
     cv_model: BaseCVModel | None = None
@@ -122,10 +132,17 @@ class AASAutoGenerationPipeline:
 
         # 7~9. Submodel Template-aware mapping plan을 만들고 ConceptDescription 포함 AAS를 생성한다.
         mapping_plan = self.mapper.map(asset_package, matched_properties, model_info)
+        mapping_validation = self.mapping_validator.validate(
+            semantic_nodes=semantic_nodes,
+            candidates_by_node=candidates_by_node,
+            match_results=match_results,
+            matched_properties=matched_properties,
+            mapping_plan=mapping_plan,
+        )
         aas_json = self.aas_generator.generate(mapping_plan)
         aas_validation = self.aas_generator.validate(aas_json)
 
-        # 생성된 AAS와 모델 참조를 DT adapter에 등록하고 mock 센서값으로 검증한다.
+        # 생성된 AAS와 모델 참조를 DT adapter에 등록하고 mock 센서값으로 보조 검증한다.
         dt_registration = self.dt_adapter.register_asset(aas_json, model_info.to_dict())
         dt_validation = self.validator.validate(
             dt_registration,
@@ -141,6 +158,7 @@ class AASAutoGenerationPipeline:
             match_results=match_results,
             matched_properties=matched_properties,
             aas_mapping_plan=mapping_plan,
+            mapping_validation=mapping_validation,
             model_info=model_info,
             aas_json=aas_json,
             aas_validation=aas_validation,
@@ -151,7 +169,7 @@ class AASAutoGenerationPipeline:
     def _run_optional_cv(self, images: list[str]) -> CVOutput | None:
         """Optional CV Module을 실행한다.
 
-        현재는 NoOp 구현체가 기본값이지만, 추후 YOLO/SAM/Vision LLM adapter로
+        CV 모듈이 연결된 경우에만 실행한다. YOLO/SAM/Vision LLM adapter로
         교체해도 pipeline.run의 나머지 코드는 바뀌지 않는다.
         """
 
@@ -172,7 +190,6 @@ class AASAutoGenerationPipeline:
         source = item.candidate.source if item.candidate else ""
         source_rank = {
             "submodel_template": 4,
-            "project_repository": 3,
             "iec_cdd_dictionary": 2,
             "eclass_dictionary": 1,
         }.get(source, 0)
@@ -193,19 +210,73 @@ class AASAutoGenerationPipeline:
 
 
 def create_default_pipeline(config: PipelineConfig | None = None) -> AASAutoGenerationPipeline:
-    """외부 의존성 없이 실행 가능한 기본 파이프라인을 조립한다.
+    """구체 모듈을 연결한다.
 
-    이 함수가 현재 MVP의 composition root이다. 실제 OCR/LLM/vector DB/DT
-    구현을 붙일 때는 여기에서 해당 adapter만 교체하면 된다.
+    기본 정책은 fail-fast이다. Ollama/embedding처럼 설정된 구체 모듈이 준비되지
+    않았으면 default 구현으로 조용히 내려가지 않고 안내 예외를 발생시킨다.
+    테스트나 오프라인 데모가 필요할 때만 config.allow_module_fallback=True를
+    명시해 이전 fallback 동작을 사용할 수 있다.
     """
 
     config = config or PipelineConfig()
-    project_property_path = (
-        config.project_root
-        / "repositories"
-        / "aas_property_repository"
-        / "properties.json"
+    paths = _pipeline_paths(config)
+    llm_client = _create_llm_client(config)
+    embedding_model = _create_embedding_model(config)
+    llm_available = llm_client is not None
+    embedding_available = embedding_model is not None
+    dt_adapter = InMemoryDTAdapter(config)
+
+    if config.allow_module_fallback and not llm_available:
+        print("[Pipeline] LLM unavailable, default modules kept for LLM-dependent stages.")
+    if config.allow_module_fallback and not embedding_available:
+        print("[Pipeline] Embedding unavailable, lexical retrieval fallback kept.")
+
+    return AASAutoGenerationPipeline(
+        config=config,
+        input_layer=DefaultInputLayer(
+            processor=DocumentProcessor(
+                client=llm_client,
+                skip_llm_cleaning=not llm_available,
+                fail_fast=not config.allow_module_fallback,
+            )
+        ),
+        cv_model=_create_cv_model(config),
+        extractor=LLMExtractor(
+            client=llm_client,
+            fail_fast=not config.allow_module_fallback,
+        ) if llm_available else ManualInputExtractor(),
+        semantic_builder=_create_semantic_builder(config, llm_client, llm_available),
+        retriever=HybridStandardsCandidateRetriever(
+            template_root=paths["template_root"],
+            eclass_path=paths["eclass_path"],
+            iec_cdd_path=paths["iec_cdd_path"],
+            embedding_model=embedding_model,
+            use_embeddings=embedding_available,
+            fail_on_embedding_error=not config.allow_module_fallback,
+        ),
+        matcher=LLMMatcher(
+            client=llm_client,
+            threshold=config.match_threshold,
+            skip_llm=not llm_available,
+            fail_fast=not config.allow_module_fallback,
+        ),
+        model_manager=DefaultModelManager(config),
+        mapper=TemplateAwareAASMapper(
+            default_submodels_path=paths["default_submodels_path"],
+            template_root=paths["template_root"],
+            review_threshold=config.human_review_threshold,
+            llm_client=llm_client,
+            use_llm_template_selection=llm_available,
+            fail_fast=not config.allow_module_fallback,
+        ),
+        aas_generator=JsonAASGenerator(),
+        mapping_validator=DefaultMappingValidator(top_k=config.top_k_candidates),
+        dt_adapter=dt_adapter,
+        validator=DefaultDTValidator(dt_adapter),
     )
+
+
+def _pipeline_paths(config: PipelineConfig) -> dict[str, Any]:
     template_path = (
         config.project_root
         / "repositories"
@@ -231,112 +302,120 @@ def create_default_pipeline(config: PipelineConfig | None = None) -> AASAutoGene
         / "iec_cdd_dictionary"
         / "iec_cdd_properties.json"
     )
-    dt_adapter = InMemoryDTAdapter(config)
-    return AASAutoGenerationPipeline(
-        config=config,
-        input_layer=DefaultInputLayer(),
-        cv_model=NoOpCVModel(),
-        extractor=ManualInputExtractor(),
-        semantic_builder=LLMSemanticNodeBuilder(skip_enrichment=True),
-        retriever=HybridStandardsCandidateRetriever(
-            template_root=template_root,
-            eclass_path=eclass_path,
-            iec_cdd_path=iec_cdd_path,
-            project_property_path=project_property_path,
-            use_embeddings=False,
-        ),
-        matcher=LLMMatcher(threshold=config.match_threshold, skip_llm=True),
-        model_manager=DefaultModelManager(config),
-        mapper=TemplateAwareAASMapper(
-            default_submodels_path=template_path,
-            template_root=template_root,
-            review_threshold=config.human_review_threshold,
-        ),
-        aas_generator=JsonAASGenerator(),
-        dt_adapter=dt_adapter,
-        validator=DefaultDTValidator(dt_adapter),
+    return {
+        "default_submodels_path": template_path,
+        "template_root": template_root,
+        "eclass_path": eclass_path,
+        "iec_cdd_path": iec_cdd_path,
+    }
+
+
+def _create_llm_client(config: PipelineConfig) -> BaseLLM | None:
+    if not config.require_llm and config.allow_module_fallback:
+        return None
+
+    provider = config.llm_provider.strip().lower()
+    try:
+        if provider != "ollama":
+            raise PipelineConfigurationError(
+                "Only Ollama llama3.2 is enabled for semantic node generation. "
+                "Set llm_provider='ollama'."
+            )
+        if config.ollama_llm_model_name != SEMANTIC_NODE_LLM_MODEL:
+            raise PipelineConfigurationError(
+                "Semantic node generation is fixed to Ollama llama3.2. "
+                f"Set ollama_llm_model_name='{SEMANTIC_NODE_LLM_MODEL}'."
+            )
+
+        from modules.llm import OllamaClient
+
+        embedding_model_name = config.embedding_model_name or DEFAULT_EMBEDDING_MODEL
+        client = OllamaClient(
+            model=SEMANTIC_NODE_LLM_MODEL,
+            embedding_model=embedding_model_name,
+        )
+        if client.is_available() and client.has_model(SEMANTIC_NODE_LLM_MODEL):
+            return client
+        raise PipelineConfigurationError(
+            "Ollama LLM server/model is unavailable. Start Ollama and run "
+            f"`ollama pull {SEMANTIC_NODE_LLM_MODEL}`."
+        )
+    except PipelineConfigurationError:
+        if config.allow_module_fallback:
+            return None
+        raise
+
+
+def _create_semantic_builder(
+    config: PipelineConfig,
+    llm_client: BaseLLM | None,
+    llm_available: bool,
+) -> BaseSemanticNodeBuilder:
+    if not llm_available or llm_client is None:
+        return DefaultSemanticNodeBuilder()
+
+    return LLMSemanticNodeBuilder(
+        client=llm_client,
+        skip_enrichment=False,
+        fail_fast=not config.allow_module_fallback,
+        semantic_batch_size=config.semantic_batch_size,
     )
 
 
-def create_llm_pipeline(config: PipelineConfig | None = None) -> AASAutoGenerationPipeline:
-    """Ollama extraction/enrichment pipeline with the same standards-aware mapping."""
+def _create_embedding_model(config: PipelineConfig) -> BaseEmbeddingModel | None:
+    if not config.require_embedding and config.allow_module_fallback:
+        return None
 
-    config = config or PipelineConfig()
-    pipeline = create_default_pipeline(config)
-    ollama_available = False
     try:
         from modules.llm import OllamaClient
 
-        client = OllamaClient()
-        ollama_available = client.is_available()
-    except Exception:
-        client = None
-
-    if not ollama_available:
-        print("[Pipeline] Ollama unavailable, llm pipeline falls back to deterministic matching.")
-
-    pipeline.extractor = LLMExtractor(client=client) if ollama_available and client else ManualInputExtractor()
-    pipeline.semantic_builder = LLMSemanticNodeBuilder(
-        client=client,
-        skip_enrichment=not ollama_available,
-    )
-    pipeline.matcher = LLMMatcher(
-        client=client,
-        threshold=config.match_threshold,
-        skip_llm=not ollama_available,
-    )
-    pipeline.mapper = TemplateAwareAASMapper(
-        default_submodels_path=config.project_root
-        / "repositories"
-        / "submodel_templates"
-        / "default_submodels.json",
-        template_root=config.project_root
-        / "repositories"
-        / "submodel_templates"
-        / "admin_shell_io_submodel_templates"
-        / "published",
-        review_threshold=config.human_review_threshold,
-        llm_client=client,
-        use_llm_template_selection=ollama_available,
-    )
-    try:
-        pipeline.retriever = HybridStandardsCandidateRetriever(
-            template_root=config.project_root
-            / "repositories"
-            / "submodel_templates"
-            / "admin_shell_io_submodel_templates"
-            / "published",
-            eclass_path=config.project_root / "repositories" / "eclass_dictionary" / "eclass_properties.json",
-            iec_cdd_path=config.project_root / "repositories" / "iec_cdd_dictionary" / "iec_cdd_properties.json",
-            project_property_path=config.project_root
-            / "repositories"
-            / "aas_property_repository"
-            / "properties.json",
-            embedding_model=client,
-            use_embeddings=ollama_available and client is not None,
+        embedding_model_name = config.embedding_model_name or DEFAULT_EMBEDDING_MODEL
+        client = OllamaClient(
+            model=SEMANTIC_NODE_LLM_MODEL,
+            embedding_model=embedding_model_name,
         )
+        if client.is_available() and client.has_model(embedding_model_name):
+            return client
+        raise PipelineConfigurationError(
+            "Ollama embedding server/model is unavailable. Start Ollama and run "
+            f"`ollama pull {embedding_model_name}`."
+        )
+    except PipelineConfigurationError:
+        if config.allow_module_fallback:
+            return None
+        raise
+
+
+def _create_cv_model(config: PipelineConfig) -> BaseCVModel | None:
+    try:
+        return YOLOPartDetector()
     except Exception as exc:
-        print(f"[Pipeline] Ollama embedding retriever unavailable, lexical fallback kept: {exc}")
-    return pipeline
+        if config.require_cv_model:
+            raise PipelineConfigurationError(
+                "YOLO CV module was requested but is unavailable. "
+                "Install ultralytics and configure weights, or run a non-YOLO pipeline."
+            ) from exc
+        if not config.allow_module_fallback:
+            return None
+        print(f"[Pipeline] YOLO unavailable, NoOpCVModel kept: {exc}")
+        return NoOpCVModel()
+
+
+def create_llm_pipeline(config: PipelineConfig | None = None) -> AASAutoGenerationPipeline:
+    """Compatibility factory: default composition already activates LLM modules when available."""
+
+    return create_default_pipeline(config)
 
 
 def create_yolo_pipeline(config: PipelineConfig | None = None) -> AASAutoGenerationPipeline:
     """Compatibility factory for CLI modes that want CV later."""
 
-    pipeline = create_default_pipeline(config)
-    try:
-        pipeline.cv_model = YOLOPartDetector()
-    except Exception as exc:
-        print(f"[Pipeline] YOLO unavailable, NoOpCVModel kept: {exc}")
-    return pipeline
+    config = replace(config or PipelineConfig(), require_cv_model=True)
+    return create_default_pipeline(config)
 
 
 def create_llm_yolo_pipeline(config: PipelineConfig | None = None) -> AASAutoGenerationPipeline:
     """Compatibility factory for LLM + CV mode."""
 
-    pipeline = create_llm_pipeline(config)
-    try:
-        pipeline.cv_model = YOLOPartDetector()
-    except Exception as exc:
-        print(f"[Pipeline] YOLO unavailable, NoOpCVModel kept: {exc}")
-    return pipeline
+    config = replace(config or PipelineConfig(), require_cv_model=True)
+    return create_default_pipeline(config)

@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Any
 
 from app.models import AssetPackage, MatchedProperty, ModelInfo
-from interfaces.base_llm import BaseLLM, LLMConnectionError
+from interfaces.base_llm import BaseLLM, LLMConnectionError, LLMResponseFormatError
 from interfaces.base_mapper import BaseAASMapper
 from modules.llm.prompts import build_submodel_template_selection_prompt
 from modules.standards import SubmodelTemplateRepository
@@ -24,6 +24,7 @@ class TemplateAwareAASMapper(BaseAASMapper):
         llm_client: BaseLLM | None = None,
         use_llm_template_selection: bool = False,
         llm_selection_threshold: float = 0.70,
+        fail_fast: bool = False,
     ) -> None:
         self.default_submodels_path = default_submodels_path
         self.template_root = template_root
@@ -32,6 +33,7 @@ class TemplateAwareAASMapper(BaseAASMapper):
         self.llm_client = llm_client
         self.use_llm_template_selection = use_llm_template_selection and llm_client is not None
         self.llm_selection_threshold = llm_selection_threshold
+        self.fail_fast = fail_fast
         self.submodel_descriptions = self._load_submodel_descriptions(default_submodels_path)
         self.submodel_ids = list(self.submodel_descriptions)
         self._template_candidates = SubmodelTemplateRepository(template_root).load_candidates()
@@ -115,7 +117,6 @@ class TemplateAwareAASMapper(BaseAASMapper):
         if item.submodel == "TechnicalData" and item.source in {
             "eclass_dictionary",
             "iec_cdd_dictionary",
-            "project_repository",
         }:
             return "template_extension", "TechnicalData accepts arbitrary technical property areas", False
         return "needs_review", "no matching element was found in loaded templates", True
@@ -168,6 +169,8 @@ class TemplateAwareAASMapper(BaseAASMapper):
         try:
             response = self.llm_client.generate_json(prompt, fallback={})  # type: ignore[union-attr]
         except LLMConnectionError as exc:
+            if self.fail_fast:
+                raise
             return {
                 **fallback,
                 "review_required": True,
@@ -179,6 +182,10 @@ class TemplateAwareAASMapper(BaseAASMapper):
         confidence = self._score(response.get("confidence"))
         allowed = {option["submodel"] for option in options}
         if selected not in allowed:
+            if self.fail_fast:
+                raise LLMResponseFormatError(
+                    f"LLM selected invalid submodel '{selected}'. Allowed: {sorted(allowed)}"
+                )
             return {
                 **fallback,
                 "review_required": True,

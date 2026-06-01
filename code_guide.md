@@ -15,7 +15,8 @@ raw payload
 → Best Match Selection
 → TemplateAwareAASMapper
 → JsonAASGenerator
-→ InMemoryDTAdapter + DefaultDTValidator
+→ DefaultMappingValidator
+→ InMemoryDTAdapter + DefaultDTValidator (auxiliary)
 ```
 
 ## Data Contracts
@@ -53,7 +54,7 @@ raw payload
 | `BaseEntityMatcher` | `LLMMatcher` |
 | `BaseAASMapper` | `TemplateAwareAASMapper` |
 | `BaseAASGenerator` | `JsonAASGenerator` |
-| `BaseLLM`, `BaseEmbeddingModel` | `OllamaClient` |
+| `BaseLLM`, `BaseEmbeddingModel` | `GeminiClient`, `OllamaClient` |
 
 `BaseEntityMatcher`는 단건 `match()`와 후보군 `match_candidates()`를 모두 제공합니다. LLM 경로는 `match_candidates()`로 top-k 후보를 batch reranking합니다.
 
@@ -66,7 +67,7 @@ raw payload
 - `document_processor.py`
   - PDF: `pdfplumber`
   - Image OCR: `easyocr`
-  - OCR/PDF text cleaning: Ollama LLM 사용 가능 시 수행
+  - OCR/PDF text cleaning: Gemini API strict mode에서 수행
 
 ## modules/extraction/
 
@@ -77,8 +78,8 @@ raw payload
 
 - `llm_semantic_builder.py`
   - `ExtractedEntity`를 `SemanticNode`로 변환합니다.
-  - Ollama 사용 가능 시 conceptual definition과 affordance를 생성합니다.
-  - 사용 불가 시 fallback 문장을 씁니다.
+  - Gemini API로 conceptual definition과 affordance를 생성합니다.
+  - `fail_fast=True`이면 LLM 실패 시 fallback 문장 대신 예외를 전파합니다.
   - `repositories/eclass_dictionary/eclass_properties.json`의 alias로 `eclass_irdi`를 보강합니다.
 
 ## modules/normalization/
@@ -90,7 +91,7 @@ raw payload
 - `candidate_sources.py`
   - `SubmodelTemplateRepository`: `published/**/*.json`에서 Submodel element 후보를 로드합니다.
   - `EclassDictionaryRepository`: 로컬 ECLASS seed를 후보로 로드합니다.
-  - `IecCddDictionaryRepository`: 로컬 IEC CDD seed를 후보로 로드합니다.
+  - `IecCddDictionaryRepository`: 로컬 IEC CDD cache를 보조 후보로 로드합니다.
   - `CandidateSourceRegistry`: 위 후보들을 통합하고 중복을 제거합니다.
 
 ## modules/retrieval/
@@ -98,7 +99,7 @@ raw payload
 - `hybrid_retriever.py`: 현재 표준 후보 검색 엔진입니다.
   - exact `eclass_irdi`/`semantic_id` 우선
   - lexical score
-  - optional Ollama embedding
+  - qwen3-embedding:4b Ollama embedding
   - source priority, unit compatibility, value type compatibility 기반 rerank
 - `embedding_retriever.py`, `in_memory_retriever.py`: 이전/대체 구현체입니다. 현재 기본 composition에는 `HybridStandardsCandidateRetriever`가 사용됩니다.
 
@@ -117,8 +118,8 @@ raw payload
     - 현재 후보의 submodel
     - semanticId/eclassIrdi/idShort가 존재하는 Submodel Template
     - core submodel heuristic
-  - default pipeline에서는 deterministic selector를 사용합니다.
-  - llm pipeline에서는 Ollama가 가능할 때 LLM Submodel Template selector를 사용합니다.
+  - default/llm pipeline에서는 Gemini API 기반 LLM Submodel Template selector를 사용합니다.
+  - 오프라인 테스트에서만 `allow_module_fallback=True`로 deterministic selector fallback을 명시합니다.
   - 결과에 `diagnostics`, `reviewQueue`, `placement` 근거를 남깁니다.
 - `default_mapper.py`, `semantic_mapper.py`: 대체/이전 mapper입니다. 현재 기본 composition에는 사용하지 않습니다.
 
@@ -133,7 +134,7 @@ raw payload
 ## modules/cv/
 
 - `noop_cv.py`: default CV adapter입니다.
-- `yolo_part_detector.py`: YOLOv8 기반 부품 탐지/crop adapter입니다. `ultralytics`와 weight 파일이 필요하며 실패 시 pipeline factory에서 fallback합니다.
+- `yolo_part_detector.py`: YOLOv8 기반 부품 탐지/crop adapter입니다. `ultralytics`와 weight 파일이 필요하며 YOLO pipeline에서 실패 시 fail-fast로 중단합니다.
 
 ## Runtime Entrypoints
 
@@ -156,7 +157,7 @@ repositories/
 ## Tests
 
 - `tests/test_pipeline.py`: default pipeline end-to-end
-- `tests/test_llm_client.py`: Ollama client/parsing mock
+- `tests/test_llm_client.py`: Gemini/Ollama client/parsing mock
 - `tests/test_llm_extractor.py`: extractor conversion/filtering
 - `tests/test_llm_matcher.py`: matcher threshold/reranking behavior
 - `tests/test_template_aware_mapper.py`: LLM Submodel placement correction

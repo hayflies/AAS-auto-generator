@@ -4,6 +4,12 @@ from dataclasses import dataclass
 from pathlib import Path
 
 
+SEMANTIC_NODE_LLM_MODEL = "llama3.2"
+DEFAULT_EMBEDDING_MODEL = "nomic-embed-text"
+# [delete] DEFAULT_EMBEDDING_MODEL = "mxbai-embed-large"
+# [delete] DEFAULT_EMBEDDING_MODEL = "qwen3-embedding:4b"
+
+
 @dataclass(frozen=True)
 class PipelineConfig:
     """파이프라인 전체에서 공유하는 실행 설정.
@@ -13,9 +19,17 @@ class PipelineConfig:
     """
 
     project_root: Path = Path(__file__).resolve().parents[1]
-    top_k_candidates: int = 5
+    top_k_candidates: int = 10
     match_threshold: float = 0.45
     human_review_threshold: float = 0.78
+    llm_provider: str = "ollama"
+    ollama_llm_model_name: str = SEMANTIC_NODE_LLM_MODEL
+    embedding_model_name: str = DEFAULT_EMBEDDING_MODEL
+    semantic_batch_size: int = 10
+    require_llm: bool = True
+    require_embedding: bool = True
+    require_cv_model: bool = False
+    allow_module_fallback: bool = False
     output_dir: Path | None = None
     generated_aas_dir: Path | None = None
     generated_models_dir: Path | None = None

@@ -8,7 +8,7 @@ from __future__ import annotations
 사용처:
     - llm_extractor.py: build_extraction_prompt
     - llm_matcher.py: build_matching_prompt, build_batch_matching_prompt
-    - llm_semantic_builder.py: build_semantic_node_prompt
+    - llm_semantic_builder.py: build_semantic_node_prompt, build_batch_semantic_node_prompt
 """
 
 
@@ -39,10 +39,14 @@ Rules:
 - Separate the numeric value from its unit (e.g. "24 VDC" → raw_value="24", raw_unit="VDC").
 - Property names must be in English (translate or normalize if needed).
 - If there is no unit, set raw_unit to null.
+- If the source text has markers like [PDF_PAGE 7] or [PDF_TABLE 7.1], include source_reference with the page/table marker and a short supporting quote.
 - Do NOT merge or summarize — extract each property as a separate entry.
 - Ignore non-property lines (e.g. table headers like "Item", "Qty", part numbers like "YM070-210-A099-RH").
 
 SKIP a property if ANY of these are true:
+- Browser/webpage header/footer text, timestamps, URL fragments, or page counters.
+- Package contents, BOM, accessory, item/quantity tables where the value only means quantity.
+- Drawing title-block fields such as sheet, scale, material, drawn/check dates, or approval metadata.
 - The numeric value is missing or replaced by brackets only (e.g. "[Mbps]", "[N/A]", "[TBD]") → SKIP entirely.
 - The value unit clearly contradicts the property name (e.g. a mass unit like "g" or "kg" paired with a dimension name like "Width" or "Length") → SKIP.
 - The value appears to be a hardware resolution or encoder count (e.g. integers like 4096, 1024, 2048 paired with no unit for a joint/angle property) → SKIP; these are not angle ranges.
@@ -53,16 +57,16 @@ Return ONLY a JSON array. No explanation, no markdown, no extra text.
 
 Example:
 [
-  {{"raw_name": "Manufacturer", "raw_value": "ROBOTIS", "raw_unit": null, "confidence": 0.99}},
-  {{"raw_name": "DOF", "raw_value": "6", "raw_unit": null, "confidence": 0.98}},
-  {{"raw_name": "Payload", "raw_value": "3", "raw_unit": "kg", "confidence": 0.97}},
-  {{"raw_name": "Reach", "raw_value": "580", "raw_unit": "mm", "confidence": 0.97}},
-  {{"raw_name": "Weight", "raw_value": "13.5", "raw_unit": "kg", "confidence": 0.97}},
-  {{"raw_name": "Operating Voltage", "raw_value": "24", "raw_unit": "VDC", "confidence": 0.96}},
-  {{"raw_name": "Repeatability", "raw_value": "0.05", "raw_unit": "mm", "confidence": 0.95}},
-  {{"raw_name": "TCP Speed", "raw_value": "900", "raw_unit": "mm/s", "confidence": 0.95}},
-  {{"raw_name": "Host Interface", "raw_value": "Ethernet", "raw_unit": null, "confidence": 0.94}},
-  {{"raw_name": "Serial Number", "raw_value": "A1B2C3D4", "raw_unit": null, "confidence": 0.85}}
+  {{"raw_name": "Manufacturer", "raw_value": "ROBOTIS", "raw_unit": null, "confidence": 0.99, "source_reference": "[PDF_PAGE 1] Manufacturer: ROBOTIS"}},
+  {{"raw_name": "DOF", "raw_value": "6", "raw_unit": null, "confidence": 0.98, "source_reference": "[PDF_PAGE 2] 6-axis robot arm"}},
+  {{"raw_name": "Payload", "raw_value": "3", "raw_unit": "kg", "confidence": 0.97, "source_reference": "[PDF_TABLE 3.1] Payload | 3 kg"}},
+  {{"raw_name": "Reach", "raw_value": "580", "raw_unit": "mm", "confidence": 0.97, "source_reference": "[PDF_TABLE 3.1] Reach | 580 mm"}},
+  {{"raw_name": "Weight", "raw_value": "13.5", "raw_unit": "kg", "confidence": 0.97, "source_reference": "[PDF_TABLE 3.1] Weight | 13.5 kg"}},
+  {{"raw_name": "Operating Voltage", "raw_value": "24", "raw_unit": "VDC", "confidence": 0.96, "source_reference": "[PDF_PAGE 4] Operating voltage 24 VDC"}},
+  {{"raw_name": "Repeatability", "raw_value": "0.05", "raw_unit": "mm", "confidence": 0.95, "source_reference": "[PDF_PAGE 4] Repeatability ±0.05 mm"}},
+  {{"raw_name": "TCP Speed", "raw_value": "900", "raw_unit": "mm/s", "confidence": 0.95, "source_reference": "[PDF_PAGE 4] TCP speed 900 mm/s"}},
+  {{"raw_name": "Host Interface", "raw_value": "Ethernet", "raw_unit": null, "confidence": 0.94, "source_reference": "[PDF_PAGE 5] Host Interface Ethernet"}},
+  {{"raw_name": "Serial Number", "raw_value": "A1B2C3D4", "raw_unit": null, "confidence": 0.85, "source_reference": "[PDF_PAGE 1] S/N A1B2C3D4"}}
 ]
 
 Text to extract from:
@@ -202,7 +206,7 @@ Rules:
 - In industrial/AAS context, similar unit + similar physical meaning = match.
 - score is a float between 0.0 and 1.0.
 - Return the exact candidate_id field shown for each candidate.
-- Prefer a Submodel Template or project AAS property candidate over a raw ECLASS/IEC dictionary candidate when both describe the same concept.
+- Prefer a Submodel Template candidate over a raw ECLASS/IEC dictionary candidate when both describe the same concept.
 
 Return ONLY a JSON array. No explanation, no markdown, no extra text.
 
@@ -338,6 +342,7 @@ Rules:
 - conceptual_definition: one sentence explaining what this property physically means.
 - affordance: one sentence explaining how this property is used in AAS or digital twin systems.
 - Keep both fields concise (under 20 words each).
+- Do not infer facts not present in the property name, value, or unit.
 
 Return ONLY a JSON object. No explanation, no markdown, no extra text.
 
@@ -345,3 +350,48 @@ Example:
 {{"conceptual_definition": "Nominal voltage required for operating the asset.", "affordance": "Used to determine electrical compatibility in AAS Nameplate submodel."}}
 
 JSON:"""
+
+
+def build_batch_semantic_node_prompt(entities: list[dict]) -> str:
+    """여러 속성의 개념 정의와 용도를 한 번에 생성하는 프롬프트를 만든다."""
+    entity_lines: list[str] = []
+    for index, entity in enumerate(entities, start=1):
+        entity_lines.append(
+            "\n".join(
+                [
+                    f"Entity {index}:",
+                    f"  input_index: {index}",
+                    f"  name: {entity.get('raw_name', '')}",
+                    f"  value: {entity.get('raw_value', '')}",
+                    f"  unit: {entity.get('raw_unit', '')}",
+                    f"  source_reference: {entity.get('source_reference', '')}",
+                ]
+            )
+        )
+    entities_text = "\n\n".join(entity_lines)
+
+    return f"""You are an industrial asset ontology expert specializing in AAS (Asset Administration Shell).
+
+For each extracted asset property below, provide its conceptual definition and how it is used in digital twin systems.
+
+[Extracted Properties]
+{entities_text}
+
+Rules:
+- Return exactly one JSON object per input entity.
+- Preserve the exact input_index for every entity.
+- conceptual_definition: one sentence explaining what this property physically means.
+- affordance: one sentence explaining how this property is used in AAS or digital twin systems.
+- Keep both fields concise (under 20 words each).
+- Do not infer facts not present in the property name, value, unit, or source_reference.
+- If a property is generic or weakly named, describe only the limited meaning supported by the input.
+
+Return ONLY a JSON array. No explanation, no markdown, no extra text.
+
+Example:
+[
+  {{"input_index": 1, "conceptual_definition": "Nominal voltage required for operating the asset.", "affordance": "Used to determine electrical compatibility in AAS Nameplate submodel."}},
+  {{"input_index": 2, "conceptual_definition": "Mass of the asset under normal configuration.", "affordance": "Used for installation planning and technical data representation."}}
+]
+
+JSON array:"""

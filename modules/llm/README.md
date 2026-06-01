@@ -1,6 +1,6 @@
 # LLM 공통 인프라와 현재 파이프라인 연결
 
-Ollama 기반 로컬 LLM을 사용해 AAS 자동 생성 파이프라인의 문서 정제, 속성 추출, 의미 보강, 매칭, embedding 검색을 지원합니다.
+Gemini API와 Ollama embedding을 사용해 AAS 자동 생성 파이프라인의 문서 정제, 속성 추출, 의미 보강, 매칭, embedding 검색을 지원합니다.
 `modules/llm/`에는 공통 클라이언트와 프롬프트만 두고, 계층별 구현체는 프로젝트 구조에 맞춰 각 디렉토리에 배치합니다.
 
 ---
@@ -16,9 +16,9 @@ Ollama 기반 로컬 LLM을 사용해 AAS 자동 생성 파이프라인의 문�
         ↓
 [LLMSemanticNodeBuilder]      ← modules/semantic_node
         ↓
-[EmbeddingCandidateRetriever] ← modules/retrieval
+[HybridStandardsCandidateRetriever] ← modules/retrieval
         ↓
-[LLMMatcher 또는 skip_llm 매칭] ← modules/matching
+[LLMMatcher] ← modules/matching
         ↓
 [AAS 생성 → DT 등록]        
 ```
@@ -29,12 +29,12 @@ Ollama 기반 로컬 LLM을 사용해 AAS 자동 생성 파이프라인의 문�
 
 | 용도 | 모델 |
 |---|---|
-| Extraction / Semantic Node / Matching | `llama3.2` (Ollama) |
+| Extraction / Semantic Node / Matching | `gemini-2.5-flash` (Gemini API) |
 | Embedding | `nomic-embed-text` (Ollama) |
 
 **사전 설치 필요:**
 ```bash
-ollama pull llama3.2
+export GEMINI_API_KEY=...
 ollama pull nomic-embed-text
 ```
 
@@ -44,7 +44,8 @@ ollama pull nomic-embed-text
 
 | 파일 | 역할 |
 |---|---|
-| `ollama_client.py` | Ollama REST API 공통 클라이언트 |
+| `gemini_client.py` | Gemini generateContent API 공통 클라이언트 |
+| `ollama_client.py` | Ollama REST API embedding 클라이언트 |
 | `prompts.py` | LLM 프롬프트 템플릿 모음 |
 | `../extraction/llm_extractor.py` | 파이프라인 2단계: 속성 추출 |
 | `../semantic_node/llm_semantic_builder.py` | 파이프라인 3단계: 의미 보강 |
@@ -55,17 +56,28 @@ ollama pull nomic-embed-text
 
 ## 각 모듈 설명
 
-### `ollama_client.py` — 공통 클라이언트
+### `gemini_client.py` — Gemini 클라이언트
 
-모든 Ollama 호출의 단일 창구입니다. `interfaces/base_llm.py`의 `BaseLLM`과 `interfaces/base_embedding.py`의 `BaseEmbeddingModel`을 구현하므로, extraction/semantic/matching 계층은 Ollama 구체 타입이 아니라 `BaseLLM` 계약을 통해 사용합니다.
+`interfaces/base_llm.py`의 `BaseLLM`을 구현하므로 extraction/semantic/matching 계층은 Gemini 구체 타입이 아니라 `BaseLLM` 계약을 통해 사용합니다.
+
+```python
+from modules.llm import GeminiClient
+
+client = GeminiClient()
+client.generate("Return JSON only")
+client.generate_json("...")
+client.generate_json_list("...")
+client.is_available()
+```
+
+### `ollama_client.py` — embedding 클라이언트
+
+`interfaces/base_embedding.py`의 `BaseEmbeddingModel`을 구현합니다. 기본 embedding 모델은 `nomic-embed-text`입니다.
 
 ```python
 from modules.llm import OllamaClient
 
 client = OllamaClient()
-client.generate("안녕")                    # 텍스트 응답
-client.generate_json("...")               # dict 응답
-client.generate_json_list("...")          # list 응답
 client.embed("Rated Voltage V")           # 임베딩 벡터
 client.is_available()                     # 서버 상태 확인
 ```
@@ -106,7 +118,7 @@ client.is_available()                     # 서버 상태 확인
 
 **특이사항:**
 - LLM 응답이 빈 리스트일 경우 최대 3회 재시도
-- `raw_name` / `name` 키 모두 처리 (llama3.2 혼용 대응)
+- `raw_name` / `name` 키 모두 처리
 - bracket-only 값, 단위만 추출된 값, encoder resolution, 치수+무게단위 오분류, 낮은 confidence 항목을 필터링
 
 ---
@@ -115,8 +127,8 @@ client.is_available()                     # 서버 상태 확인
 
 **인터페이스:** `BaseSemanticNodeBuilder`
 
-추출된 속성마다 LLM이 개념 정의(conceptual_definition)와 용도(affordance)를 동적으로 생성합니다.
-현재 기본 파이프라인에서는 처리 시간을 줄이기 위해 `skip_enrichment=True`를 사용합니다.
+추출된 속성마다 Gemini API가 개념 정의(conceptual_definition)와 용도(affordance)를 동적으로 생성합니다.
+기본 파이프라인은 strict mode라서 실패 시 default builder로 내려가지 않고 중단합니다.
 
 ```
 입력:  list[ExtractedEntity]
@@ -162,7 +174,7 @@ client.is_available()                     # 서버 상태 확인
 1. `SemanticNode.eclass_irdi`가 있으면 같은 IRDI 후보를 score 1.0으로 우선 반환
 2. IRDI 매칭이 없으면 초기화 시 캐싱한 후보 임베딩과 query embedding의 코사인 유사도 계산
 3. 단위 일치와 alias exact/partial match에 boost 적용
-4. `nomic-embed-text` 없으면 `llama3.2`로 자동 fallback
+4. strict mode에서 embedding 호출이 실패하면 중단하고, `allow_module_fallback=True`일 때만 lexical scoring으로 fallback
 
 ---
 
@@ -189,24 +201,21 @@ node_matches = [self.matcher.match(node, candidate) for candidate in candidates]
 후보를 하나씩 받아 MatchResult 하나씩 반환하는 구조.
 
 **특이사항:**
-- llama3.2는 `match` boolean과 `score`를 모순되게 반환하는 경우가 있어 **score 기준으로 판단**
 - `score >= threshold` 이면 match=True (기본 threshold: 0.45)
-- 현재 기본 파이프라인은 `skip_llm=True`로 LLM matching 호출을 생략하고 embedding score threshold를 사용
+- 기본 파이프라인은 Gemini batch LLM matching을 사용하고, 오프라인 테스트 fallback에서만 similarity score threshold를 사용
 
 ---
 
 ## 현재 기본 파이프라인 연결
 
-`app/pipeline.py`의 `create_default_pipeline()`이 현재 LLM/embedding 구현을 기본으로 연결합니다.
+`app/pipeline.py`의 `create_default_pipeline()`이 strict mode로 구체 모듈을 연결합니다.
 
 ```text
-LLMExtractor
-→ LLMSemanticNodeBuilder(skip_enrichment=True)
-→ EmbeddingCandidateRetriever
-→ LLMMatcher(skip_llm=True)
+LLMExtractor(Gemini)
+→ LLMSemanticNodeBuilder(Gemini)
+→ HybridStandardsCandidateRetriever(nomic-embed-text)
+→ LLMMatcher(batch reranking)
 ```
-
-`app/main.py`에는 `create_llm_pipeline()` import가 남아 있지만 현재 `app/pipeline.py`에는 해당 factory가 정의되어 있지 않습니다. CLI의 `--pipeline llm/yolo/llm-yolo` 경로는 추가 정리가 필요합니다.
 
 ---
 
@@ -229,6 +238,7 @@ test_llm_matcher.py    threshold와 MatchResult 구조 검증
 기본 파이프라인 실행:
   semantic_nodes     = 8
   matched_properties = 8
+  mapping_validation = review
   aas_valid          = True
   dt_status          = success
   dt_validation      = passed

@@ -1,5 +1,5 @@
-"""DT Validation Layer 구현체 패키지."""
+"""AAS mapping validation layer implementations."""
 
-from modules.validation.default_validator import DefaultDTValidator
+from modules.validation.default_validator import DefaultMappingValidator
 
-__all__ = ["DefaultDTValidator"]
+__all__ = ["DefaultMappingValidator"]

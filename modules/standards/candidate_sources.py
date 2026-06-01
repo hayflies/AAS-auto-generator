@@ -21,27 +21,23 @@ MAPPABLE_ELEMENT_TYPES = {
 
 
 class CandidateSourceRegistry:
-    """Loads AAS property candidates from template, ECLASS, IEC CDD, and legacy data."""
+    """Loads AAS property candidates from IDTA templates, ECLASS, and IEC CDD."""
 
     def __init__(
         self,
         template_root: Path,
         eclass_path: Path,
         iec_cdd_path: Path,
-        project_property_path: Path | None = None,
     ) -> None:
         self.template_root = template_root
         self.eclass_path = eclass_path
         self.iec_cdd_path = iec_cdd_path
-        self.project_property_path = project_property_path
 
     def load_candidates(self) -> list[AASPropertyCandidate]:
         candidates: list[AASPropertyCandidate] = []
         candidates.extend(SubmodelTemplateRepository(self.template_root).load_candidates())
         candidates.extend(EclassDictionaryRepository(self.eclass_path).load_candidates())
         candidates.extend(IecCddDictionaryRepository(self.iec_cdd_path).load_candidates())
-        if self.project_property_path:
-            candidates.extend(ProjectPropertyRepository(self.project_property_path).load_candidates())
         return self._dedupe(candidates)
 
     def _dedupe(self, candidates: list[AASPropertyCandidate]) -> list[AASPropertyCandidate]:
@@ -218,7 +214,7 @@ class EclassDictionaryRepository:
 
 
 class IecCddDictionaryRepository:
-    """Loads IEC CDD seed records from a local JSON source."""
+    """Loads IEC CDD cache records from a local JSON source."""
 
     def __init__(self, path: Path) -> None:
         self.path = path
@@ -248,41 +244,6 @@ class IecCddDictionaryRepository:
                     value_type=entry.get("value_type") or _aas_value_type(entry.get("datatype")),
                     definition=entry.get("definition"),
                     source_priority=0.7,
-                )
-            )
-        return candidates
-
-
-class ProjectPropertyRepository:
-    """Keeps the old project-level properties.json available as a compatibility source."""
-
-    def __init__(self, path: Path) -> None:
-        self.path = path
-
-    def load_candidates(self) -> list[AASPropertyCandidate]:
-        data = _load_json(self.path)
-        if not isinstance(data, dict):
-            return []
-        candidates: list[AASPropertyCandidate] = []
-        for item in data.get("properties", []):
-            if not isinstance(item, dict):
-                continue
-            candidates.append(
-                AASPropertyCandidate(
-                    candidate_id=str(item["candidate_id"]),
-                    idShort=str(item["idShort"]),
-                    description=str(item.get("description") or item["idShort"]),
-                    submodel=str(item.get("submodel") or "TechnicalData"),
-                    semantic_id=item.get("semantic_id"),
-                    preferred_unit=item.get("preferred_unit"),
-                    aliases=list(item.get("aliases", [])),
-                    eclass_irdi=item.get("eclass_irdi"),
-                    source="project_repository",
-                    path=f"project/{item['candidate_id']}",
-                    element_type=str(item.get("element_type") or "Property"),
-                    value_type=item.get("value_type"),
-                    definition=item.get("description"),
-                    source_priority=0.55,
                 )
             )
         return candidates

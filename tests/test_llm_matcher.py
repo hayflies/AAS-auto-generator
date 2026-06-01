@@ -86,8 +86,7 @@ class LLMMatcherTest(unittest.TestCase):
     def test_obvious_match(self) -> None:
         """같은 의미인 두 속성은 높은 점수를 받는다.
 
-        llama3.2는 소형 모델이라 match=True를 보장하기 어렵다.
-        대신 score가 mismatch보다 유의미하게 높은지(>= 0.3) 확인한다.
+        모델별 boolean 보정 차이를 피하기 위해 score가 유의미하게 높은지 확인한다.
         """
         node = _make_node("Rated Voltage", "24", "V")
         candidate = _make_candidate("NominalVoltage", "Nominal operating voltage of the device in volts")

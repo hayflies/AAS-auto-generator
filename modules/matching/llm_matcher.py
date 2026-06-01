@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from app.models import AASPropertyCandidate, MatchResult, SemanticNode
 from interfaces.base_matcher import BaseEntityMatcher
-from interfaces.base_llm import LLMConnectionError
+from interfaces.base_llm import BaseLLM, LLMConnectionError, LLMResponseFormatError
 from modules.llm.ollama_client import OllamaClient
 from modules.llm.prompts import build_batch_matching_prompt, build_matching_prompt
 
@@ -21,22 +21,25 @@ DEFAULT_MATCH_THRESHOLD = 0.5
 
 
 class LLMMatcher(BaseEntityMatcher):
-    """Ollama LLM을 사용해 SemanticNode와 AAS Property 후보의 의미 일치를 판단한다.
+    """LLM을 사용해 SemanticNode와 AAS Property 후보의 의미 일치를 판단한다.
 
     Args:
-        client: OllamaClient 인스턴스. 기본값은 새 인스턴스 생성.
+        client: BaseLLM 인스턴스. 기본값은 새 OllamaClient 인스턴스.
         threshold: 이 점수 미만이면 match=False로 처리한다. 기본값 0.5.
+        fail_fast: True이면 LLM 실패 시 match=False fallback 대신 예외를 전파한다.
     """
 
     def __init__(
         self,
-        client: OllamaClient | None = None,
+        client: BaseLLM | None = None,
         threshold: float = DEFAULT_MATCH_THRESHOLD,
         skip_llm: bool = False,
+        fail_fast: bool = False,
     ):
         self.client = client or OllamaClient()
         self.threshold = threshold
         self.skip_llm = skip_llm
+        self.fail_fast = fail_fast
 
     def match(
         self,
@@ -46,7 +49,7 @@ class LLMMatcher(BaseEntityMatcher):
         """source SemanticNode와 target AASPropertyCandidate의 의미 일치 여부를 판단한다.
 
         LLM에 두 속성을 보내고 match/score/reason을 받아 MatchResult로 반환한다.
-        Ollama 연결 실패 시 match=False인 MatchResult를 반환한다 (예외 전파 안 함).
+        fail_fast=False이면 LLM 연결 실패 시 match=False인 MatchResult를 반환한다.
         """
         # skip_llm=True이면 임베딩 유사도로만 판단한다.
         # similarity_score가 EMBED_THRESHOLD 이상일 때만 match=True 처리.
@@ -71,21 +74,25 @@ class LLMMatcher(BaseEntityMatcher):
         try:
             response = self.client.generate_json(prompt, fallback={})
         except LLMConnectionError as e:
-            print(f"[LLMMatcher] Ollama 연결 실패: {e}")
+            if self.fail_fast:
+                raise
+            print(f"[LLMMatcher] LLM 연결 실패: {e}")
             return MatchResult(
                 semantic_node_id=source_entity.semantic_node_id,
                 selected_candidate_id=None,
                 match=False,
                 match_score=0.0,
-                reason="Ollama connection failed",
+                reason="LLM connection failed",
                 candidate=None,
             )
+
+        if self.fail_fast and "score" not in response:
+            raise LLMResponseFormatError("LLM matching response must include a score field.")
 
         score = self._score(response.get("score"))
         reason = str(response.get("reason", ""))
 
-        # score를 기준으로 판단 (llama3.2는 boolean과 score를 모순되게 반환하는 경우가 있어
-        # boolean match 필드 대신 score로 결정한다)
+        # boolean match 필드보다 calibration 가능한 score를 기준으로 결정한다.
         is_match = score >= self.threshold
 
         return MatchResult(
@@ -121,18 +128,23 @@ class LLMMatcher(BaseEntityMatcher):
         try:
             response = self.client.generate_json_list(prompt, fallback=[])
         except LLMConnectionError as e:
-            print(f"[LLMMatcher] Ollama 후보군 재랭킹 실패: {e}")
+            if self.fail_fast:
+                raise
+            print(f"[LLMMatcher] LLM 후보군 재랭킹 실패: {e}")
             return [
                 MatchResult(
                     semantic_node_id=source_entity.semantic_node_id,
                     selected_candidate_id=None,
                     match=False,
                     match_score=0.0,
-                    reason="Ollama connection failed during batch reranking",
+                    reason="LLM connection failed during batch reranking",
                     candidate=None,
                 )
                 for _ in candidates
             ]
+
+        if self.fail_fast and not response:
+            raise LLMResponseFormatError("LLM batch reranking returned an empty JSON array.")
 
         scored_by_key = self._response_index(response)
         results: list[MatchResult] = []
@@ -143,6 +155,10 @@ class LLMMatcher(BaseEntityMatcher):
                 or scored_by_key.get(candidate.idShort.lower())
             )
             if item is None:
+                if self.fail_fast:
+                    raise LLMResponseFormatError(
+                        f"LLM batch response omitted candidate {candidate.candidate_id}."
+                    )
                 results.append(
                     MatchResult(
                         semantic_node_id=source_entity.semantic_node_id,

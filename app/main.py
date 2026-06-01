@@ -37,6 +37,7 @@ def main() -> None:
                 f"asset_id={result.asset_package.asset_id}",
                 f"semantic_nodes={len(result.semantic_nodes)}",
                 f"matched_properties={len(result.matched_properties)}",
+                f"mapping_validation={result.mapping_validation.overall_status}",
                 f"aas_valid={result.aas_validation['is_valid']}",
                 f"dt_status={result.dt_registration.registration_status}",
                 f"dt_validation={result.dt_validation.overall_status}",
@@ -64,8 +65,8 @@ def _parse_args() -> argparse.Namespace:
         choices=("default", "llm", "yolo", "llm-yolo"),
         default="default",
         help=(
-            "Pipeline implementation set. 'default' has no external runtime "
-            "dependencies; LLM modes require Ollama; YOLO modes require ultralytics."
+            "Pipeline implementation set. Default/LLM modes require Ollama llama3.2 "
+            "and nomic-embed-text; YOLO modes also require ultralytics."
         ),
     )
     return parser.parse_args()

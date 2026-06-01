@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import math
+from collections.abc import Callable
 from pathlib import Path
 
 from app.models import AASPropertyCandidate, SemanticNode
@@ -10,12 +11,16 @@ from interfaces.base_retriever import BaseCandidateRetriever
 from modules.standards import CandidateSourceRegistry
 
 
+MAX_EMBEDDING_TEXT_CHARS = 1200
+
+
 class HybridStandardsCandidateRetriever(BaseCandidateRetriever):
     """Retrieves candidates from IDTA templates, ECLASS, and IEC CDD.
 
-    Stage 1 keeps recall high with lexical scoring and optional embeddings.
-    Stage 2 reranks using deterministic AAS signals: exact IRDI, template source,
-    unit compatibility, value type compatibility, and alias/name overlap.
+    When embeddings are available, candidates are ranked by cosine similarity only.
+    Lexical scoring is kept as an offline fallback for runs without an embedding
+    model. This keeps embedding-model comparisons from being biased by a lexical
+    pre-filter or deterministic post-ranking rules.
     """
 
     def __init__(
@@ -23,57 +28,85 @@ class HybridStandardsCandidateRetriever(BaseCandidateRetriever):
         template_root: Path,
         eclass_path: Path,
         iec_cdd_path: Path,
-        project_property_path: Path | None = None,
         embedding_model: BaseEmbeddingModel | None = None,
         use_embeddings: bool = False,
+        fail_on_embedding_error: bool = False,
+        progress_callback: Callable[[str, int, int], None] | None = None,
     ) -> None:
         self.embedding_model = embedding_model
         self.use_embeddings = use_embeddings and embedding_model is not None
+        self.fail_on_embedding_error = fail_on_embedding_error
+        self.progress_callback = progress_callback
         self._candidates = CandidateSourceRegistry(
             template_root=template_root,
             eclass_path=eclass_path,
             iec_cdd_path=iec_cdd_path,
-            project_property_path=project_property_path,
         ).load_candidates()
         self._candidate_embedding_cache: dict[str, list[float] | None] = {}
+        self._candidate_embedding_total = len(
+            {candidate.candidate_id for candidate in self._candidates}
+        )
 
     def retrieve(self, semantic_node: SemanticNode, top_k: int) -> list[AASPropertyCandidate]:
         if not self._candidates:
             return []
 
         query_text = self._node_text(semantic_node)
-        query_tokens = tokenize(query_text)
-        query_embedding = None
         if self.use_embeddings:
-            try:
-                query_embedding = self.embedding_model.embed(query_text)  # type: ignore[union-attr]
-            except Exception as exc:
-                print(f"[HybridRetriever] Embedding query failed, lexical fallback: {exc}")
-                query_embedding = None
+            return self._retrieve_by_embedding(semantic_node, query_text, top_k)
+
+        return self._retrieve_by_lexical_fallback(semantic_node, query_text, top_k)
+
+    def _retrieve_by_embedding(
+        self,
+        semantic_node: SemanticNode,
+        query_text: str,
+        top_k: int,
+    ) -> list[AASPropertyCandidate]:
+        try:
+            query_embedding = self.embedding_model.embed(query_text)  # type: ignore[union-attr]
+        except Exception as exc:
+            if self.fail_on_embedding_error:
+                raise
+            print(f"[HybridRetriever] Embedding query failed, lexical fallback: {exc}")
+            return self._retrieve_by_lexical_fallback(semantic_node, query_text, top_k)
+
+        scored: list[tuple[AASPropertyCandidate, float]] = []
+        for candidate in self._candidates:
+            was_cached = candidate.candidate_id in self._candidate_embedding_cache
+            candidate_embedding = self._candidate_embedding(candidate)
+            if self.progress_callback and not was_cached:
+                self.progress_callback(
+                    "candidate embeddings",
+                    len(self._candidate_embedding_cache),
+                    self._candidate_embedding_total,
+                )
+            if candidate_embedding is None:
+                continue
+            score = _cosine_similarity(query_embedding, candidate_embedding)
+            cloned = self._clone_candidate(candidate)
+            cloned.similarity_score = score
+            scored.append((cloned, score))
+
+        scored.sort(key=lambda item: item[1], reverse=True)
+        return [candidate for candidate, _ in self._dedupe_ranked(scored)[:top_k]]
+
+    def _retrieve_by_lexical_fallback(
+        self,
+        semantic_node: SemanticNode,
+        query_text: str,
+        top_k: int,
+    ) -> list[AASPropertyCandidate]:
+        query_tokens = tokenize(query_text)
 
         lexical_scored: list[tuple[int, AASPropertyCandidate, float]] = []
         for index, candidate in enumerate(self._candidates):
             lexical = self._lexical_score(query_tokens, semantic_node, candidate)
             lexical_scored.append((index, candidate, lexical))
 
-        embedding_pool = {
-            index
-            for index, _, _ in sorted(
-                lexical_scored,
-                key=lambda item: item[2],
-                reverse=True,
-            )[: max(top_k * 12, 80)]
-        }
-
         scored: list[tuple[AASPropertyCandidate, float]] = []
         for index, candidate, lexical in lexical_scored:
-            embedding = 0.0
-            if query_embedding is not None and index in embedding_pool:
-                candidate_embedding = self._candidate_embedding(candidate)
-                if candidate_embedding is not None:
-                    embedding = _cosine_similarity(query_embedding, candidate_embedding)
-            stage_one = max(lexical, embedding)
-            score = self._rerank(stage_one, semantic_node, candidate)
+            score = self._rerank(lexical, semantic_node, candidate)
             cloned = self._clone_candidate(candidate)
             cloned.similarity_score = score
             scored.append((cloned, score))
@@ -87,7 +120,11 @@ class HybridStandardsCandidateRetriever(BaseCandidateRetriever):
             return cached
         try:
             cached = self.embedding_model.embed(self._candidate_text(candidate))  # type: ignore[union-attr]
-        except Exception:
+        except Exception as exc:
+            print(
+                "[HybridRetriever] Candidate embedding skipped "
+                f"({candidate.candidate_id}): {exc}"
+            )
             cached = None
         self._candidate_embedding_cache[candidate.candidate_id] = cached
         return cached
@@ -159,33 +196,37 @@ class HybridStandardsCandidateRetriever(BaseCandidateRetriever):
         return max(0.0, min(score, 0.97))
 
     def _node_text(self, semantic_node: SemanticNode) -> str:
-        return " ".join(
-            part
-            for part in [
-                semantic_node.name,
-                semantic_node.conceptual_definition,
-                semantic_node.affordance,
-                semantic_node.unit or "",
-                semantic_node.eclass_irdi or "",
-            ]
-            if part
+        return _compact_embedding_text(
+            " ".join(
+                part
+                for part in [
+                    semantic_node.name,
+                    semantic_node.conceptual_definition,
+                    semantic_node.affordance,
+                    semantic_node.unit or "",
+                    semantic_node.eclass_irdi or "",
+                ]
+                if part
+            )
         )
 
     def _candidate_text(self, candidate: AASPropertyCandidate) -> str:
-        return " ".join(
-            part
-            for part in [
-                candidate.idShort,
-                candidate.description,
-                candidate.definition or "",
-                candidate.submodel,
-                candidate.path or "",
-                " ".join(candidate.aliases),
-                candidate.preferred_unit or "",
-                candidate.semantic_id or "",
-                candidate.eclass_irdi or "",
-            ]
-            if part
+        return _compact_embedding_text(
+            " ".join(
+                part
+                for part in [
+                    candidate.idShort,
+                    _clip_text(candidate.description, 320),
+                    _clip_text(candidate.definition or "", 320),
+                    candidate.submodel,
+                    candidate.path or "",
+                    " ".join(candidate.aliases[:8]),
+                    candidate.preferred_unit or "",
+                    candidate.semantic_id or "",
+                    candidate.eclass_irdi or "",
+                ]
+                if part
+            )
         )
 
     def _dedupe_ranked(
@@ -202,6 +243,17 @@ class HybridStandardsCandidateRetriever(BaseCandidateRetriever):
 
     def _clone_candidate(self, candidate: AASPropertyCandidate) -> AASPropertyCandidate:
         return AASPropertyCandidate(**candidate.to_dict())
+
+
+def _compact_embedding_text(text: str) -> str:
+    compact = " ".join(str(text or "").split())
+    return _clip_text(compact, MAX_EMBEDDING_TEXT_CHARS)
+
+
+def _clip_text(text: str, max_chars: int) -> str:
+    if len(text) <= max_chars:
+        return text
+    return text[:max_chars].rsplit(" ", 1)[0] or text[:max_chars]
 
 
 def _contains_meaningful_phrase(a: str, b: str) -> bool:
@@ -262,7 +314,6 @@ def _exact_identifier_score(candidate: AASPropertyCandidate) -> float:
         return 0.965
     priority = {
         "submodel_template": 1.0,
-        "project_repository": 0.995,
         "iec_cdd_dictionary": 0.985,
         "eclass_dictionary": 0.98,
     }

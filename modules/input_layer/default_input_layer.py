@@ -58,7 +58,7 @@ class DefaultInputLayer(BaseInputLayer):
 
         # 입력 시스템마다 필드명이 다를 수 있어 대표 alias를 함께 처리한다.
         images = list(raw.get("images") or raw.get("asset_images") or [])
-        raw_documents = list(raw.get("documents") or raw.get("manual_files") or [])
+        raw_documents = self._document_inputs(raw)
         raw_documents.extend(self._free_text_inputs(raw))
 
         # PDF / 이미지 경로는 텍스트로 변환한다. 이미 텍스트인 항목은 그대로 유지한다.
@@ -95,12 +95,31 @@ class DefaultInputLayer(BaseInputLayer):
                 text_values.extend(str(item).strip() for item in value if str(item).strip())
         return text_values
 
+    def _document_inputs(self, raw: dict[str, Any]) -> list[str]:
+        """매뉴얼/PDF 입력 alias를 모두 documents 입력으로 수집한다."""
+        documents: list[str] = []
+        for key in (
+            "documents",
+            "manual_files",
+            "manual_pdfs",
+            "user_manuals",
+            "pdf_files",
+            "datasheets",
+            "specification_files",
+        ):
+            value = raw.get(key)
+            if isinstance(value, str) and value.strip():
+                documents.append(value.strip())
+            elif isinstance(value, (list, tuple)):
+                documents.extend(str(item).strip() for item in value if str(item).strip())
+        return documents
+
     def _process_documents(self, raw_documents: list) -> list:
         """문서 목록을 순회하며 파일 경로는 텍스트로 변환하고, 텍스트는 그대로 유지한다.
 
         - 파일 경로(.pdf, .jpg 등)인 항목 → DocumentProcessor로 텍스트 추출
         - 이미 텍스트인 항목 → 그대로 반환
-        - 변환 실패 항목 → 건너뜀 (파이프라인 중단 없음)
+        - 변환 실패 항목 → strict 모드에서는 예외, fallback 모드에서는 건너뜀
         """
         processed: list[str] = []
 

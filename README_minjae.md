@@ -13,18 +13,20 @@
     ↓
 [1] 입력 처리 — EasyOCR / pdfplumber / 텍스트 파싱 → AssetPackage
     ↓
-[2] 속성 추출 — Ollama LLM(llama3.2)으로 키-값 속성 추출 + 가비지 필터 5종
+[2] 속성 추출 — Gemini API로 키-값 속성 추출 + 가비지 필터 5종
     ↓
 [3] Semantic Node 생성 — LLM 의미 설명 생성 + ECLASS IRDI 사전 조회
     ↓
 [4] DDMS 계층적 매칭
       ① ECLASS IRDI 정확 매칭 (score=1.0, 임베딩 스킵)
       ② 임베딩 코사인 유사도 + alias 부스트 (nomic-embed-text)
-      ③ LLM 정밀 매핑 (fallback)
+      ③ Gemini API 기반 LLM 정밀 매핑
     ↓
 [5] AAS 구조 생성 — IDTA 서브모델 템플릿(DigitalNameplate / TechnicalData) 배치
     ↓
-[6] 디지털 트윈 등록 및 동작 검증
+[6] AAS 매핑 품질 검증 — DDMS식 Hit@K / MRR@K / coverage / template support
+    ↓
+[7] 디지털 트윈 등록 및 보조 동작 검증
 ```
 
 ### 가비지 필터 (OCR 노이즈 제거)
@@ -39,7 +41,7 @@
 
 ### ECLASS IRDI 기반 결정론적 매칭
 
-IDTA 공식 템플릿(Digital Nameplate 3/0, TechnicalData 1/2)에서 수집한 21개 표준 속성 IRDI를 사용합니다. 속성명이 IRDI 사전의 alias와 일치하면 임베딩 계산 없이 score=1.0으로 즉시 매핑됩니다. IRDI가 없는 로봇 특화 속성(DOF, Payload 등)은 임베딩 fallback으로 처리합니다.
+IDTA 공식 템플릿, ECLASS, IEC CDD cache에서 수집한 표준 속성 IRDI를 사용합니다. 속성명이 IRDI 사전의 alias와 일치하면 임베딩 계산 없이 높은 점수로 우선 매핑됩니다. IRDI가 없는 로봇 특화 속성(DOF, Payload 등)은 embedding 후보 검색과 LLM 재랭킹으로 처리합니다.
 
 ## 검증 결과
 
@@ -60,30 +62,31 @@ IDTA 공식 템플릿(Digital Nameplate 3/0, TechnicalData 1/2)에서 수집한 
 Input
 → DefaultInputLayer          # 입력 alias 정규화, DocumentProcessor 호출
 → DocumentProcessor          # PDF(pdfplumber) / Image OCR(easyocr)
-→ LLMExtractor               # Ollama LLM 속성 추출 + 가비지 필터
+→ LLMExtractor               # Gemini API 속성 추출 + 가비지 필터
 → LLMSemanticNodeBuilder     # ECLASS IRDI 할당 + 의미 설명 생성
 → HybridStandardsCandidateRetriever  # IRDI 매칭 → 임베딩 → lexical
 → LLMMatcher.match_candidates        # 후보 재랭킹
 → TemplateAwareAASMapper     # Submodel 배치 (deterministic / LLM)
 → JsonAASGenerator           # AAS JSON + ConceptDescriptions 생성
-→ DT 등록 및 검증
+→ DefaultMappingValidator    # AAS 매핑 품질 검증
+→ DT 등록 및 보조 검증
 ```
 
 ## Pipeline Modes
 
 | Mode | 설명 | 외부 의존 |
 |---|---|---|
-| `default` | 수동 입력, lexical/IRDI 검색, deterministic 매칭 | 없음 |
-| `llm` | LLM 추출, 임베딩 검색, LLM 재랭킹·배치 | Ollama |
-| `yolo` | default + YOLO CV 명판 탐지 | ultralytics |
-| `llm-yolo` | llm + YOLO | Ollama, ultralytics |
+| `default` | Gemini 추출/의미생성/재랭킹 + nomic embedding | Gemini API key, Ollama |
+| `llm` | default와 동일한 strict composition | Gemini API key, Ollama |
+| `yolo` | default + YOLO CV 명판 탐지 | default 의존 + ultralytics |
+| `llm-yolo` | llm + YOLO | default 의존 + ultralytics |
 
 ## 실행 방법
 
 ### 사전 준비
 
 ```bash
-ollama pull llama3.2
+export GEMINI_API_KEY=...
 ollama pull nomic-embed-text
 pip install fastapi uvicorn pdfplumber easyocr pillow numpy
 ```
@@ -124,7 +127,7 @@ python run_from_image.py --files data/input/nameplate.jpg --name "Robot Arm" --m
 |---|---|
 | `repositories/submodel_templates/admin_shell_io_submodel_templates/` | IDTA 공식 Submodel Templates 전체 |
 | `repositories/eclass_dictionary/eclass_properties.json` | ECLASS IRDI 사전 (21개 속성, 공식 템플릿 기반) |
-| `repositories/iec_cdd_dictionary/iec_cdd_properties.json` | IEC CDD 속성 사전 |
+| `repositories/iec_cdd_dictionary/iec_cdd_properties.json` | IDTA 템플릿 IEC reference 기반 IEC CDD 보조 후보 cache |
 
 ## 테스트
 

@@ -1,4 +1,4 @@
-"""Ollama 기반 LLM 공통 인프라 패키지.
+"""LLM 공통 인프라 패키지.
 
 계층별 구현체는 각 기능 디렉토리에 둔다.
 
@@ -10,4 +10,7 @@
 
 from modules.llm.ollama_client import OllamaClient, OllamaConnectionError
 
-__all__ = ["OllamaClient", "OllamaConnectionError"]
+__all__ = [
+    "OllamaClient",
+    "OllamaConnectionError",
+]

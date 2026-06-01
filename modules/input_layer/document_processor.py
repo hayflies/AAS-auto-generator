@@ -4,8 +4,8 @@
     - PDF  : pdfplumber 사용
     - 이미지: easyocr 사용 (JPG, PNG, BMP, TIFF 등)
 
-두 라이브러리 모두 선택적 의존성이다.
-설치되어 있지 않으면 ImportError 없이 경고만 출력하고 원본 경로 문자열을 반환한다.
+두 라이브러리 모두 선택적 의존성이다. strict/fail-fast 실행에서는 설치나 추출 실패를
+예외로 올려 파이프라인을 중단하고, fallback 실행에서만 경고 후 빈 결과를 반환한다.
 
 설치 방법:
     pip install pdfplumber easyocr
@@ -18,6 +18,7 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
+from interfaces.base_llm import BaseLLM
 from modules.llm.ollama_client import OllamaClient
 from modules.llm.prompts import build_text_cleaning_prompt
 
@@ -26,23 +27,28 @@ _IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".bmp", ".tiff", ".tif", ".webp"}
 
 
 class DocumentProcessor:
-    """PDF / 이미지를 텍스트로 변환하고 llama3.2로 정제한다.
+    """PDF / 이미지를 텍스트로 변환하고 LLM으로 정제한다.
 
     Args:
-        client: OllamaClient 인스턴스. 기본값은 새 인스턴스 생성.
+        client: BaseLLM 인스턴스. 기본값은 새 OllamaClient 인스턴스.
         ocr_languages: easyocr 언어 목록. 기본값 ['en'] (영문 명판).
         skip_llm_cleaning: True이면 LLM 정제 단계를 건너뛴다 (테스트용).
+        fail_fast: True이면 LLM 정제 실패 시 원문 fallback 대신 예외를 전파한다.
     """
 
     def __init__(
         self,
-        client: OllamaClient | None = None,
+        client: BaseLLM | None = None,
         ocr_languages: list[str] | None = None,
         skip_llm_cleaning: bool = False,
+        fail_fast: bool = False,
+        max_llm_cleaning_chars: int = 12000,
     ):
         self.client = client or OllamaClient()
         self.ocr_languages = ocr_languages or ["en"]
         self.skip_llm_cleaning = skip_llm_cleaning
+        self.fail_fast = fail_fast
+        self.max_llm_cleaning_chars = max_llm_cleaning_chars
         self._ocr_reader = None  # lazy init (easyocr 모델 로딩이 느림)
 
     # ------------------------------------------------------------------ #
@@ -69,7 +75,10 @@ class DocumentProcessor:
         """PDF 파일에서 텍스트를 추출하고 LLM으로 정제한다."""
         raw_text = self._extract_pdf_text(pdf_path)
         if not raw_text.strip():
-            print(f"[DocumentProcessor] PDF에서 텍스트를 추출하지 못함: {pdf_path}")
+            message = f"[DocumentProcessor] PDF에서 텍스트를 추출하지 못함: {pdf_path}"
+            if self.fail_fast:
+                raise RuntimeError(message)
+            print(message)
             return ""
         return self._clean_with_llm(raw_text) if not self.skip_llm_cleaning else raw_text
 
@@ -86,27 +95,97 @@ class DocumentProcessor:
     # ------------------------------------------------------------------ #
 
     def _extract_pdf_text(self, pdf_path: str) -> str:
-        """pdfplumber로 PDF 전체 텍스트를 추출한다."""
+        """pdfplumber로 PDF 본문과 표를 페이지 단위 provenance와 함께 추출한다."""
+        if not Path(pdf_path).exists():
+            message = f"[DocumentProcessor] PDF 파일이 존재하지 않습니다: {pdf_path}"
+            if self.fail_fast:
+                raise FileNotFoundError(message)
+            print(message)
+            return ""
+
         try:
             import pdfplumber  # type: ignore
         except ImportError:
-            print(
-                "[DocumentProcessor] pdfplumber가 설치되어 있지 않습니다.\n"
-                "  설치: pip install pdfplumber"
-            )
-            return ""
+            return self._extract_pdf_text_with_pypdf(pdf_path)
 
         try:
             lines: list[str] = []
             with pdfplumber.open(pdf_path) as pdf:
-                for page in pdf.pages:
-                    text = page.extract_text()
-                    if text:
-                        lines.append(text.strip())
-            return "\n".join(lines)
+                lines.append(f"[PDF_FILE] {os.path.basename(pdf_path)}")
+                for page_index, page in enumerate(pdf.pages, start=1):
+                    try:
+                        text = self._page_text(page)
+                        if text:
+                            lines.append(f"[PDF_PAGE {page_index}]\n{text.strip()}")
+                        for table_index, table in enumerate(page.extract_tables() or [], start=1):
+                            formatted_table = self._format_pdf_table(table)
+                            if formatted_table:
+                                lines.append(
+                                    f"[PDF_TABLE {page_index}.{table_index}]\n{formatted_table}"
+                                )
+                    except Exception as page_error:
+                        if self.fail_fast:
+                            raise RuntimeError(
+                                f"[DocumentProcessor] PDF page {page_index} 처리 오류: {page_error}"
+                            ) from page_error
+                        print(f"[DocumentProcessor] PDF page {page_index} 처리 오류: {page_error}")
+            return "\n\n".join(lines)
         except Exception as e:
+            if self.fail_fast:
+                raise RuntimeError(f"[DocumentProcessor] PDF 처리 오류: {e}") from e
             print(f"[DocumentProcessor] PDF 처리 오류: {e}")
             return ""
+
+    def _extract_pdf_text_with_pypdf(self, pdf_path: str) -> str:
+        """pypdf fallback for environments without pdfplumber table extraction."""
+
+        try:
+            from pypdf import PdfReader  # type: ignore
+        except ImportError:
+            message = (
+                "[DocumentProcessor] PDF 텍스트 추출 라이브러리가 없습니다.\n"
+                "  설치: pip install pdfplumber 또는 pip install pypdf"
+            )
+            if self.fail_fast:
+                raise ImportError(message)
+            print(message)
+            return ""
+
+        try:
+            reader = PdfReader(pdf_path)
+            lines = [f"[PDF_FILE] {os.path.basename(pdf_path)}"]
+            for page_index, page in enumerate(reader.pages, start=1):
+                text = page.extract_text() or ""
+                if text.strip():
+                    lines.append(f"[PDF_PAGE {page_index}]\n{text.strip()}")
+            return "\n\n".join(lines)
+        except Exception as exc:
+            if self.fail_fast:
+                raise RuntimeError(f"[DocumentProcessor] pypdf PDF 처리 오류: {exc}") from exc
+            print(f"[DocumentProcessor] pypdf PDF 처리 오류: {exc}")
+            return ""
+
+    @staticmethod
+    def _page_text(page: object) -> str:
+        """pdfplumber page에서 가능한 한 레이아웃을 보존해 텍스트를 추출한다."""
+        try:
+            text = page.extract_text(layout=True)  # type: ignore[attr-defined]
+        except TypeError:
+            text = page.extract_text()  # type: ignore[attr-defined]
+        if text:
+            return str(text)
+        fallback = page.extract_text()  # type: ignore[attr-defined]
+        return str(fallback or "")
+
+    @staticmethod
+    def _format_pdf_table(table: list[list[object]]) -> str:
+        """PDF 표를 LLM이 읽기 쉬운 pipe-separated 텍스트로 변환한다."""
+        rows: list[str] = []
+        for row in table:
+            cells = [str(cell or "").strip().replace("\n", " ") for cell in row]
+            if any(cells):
+                rows.append(" | ".join(cells))
+        return "\n".join(rows)
 
     def _extract_image_text(self, image_path: str) -> str:
         """easyocr로 이미지에서 텍스트를 추출한다."""
@@ -213,9 +292,11 @@ class DocumentProcessor:
         return "\n".join(lines)
 
     def _clean_with_llm(self, raw_text: str) -> str:
-        """llama3.2로 노이즈를 제거하고 산업 속성 텍스트만 남긴다."""
+        """LLM으로 노이즈를 제거하고 산업 속성 텍스트만 남긴다."""
         # 텍스트가 너무 짧으면 정제 불필요
         if len(raw_text.strip()) < 10:
+            return raw_text
+        if len(raw_text) > self.max_llm_cleaning_chars:
             return raw_text
 
         prompt = build_text_cleaning_prompt(raw_text)
@@ -223,5 +304,7 @@ class DocumentProcessor:
             cleaned = self.client.generate(prompt)
             return cleaned.strip() if cleaned else raw_text
         except Exception as e:
+            if self.fail_fast:
+                raise
             print(f"[DocumentProcessor] LLM 정제 실패, 원본 텍스트 사용: {e}")
             return raw_text

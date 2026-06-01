@@ -31,6 +31,20 @@ class FakeExtractionClient:
                 "raw_unit": "kg",
                 "confidence": 0.88,
             },
+            {
+                "raw_name": "https",
+                "raw_value": "1",
+                "raw_unit": "/",
+                "confidence": 0.99,
+                "source_reference": "[PDF_PAGE 1] https://example.com/page/1",
+            },
+            {
+                "raw_name": "USB cable",
+                "raw_value": "1",
+                "raw_unit": None,
+                "confidence": 0.99,
+                "source_reference": "[PDF_TABLE 2.1] Item | Qty",
+            },
         ]
 
 
@@ -107,6 +121,13 @@ class LLMExtractorTest(unittest.TestCase):
         names = [e.raw_name.lower() for e in result]
         has_voltage = any("voltage" in n or "volt" in n for n in names)
         self.assertTrue(has_voltage, f"전압 속성이 추출되지 않았습니다. 추출된 속성: {names}")
+
+    def test_extract_filters_pdf_web_and_bom_noise(self) -> None:
+        """웹페이지 URL 조각과 BOM 수량 행은 entity에서 제거한다."""
+        result = self.extractor.extract(self.sample_package)
+        names = {e.raw_name.lower() for e in result}
+        self.assertNotIn("https", names)
+        self.assertNotIn("usb cable", names)
 
 
 if __name__ == "__main__":

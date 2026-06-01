@@ -28,15 +28,15 @@ DocumentProcessor
 Output: cleaned text
 - PDF: pdfplumber
 - Image OCR: easyocr
-- OCR/PDF text cleaning: Ollama LLM, 사용 가능할 때
+- OCR/PDF text cleaning: Gemini API
 
         |
         v
 
 Extractor
 Output: ExtractedEntity[]
-- default: ManualInputExtractor
-- llm: LLMExtractor
+- default/llm: LLMExtractor with Gemini API
+- allow_module_fallback=True 테스트 경로: ManualInputExtractor
 
         |
         v
@@ -44,7 +44,7 @@ Output: ExtractedEntity[]
 LLMSemanticNodeBuilder + ValueNormalizer
 Output: SemanticNode[]
 - name/value/unit/value_type 정규화
-- conceptual_definition, affordance 생성 또는 fallback
+- Gemini API로 conceptual_definition, affordance 생성
 - ECLASS alias 사전으로 eclass_irdi 보강
 
         |
@@ -59,7 +59,7 @@ Sources:
 Output: top-k AASPropertyCandidate[]
 - ECLASS/semanticId exact match 우선
 - lexical search
-- Ollama embedding search, llm pipeline에서 Ollama 사용 가능할 때
+- nomic-embed-text embedding search via Ollama
 
         |
         v
@@ -67,8 +67,8 @@ Output: top-k AASPropertyCandidate[]
 LLMMatcher.match_candidates
 Input: SemanticNode + top-k candidates
 Output: MatchResult[]
-- default: similarity_score threshold
-- llm: top-k 후보군 batch reranking
+- Gemini API top-k 후보군 batch reranking
+- allow_module_fallback=True 테스트 경로: similarity_score threshold
 
         |
         v
@@ -86,8 +86,8 @@ Output: MatchedProperty[]
 TemplateAwareAASMapper
 Output: AAS mapping plan
 - Submodel 후보 생성
-- default: deterministic template selector
-- llm: Ollama 기반 Submodel Template selector
+- Gemini API 기반 Submodel Template selector
+- allow_module_fallback=True 테스트 경로: deterministic template selector
 - diagnostics/reviewQueue 생성
 
         |
@@ -99,16 +99,25 @@ Output:
 - ConceptDescriptions
 - supplementalSemanticIds for ECLASS IRDI
 - validation result
+
+        |
+        v
+
+DefaultMappingValidator
+Output:
+- DDMS-style Hit@K / MRR@K / coverage
+- template support ratio
+- source grounding warnings
 ```
 
 ## Pipeline Modes
 
 | Mode | Factory | 외부 의존 | 설명 |
 |---|---|---|---|
-| default | `create_default_pipeline()` | 없음 | 수동 입력, lexical/IRDI 검색, deterministic matching/placement |
-| llm | `create_llm_pipeline()` | Ollama | LLM extraction, Semantic Node enrichment, embedding retrieval, LLM reranking, LLM Submodel placement |
-| yolo | `create_yolo_pipeline()` | ultralytics | default + YOLO CV adapter, 불가 시 NoOp fallback |
-| llm-yolo | `create_llm_yolo_pipeline()` | Ollama, ultralytics | llm + YOLO, 사용 불가한 모듈은 fallback |
+| default | `create_default_pipeline()` | Gemini API key, Ollama embedding | Gemini 추출/의미생성/재랭킹 + nomic embedding. 준비 안 되면 fail-fast |
+| llm | `create_llm_pipeline()` | Gemini API key, Ollama embedding | default와 동일한 strict composition |
+| yolo | `create_yolo_pipeline()` | default 의존 + ultralytics | YOLO를 요청하므로 사용 불가 시 fail-fast |
+| llm-yolo | `create_llm_yolo_pipeline()` | default 의존 + ultralytics | LLM + YOLO strict composition |
 
 ## Input Payload
 
@@ -162,7 +171,7 @@ python3 run_from_image.py --files data/input/nameplate.jpg --name "Robot Arm" --
 필수 테스트 경로는 표준 라이브러리 중심으로 동작합니다. 기능별 의존성은 아래처럼 설치합니다.
 
 ```bash
-ollama pull llama3.2
+export GEMINI_API_KEY=...
 ollama pull nomic-embed-text
 
 python3 -m pip install fastapi uvicorn
@@ -170,7 +179,7 @@ python3 -m pip install pdfplumber easyocr pillow numpy
 python3 -m pip install -e ".[cv]"
 ```
 
-현재 `requirements.txt`는 없습니다. OCR/PDF/YOLO/Ollama가 없으면 해당 단계는 fallback 또는 빈 결과로 처리됩니다.
+현재 `requirements.txt`는 없습니다. 기본 실행은 strict mode라서 Gemini API key 또는 Ollama embedding 서버가 없으면 안내 예외와 함께 중단합니다. 오프라인 테스트만 `PipelineConfig(allow_module_fallback=True, require_llm=False, require_embedding=False)`로 fallback을 명시합니다.
 
 ## Outputs
 
@@ -186,7 +195,7 @@ python3 -m pip install -e ".[cv]"
 - `repositories/submodel_templates/admin_shell_io_submodel_templates/`: admin-shell-io Submodel Templates `main` snapshot
 - `repositories/submodel_templates/default_submodels.json`: core submodel set used by the generator
 - `repositories/eclass_dictionary/eclass_properties.json`: local ECLASS alias/IRDI seed
-- `repositories/iec_cdd_dictionary/iec_cdd_properties.json`: local IEC CDD seed
+- `repositories/iec_cdd_dictionary/iec_cdd_properties.json`: local IEC CDD cache rebuilt from IDTA template IEC references and optional official exports
 
 ## Test
 

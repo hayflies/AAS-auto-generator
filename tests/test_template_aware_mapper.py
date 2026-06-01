@@ -50,7 +50,7 @@ class TemplateAwareMapperTest(unittest.TestCase):
                 match_score=0.91,
                 semantic_id="0112/2///61987#ABA565#009",
                 eclass_irdi="0173-1#02-AAO677#004",
-                source="project_repository",
+                source="eclass_dictionary",
                 definition="Name of the manufacturer responsible for the product.",
             )
         ]

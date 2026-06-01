@@ -27,8 +27,7 @@ class EmbeddingCandidateRetriever(BaseCandidateRetriever):
     초기화 시 properties.json의 모든 후보에 대한 임베딩을 미리 계산해 캐싱한다.
     retrieve() 호출마다 쿼리 임베딩과 코사인 유사도를 계산해 Top-K를 반환한다.
 
-    임베딩 모델은 nomic-embed-text를 기본으로 사용하며,
-    설치되지 않은 경우 llama3.2로 자동 fallback한다.
+    임베딩 모델은 OllamaClient 기본값인 nomic-embed-text를 사용한다.
 
     Args:
         repository_path: AAS Property 후보 JSON 파일 경로.

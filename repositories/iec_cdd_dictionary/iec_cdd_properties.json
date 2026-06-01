@@ -1,23 +1,844 @@
 {
   "source": {
-    "name": "IEC Common Data Dictionary",
+    "name": "IEC Common Data Dictionary local cache",
     "official_url": "https://cdd.iec.ch",
     "tc3_overview_url": "https://tc3.dvl.iec.ch/tc-activity/common-data-dictionary-cdd/",
     "legacy_browser_url": "https://www.electropedia.org/cdd/iec61360/iec61360.nsf/Welcome?OpenPage",
-    "notes": "Seeded with IEC 61987 / IEC CDD IRDIs referenced by local IDTA Digital Nameplate templates. Extend from official IEC CDD exports for domain-specific projects."
+    "retrieved_at": "2026-05-25",
+    "notes": "This file is a complete local IEC CDD cache for the project's available data: curated seed records, optional files under repositories/iec_cdd_dictionary/imports, and every IEC 61360 IRDI/ConceptDescription referenced by the checked-in IDTA Submodel Templates. IEC does not provide a simple anonymous bulk JSON endpoint for the full public CDD, so official exports should be placed in imports/ and this script rerun."
   },
+  "property_count": 96,
   "properties": [
     {
-      "irdi": "0112/2///61987#ABN590#002",
-      "preferred_name": "URI of the product",
-      "idShort": "URIOfTheProduct",
-      "definition": "Unique URI that identifies the product or product instance.",
-      "datatype": "URI",
-      "value_type": "xs:anyURI",
+      "irdi": "0112/2///61360_4#AAA235#001",
+      "preferred_name": "Nominal Value",
+      "idShort": "NominalValue",
+      "definition": "Value for physical quantities that may be expressed as the nominal value of the quantity together with deviations from that nominal value as percentages or absolute values",
+      "datatype": "xs:double",
+      "value_type": "xs:double",
+      "unit": null,
+      "submodel_hint": "TechnicalData",
+      "element_type": "Property",
+      "aliases": [
+        "Nominal Value",
+        "NominalValue"
+      ],
+      "source_kind": "idta_semantic_reference",
+      "source_templates": [],
+      "source_paths": [],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Quality Control for Machining/1/0/IDTA_02049_Template_QualityControlForMachining.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///61360_4#AAF575",
+      "preferred_name": "0112/2///61360_4#AAF575",
+      "idShort": "01122613604AAF575",
+      "definition": "0112/2///61360_4#AAF575",
+      "datatype": "xs:string",
+      "value_type": "xs:string",
+      "unit": null,
+      "submodel_hint": "TechnicalData",
+      "element_type": "Property",
+      "aliases": [
+        "0112/2///61360_4#AAF575",
+        "0112/2///61360 4# A A F575",
+        "01122613604 A A F575",
+        "01122613604AAF575"
+      ],
+      "source_kind": "idta_semantic_reference",
+      "source_templates": [],
+      "source_paths": [],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Technical Data for Automated Guided Vehicles/1/0/1/IDTA 02047-1-0-1 Template_TechnicalDataForAGV.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Technical Data for Automated Guided Vehicles/1/0/1/IDTA 02047-1-0-1 Template_TechnicalDataForAGV_forAASMetamodelV3.1.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Technical Data for Automated Guided Vehicles/1/0/IDTA 02047-1-0 Template_TechnicalDataForAGV.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Wireless Communication/1/0/1/IDTA 02022-1-0-1_Template_Wireless Communication.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Wireless Communication/1/0/1/IDTA 02022-1-0-1_Template_Wireless Communication_forAASMetamodelV3.1.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Wireless Communication/1/0/IDTA 02022-1-0_Template_Wireless Communication.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///61360_4#AAH549",
+      "preferred_name": "Seller Purchase Order Number",
+      "idShort": "SellerPurchaseOrderNumber",
+      "definition": "Order number assigned by the buyer (Optional)",
+      "datatype": "xs:string",
+      "value_type": "xs:string",
+      "unit": null,
+      "submodel_hint": "TechnicalData",
+      "element_type": "Property",
+      "aliases": [
+        "Seller Purchase Order Number",
+        "SellerPurchaseOrderNumber",
+        "Buyer Purchase Order Number",
+        "BuyerPurchaseOrderNumber",
+        "Agent Purchase Order Number",
+        "AgentPurchaseOrderNumber"
+      ],
+      "source_kind": "idta_semantic_reference",
+      "source_templates": [],
+      "source_paths": [],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Purchase Order/1/0/IDTA-02050_Template_PurchaseOrder.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Purchase Order/1/0/IDTA-02050_Template_PurchaseOrder_forAASMetamodelV3.1.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///61360_4#ACB004#001",
+      "preferred_name": "Product Description",
+      "idShort": "ProductDescription",
+      "definition": "This element contains the long description of the product (Mandatory)",
+      "datatype": "xs:string",
+      "value_type": "xs:string",
+      "unit": null,
+      "submodel_hint": "TechnicalData",
+      "element_type": "Property",
+      "aliases": [
+        "Product Description",
+        "ProductDescription"
+      ],
+      "source_kind": "idta_semantic_reference",
+      "source_templates": [],
+      "source_paths": [],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Purchase Order/1/0/IDTA-02050_Template_PurchaseOrder.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Purchase Order/1/0/IDTA-02050_Template_PurchaseOrder_forAASMetamodelV3.1.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///61360_4#ACB024#002",
+      "preferred_name": "Product Designation",
+      "idShort": "ProductDesignation",
+      "definition": "Name of the product (Mandatory)",
+      "datatype": "xs:string",
+      "value_type": "xs:string",
+      "unit": null,
+      "submodel_hint": "TechnicalData",
+      "element_type": "Property",
+      "aliases": [
+        "Product Designation",
+        "ProductDesignation"
+      ],
+      "source_kind": "idta_semantic_reference",
+      "source_templates": [],
+      "source_paths": [],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Purchase Order/1/0/IDTA-02050_Template_PurchaseOrder.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Purchase Order/1/0/IDTA-02050_Template_PurchaseOrder_forAASMetamodelV3.1.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///61360_4#ACB113#001",
+      "preferred_name": "Mime Type",
+      "idShort": "MimeType",
+      "definition": "MIME type of the multimedia file (Optional)",
+      "datatype": "xs:string",
+      "value_type": "xs:string",
+      "unit": null,
+      "submodel_hint": "TechnicalData",
+      "element_type": "Property",
+      "aliases": [
+        "Mime Type",
+        "MimeType"
+      ],
+      "source_kind": "idta_semantic_reference",
+      "source_templates": [],
+      "source_paths": [],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Purchase Order/1/0/IDTA-02050_Template_PurchaseOrder.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Purchase Order/1/0/IDTA-02050_Template_PurchaseOrder_forAASMetamodelV3.1.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Quality Control for Machining/1/0/IDTA_02049_Template_QualityControlForMachining.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///61360_4#ADA004#001",
+      "preferred_name": "Version",
+      "idShort": "Version",
+      "definition": "Purchase order request version (Recommended)",
+      "datatype": "xs:string",
+      "value_type": "xs:string",
+      "unit": null,
+      "submodel_hint": "TechnicalData",
+      "element_type": "Property",
+      "aliases": [
+        "Version"
+      ],
+      "source_kind": "idta_semantic_reference",
+      "source_templates": [],
+      "source_paths": [],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Purchase Order/1/0/IDTA-02050_Template_PurchaseOrder.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Purchase Order/1/0/IDTA-02050_Template_PurchaseOrder_forAASMetamodelV3.1.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///61360_4#ADA005#001",
+      "preferred_name": "National Code",
+      "idShort": "NationalCode",
+      "definition": "Two-digit country code according to ISO 3166 ALPHA-2 (Mandatory)",
+      "datatype": "xs:string",
+      "value_type": "xs:string",
+      "unit": null,
+      "submodel_hint": "TechnicalData",
+      "element_type": "Property",
+      "aliases": [
+        "National Code",
+        "NationalCode"
+      ],
+      "source_kind": "idta_semantic_reference",
+      "source_templates": [],
+      "source_paths": [],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Purchase Order/1/0/IDTA-02050_Template_PurchaseOrder.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Purchase Order/1/0/IDTA-02050_Template_PurchaseOrder_forAASMetamodelV3.1.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///61360_4#ADA006#001",
+      "preferred_name": "State Country",
+      "idShort": "StateCountry",
+      "definition": "Country (Mandatory)",
+      "datatype": "xs:string",
+      "value_type": "xs:string",
+      "unit": null,
+      "submodel_hint": "TechnicalData",
+      "element_type": "Property",
+      "aliases": [
+        "State Country",
+        "StateCountry"
+      ],
+      "source_kind": "idta_semantic_reference",
+      "source_templates": [],
+      "source_paths": [],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Purchase Order/1/0/IDTA-02050_Template_PurchaseOrder.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Purchase Order/1/0/IDTA-02050_Template_PurchaseOrder_forAASMetamodelV3.1.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///61360_4#ADA007#001",
+      "preferred_name": "Organization Name1",
+      "idShort": "OrganizationName1",
+      "definition": "First address line, usually the name of the organization (Mandatory)",
+      "datatype": "xs:string",
+      "value_type": "xs:string",
+      "unit": null,
+      "submodel_hint": "TechnicalData",
+      "element_type": "Property",
+      "aliases": [
+        "Organization Name1",
+        "OrganizationName1"
+      ],
+      "source_kind": "idta_semantic_reference",
+      "source_templates": [],
+      "source_paths": [],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Purchase Order/1/0/IDTA-02050_Template_PurchaseOrder.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Purchase Order/1/0/IDTA-02050_Template_PurchaseOrder_forAASMetamodelV3.1.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///61360_4#ADA008#001",
+      "preferred_name": "Email Address",
+      "idShort": "EmailAddress",
+      "definition": "Company central email address (Mandatory)",
+      "datatype": "xs:string",
+      "value_type": "xs:string",
+      "unit": null,
+      "submodel_hint": "TechnicalData",
+      "element_type": "Property",
+      "aliases": [
+        "Email Address",
+        "EmailAddress"
+      ],
+      "source_kind": "idta_semantic_reference",
+      "source_templates": [],
+      "source_paths": [],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Purchase Order/1/0/IDTA-02050_Template_PurchaseOrder.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Purchase Order/1/0/IDTA-02050_Template_PurchaseOrder_forAASMetamodelV3.1.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///61360_4#ADA009#001",
+      "preferred_name": "Delivery Telephone Number",
+      "idShort": "DeliveryTelephoneNumber",
+      "definition": "Telephone number of the recipient (not the buyer) for the shipping companies. That can also be the gatekeeper. (Optional)",
+      "datatype": "xs:string",
+      "value_type": "xs:string",
+      "unit": null,
+      "submodel_hint": "TechnicalData",
+      "element_type": "Property",
+      "aliases": [
+        "Delivery Telephone Number",
+        "DeliveryTelephoneNumber",
+        "Telephone Number",
+        "TelephoneNumber"
+      ],
+      "source_kind": "idta_semantic_reference",
+      "source_templates": [],
+      "source_paths": [],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Purchase Order/1/0/IDTA-02050_Template_PurchaseOrder.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Purchase Order/1/0/IDTA-02050_Template_PurchaseOrder_forAASMetamodelV3.1.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///61360_4#ADA011#001",
+      "preferred_name": "Fax Number",
+      "idShort": "FaxNumber",
+      "definition": "Company central fax number (Optional)",
+      "datatype": "xs:string",
+      "value_type": "xs:string",
+      "unit": null,
+      "submodel_hint": "TechnicalData",
+      "element_type": "Property",
+      "aliases": [
+        "Fax Number",
+        "FaxNumber"
+      ],
+      "source_kind": "idta_semantic_reference",
+      "source_templates": [],
+      "source_paths": [],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Purchase Order/1/0/IDTA-02050_Template_PurchaseOrder.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Purchase Order/1/0/IDTA-02050_Template_PurchaseOrder_forAASMetamodelV3.1.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///61360_4#ADA014#001",
+      "preferred_name": "Zipcode",
+      "idShort": "Zipcode",
+      "definition": "Postal code of the house address (Mandatory)",
+      "datatype": "xs:string",
+      "value_type": "xs:string",
+      "unit": null,
+      "submodel_hint": "TechnicalData",
+      "element_type": "Property",
+      "aliases": [
+        "Zipcode",
+        "Zipcode Of P O Box",
+        "ZipcodeOfPOBox"
+      ],
+      "source_kind": "idta_semantic_reference",
+      "source_templates": [],
+      "source_paths": [],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Purchase Order/1/0/IDTA-02050_Template_PurchaseOrder.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Purchase Order/1/0/IDTA-02050_Template_PurchaseOrder_forAASMetamodelV3.1.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///61360_4#ADA015#001",
+      "preferred_name": "State",
+      "idShort": "State",
+      "definition": "State (Optional)",
+      "datatype": "xs:string",
+      "value_type": "xs:string",
+      "unit": null,
+      "submodel_hint": "TechnicalData",
+      "element_type": "Property",
+      "aliases": [
+        "State"
+      ],
+      "source_kind": "idta_semantic_reference",
+      "source_templates": [],
+      "source_paths": [],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Purchase Order/1/0/IDTA-02050_Template_PurchaseOrder.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Purchase Order/1/0/IDTA-02050_Template_PurchaseOrder_forAASMetamodelV3.1.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///61360_4#ADA016#001",
+      "preferred_name": "City Town",
+      "idShort": "CityTown",
+      "definition": "Location information about the company (Mandatory)",
+      "datatype": "xs:string",
+      "value_type": "xs:string",
+      "unit": null,
+      "submodel_hint": "TechnicalData",
+      "element_type": "Property",
+      "aliases": [
+        "City Town",
+        "CityTown"
+      ],
+      "source_kind": "idta_semantic_reference",
+      "source_templates": [],
+      "source_paths": [],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Purchase Order/1/0/IDTA-02050_Template_PurchaseOrder.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Purchase Order/1/0/IDTA-02050_Template_PurchaseOrder_forAASMetamodelV3.1.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///61360_4#ADA017#001",
+      "preferred_name": "Street1",
+      "idShort": "Street1",
+      "definition": "Street name and house number (Mandatory)",
+      "datatype": "xs:string",
+      "value_type": "xs:string",
+      "unit": null,
+      "submodel_hint": "TechnicalData",
+      "element_type": "Property",
+      "aliases": [
+        "Street1",
+        "Street2"
+      ],
+      "source_kind": "idta_semantic_reference",
+      "source_templates": [],
+      "source_paths": [],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Purchase Order/1/0/IDTA-02050_Template_PurchaseOrder.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Purchase Order/1/0/IDTA-02050_Template_PurchaseOrder_forAASMetamodelV3.1.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///61360_4#ADA019#001",
+      "preferred_name": "Unloading Point",
+      "idShort": "UnloadingPoint",
+      "definition": "Unloading point (Optional)",
+      "datatype": "xs:string",
+      "value_type": "xs:string",
+      "unit": null,
+      "submodel_hint": "TechnicalData",
+      "element_type": "Property",
+      "aliases": [
+        "Unloading Point",
+        "UnloadingPoint"
+      ],
+      "source_kind": "idta_semantic_reference",
+      "source_templates": [],
+      "source_paths": [],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Purchase Order/1/0/IDTA-02050_Template_PurchaseOrder.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Purchase Order/1/0/IDTA-02050_Template_PurchaseOrder_forAASMetamodelV3.1.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///61360_4#ADA022#001",
+      "preferred_name": "P O Box",
+      "idShort": "POBox",
+      "definition": "Post office box number (Optional)",
+      "datatype": "xs:string",
+      "value_type": "xs:string",
+      "unit": null,
+      "submodel_hint": "TechnicalData",
+      "element_type": "Property",
+      "aliases": [
+        "P O Box",
+        "POBox"
+      ],
+      "source_kind": "idta_semantic_reference",
+      "source_templates": [],
+      "source_paths": [],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Purchase Order/1/0/IDTA-02050_Template_PurchaseOrder.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Purchase Order/1/0/IDTA-02050_Template_PurchaseOrder_forAASMetamodelV3.1.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///61360_4#ADA029#001",
+      "preferred_name": "Part Number",
+      "idShort": "PartNumber",
+      "definition": "Consecutive number of the manufactured component in the batch from the CNC",
+      "datatype": "xs:integer",
+      "value_type": "xs:integer",
+      "unit": null,
+      "submodel_hint": "TechnicalData",
+      "element_type": "Property",
+      "aliases": [
+        "Part Number",
+        "PartNumber"
+      ],
+      "source_kind": "idta_semantic_reference",
+      "source_templates": [],
+      "source_paths": [],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Quality Control for Machining/1/0/IDTA_02049_Template_QualityControlForMachining.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///61360_4#ADA031#001",
+      "preferred_name": "Production Start",
+      "idShort": "ProductionStart",
+      "definition": "Date and time when production started for the production order",
+      "datatype": "xs:dateTime",
+      "value_type": "xs:dateTime",
+      "unit": null,
+      "submodel_hint": "TechnicalData",
+      "element_type": "Property",
+      "aliases": [
+        "Production Start",
+        "ProductionStart",
+        "Production End",
+        "ProductionEnd"
+      ],
+      "source_kind": "idta_semantic_reference",
+      "source_templates": [],
+      "source_paths": [],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Quality Control for Machining/1/0/IDTA_02049_Template_QualityControlForMachining.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///61360_4#ADA098#001",
+      "preferred_name": "Certification Regulation",
+      "idShort": "CertificationRegulation",
+      "definition": "Specific name of the certification or approval requirement (Mandatory)",
+      "datatype": "xs:string",
+      "value_type": "xs:string",
+      "unit": null,
+      "submodel_hint": "TechnicalData",
+      "element_type": "Property",
+      "aliases": [
+        "Certification Regulation",
+        "CertificationRegulation"
+      ],
+      "source_kind": "idta_semantic_reference",
+      "source_templates": [],
+      "source_paths": [],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Purchase Order/1/0/IDTA-02050_Template_PurchaseOrder.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Purchase Order/1/0/IDTA-02050_Template_PurchaseOrder_forAASMetamodelV3.1.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///61360_4#ADA114#001",
+      "preferred_name": "Document Creation Date",
+      "idShort": "DocumentCreationDate",
+      "definition": "Date of document (Mandatory)",
+      "datatype": "xs:date",
+      "value_type": "xs:date",
+      "unit": null,
+      "submodel_hint": "TechnicalData",
+      "element_type": "Property",
+      "aliases": [
+        "Document Creation Date",
+        "DocumentCreationDate",
+        "Open Date",
+        "OpenDate",
+        "Delivery Start Date",
+        "DeliveryStartDate",
+        "Delivery End Date",
+        "DeliveryEndDate"
+      ],
+      "source_kind": "idta_semantic_reference",
+      "source_templates": [],
+      "source_paths": [],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Purchase Order/1/0/IDTA-02050_Template_PurchaseOrder.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Purchase Order/1/0/IDTA-02050_Template_PurchaseOrder_forAASMetamodelV3.1.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///61360_7#AAS002#001",
+      "preferred_name": "Goods Handover Address",
+      "idShort": "GoodsHandoverAddress",
+      "definition": "Indicates the hand-over address of the goods transport",
+      "datatype": null,
+      "value_type": null,
+      "unit": null,
+      "submodel_hint": "DigitalNameplate",
+      "element_type": "SubmodelElementCollection",
+      "aliases": [
+        "Goods Handover Address",
+        "GoodsHandoverAddress",
+        "goods address hand over",
+        "goods address hand-over",
+        "Address Information",
+        "AddressInformation"
+      ],
+      "source_kind": "idta_semantic_reference",
+      "source_templates": [],
+      "source_paths": [],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Carbon Footprint/1/0/1/IDTA 02023-1-0-1 _Template_CarbonFootprint.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Carbon Footprint/1/0/1/IDTA 02023-1-0-1 _Template_CarbonFootprint_forAASMetamodelV3.1.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Carbon Footprint/1/0/IDTA 02023 _Template_CarbonFootprint.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Digital Battery Passport/1_Digital Nameplate/1/0/IDTA 02035-1_DBP-Part-1_Digital Nameplate.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Digital Battery Passport/1_Digital Nameplate/1/0/IDTA 02035-1_DBP-Part-1_Digital Nameplate_without_examplevalues.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Digital nameplate/3/0/1/IDTA 02006-3-0-1_Template_Digital Nameplate.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Digital nameplate/3/0/IDTA 02006-3-0_Template_Digital Nameplate.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///61360_7#AAS006",
+      "preferred_name": "Markings",
+      "idShort": "Markings",
+      "definition": "collection of several markings relevant to the product",
+      "datatype": "STRING",
+      "value_type": "STRING",
       "unit": null,
       "submodel_hint": "DigitalNameplate",
       "element_type": "Property",
-      "aliases": ["uri of the product", "product uri", "product url"]
+      "aliases": [
+        "Markings"
+      ],
+      "source_kind": "idta_concept_description+idta_semantic_reference",
+      "source_templates": [],
+      "source_paths": [],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Digital Battery Passport/1_Digital Nameplate/1/0/IDTA 02035-1_DBP-Part-1_Digital Nameplate.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Digital Battery Passport/1_Digital Nameplate/1/0/IDTA 02035-1_DBP-Part-1_Digital Nameplate_without_examplevalues.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///61360_7#AAS006#001",
+      "preferred_name": "Markings",
+      "idShort": "Markings",
+      "definition": "Note: CE marking is declared as mandatory according to EU Blue Guide",
+      "datatype": null,
+      "value_type": null,
+      "unit": null,
+      "submodel_hint": "DigitalNameplate",
+      "element_type": "SubmodelElementList",
+      "aliases": [
+        "Markings"
+      ],
+      "source_kind": "idta_semantic_reference",
+      "source_templates": [],
+      "source_paths": [],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Digital nameplate/3/0/1/IDTA 02006-3-0-1_Template_Digital Nameplate.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Digital nameplate/3/0/IDTA 02006-3-0_Template_Digital Nameplate.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///61360_7#AAS009#001",
+      "preferred_name": "Marking",
+      "idShort": "Marking",
+      "definition": "Single marking information",
+      "datatype": null,
+      "value_type": null,
+      "unit": null,
+      "submodel_hint": "DigitalNameplate",
+      "element_type": "Property",
+      "aliases": [
+        "Marking",
+        "Markings 00",
+        "Markings__00__",
+        "0112/2///61360_7#AAS009#001",
+        "0112/2///61360 7# A A S009#001",
+        "01122613607 A A S009001",
+        "01122613607AAS009001"
+      ],
+      "source_kind": "idta_concept_description+idta_semantic_reference",
+      "source_templates": [],
+      "source_paths": [],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Digital Battery Passport/1_Digital Nameplate/1/0/IDTA 02035-1_DBP-Part-1_Digital Nameplate.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Digital Battery Passport/1_Digital Nameplate/1/0/IDTA 02035-1_DBP-Part-1_Digital Nameplate_without_examplevalues.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Digital nameplate/3/0/1/IDTA 02006-3-0-1_Template_Digital Nameplate.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Digital nameplate/3/0/IDTA 02006-3-0_Template_Digital Nameplate.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///61360_7#AAS011#001",
+      "preferred_name": "Manufacturer Product Root",
+      "idShort": "ManufacturerProductRoot",
+      "definition": "top level of a 3 level manufacturer specific product hierarchy",
+      "datatype": "STRING_TRANSLATABLE",
+      "value_type": "STRING_TRANSLATABLE",
+      "unit": null,
+      "submodel_hint": "DigitalNameplate",
+      "element_type": "MultiLanguageProperty",
+      "aliases": [
+        "Manufacturer Product Root",
+        "ManufacturerProductRoot"
+      ],
+      "source_kind": "idta_concept_description+idta_semantic_reference+idta_template_reference",
+      "source_templates": [
+        "https://admin-shell.io/IDTA 02006-3-0",
+        "https://admin-shell.io/idta-02006-3-0"
+      ],
+      "source_paths": [
+        "Nameplate/ManufacturerProductRoot"
+      ],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Digital nameplate/3/0/1/IDTA 02006-3-0-1_Template_Digital Nameplate.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Digital nameplate/3/0/IDTA 02006-3-0_Template_Digital Nameplate.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///61360_7#AAS034",
+      "preferred_name": "physical address",
+      "idShort": "Address_IEC",
+      "definition": "properties characterizing a geographical location where individual people and organizations are residing according to an address system",
+      "datatype": null,
+      "value_type": null,
+      "unit": null,
+      "submodel_hint": "TechnicalData",
+      "element_type": "Property",
+      "aliases": [
+        "physical address",
+        "Address I E C",
+        "Address_IEC",
+        "Physical Address 1",
+        "PhysicalAddress__1__"
+      ],
+      "source_kind": "idta_concept_description+idta_semantic_reference",
+      "source_templates": [],
+      "source_paths": [],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Product Change Notifications/1/0/IDTA_02036_Template_ProductChangeNotifications.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///61360_7#CBA006",
+      "preferred_name": "Quality",
+      "idShort": "Quality",
+      "definition": "Quality of the measured value (e.g., Good, Bad, Uncertain and others like out of range).",
+      "datatype": "xs:string",
+      "value_type": "xs:string",
+      "unit": null,
+      "submodel_hint": "Sensor40",
+      "element_type": "Property",
+      "aliases": [
+        "Quality"
+      ],
+      "source_kind": "idta_concept_description+idta_semantic_reference+idta_template_reference",
+      "source_templates": [
+        "https://admin-shell.io/idta/SubmodelTemplate/measurementValue/1/0"
+      ],
+      "source_paths": [
+        "MeasurementValue/MeasurementQualifier/Quality"
+      ],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/sensor4.0/Part 1 Measurement Value/1/0/IDTA 02029-1_Template_Sensor4.0_MeasurementValue.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///61360_7#CBA007",
+      "preferred_name": "Measurement Timestamp",
+      "idShort": "MeasurementTimestamp",
+      "definition": "Date and time when the measurement was taken.",
+      "datatype": "xs:dateTime",
+      "value_type": "xs:dateTime",
+      "unit": null,
+      "submodel_hint": "Sensor40",
+      "element_type": "Property",
+      "aliases": [
+        "Measurement Timestamp",
+        "MeasurementTimestamp"
+      ],
+      "source_kind": "idta_concept_description+idta_semantic_reference+idta_template_reference",
+      "source_templates": [
+        "https://admin-shell.io/idta/SubmodelTemplate/measurementValue/1/0"
+      ],
+      "source_paths": [
+        "MeasurementValue/MeasurementTimestamp"
+      ],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/sensor4.0/Part 1 Measurement Value/1/0/IDTA 02029-1_Template_Sensor4.0_MeasurementValue.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///61360_7#CBA008",
+      "preferred_name": "Measurement Timestamp",
+      "idShort": "MeasurementTimestamp",
+      "definition": "Date and time when the measurement was taken.",
+      "datatype": "xs:dateTime",
+      "value_type": "xs:dateTime",
+      "unit": null,
+      "submodel_hint": "OperationalData",
+      "element_type": "Property",
+      "aliases": [
+        "Measurement Timestamp",
+        "MeasurementTimestamp"
+      ],
+      "source_kind": "idta_semantic_reference",
+      "source_templates": [],
+      "source_paths": [],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/sensor4.0/Part 1 Measurement Value/1/0/IDTA 02029-1_Template_Sensor4.0_MeasurementValue.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///61987#ABA231#009",
+      "preferred_name": "Marking Name",
+      "idShort": "MarkingName",
+      "definition": "common name of the marking",
+      "datatype": "xs:string",
+      "value_type": "xs:string",
+      "unit": null,
+      "submodel_hint": "DigitalBatteryPassport",
+      "element_type": "Property",
+      "aliases": [
+        "Marking Name",
+        "MarkingName"
+      ],
+      "source_kind": "idta_concept_description+idta_semantic_reference+idta_template_reference",
+      "source_templates": [
+        "https://admin-shell.io/IDTA 02006-3-0",
+        "https://admin-shell.io/idta-02006-3-0",
+        "https://admin-shell.io/idta-02035-1"
+      ],
+      "source_paths": [
+        "BatteryNameplate/Markings/Markings__00__/MarkingName",
+        "Nameplate/Markings/MarkingName"
+      ],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Digital Battery Passport/1_Digital Nameplate/1/0/IDTA 02035-1_DBP-Part-1_Digital Nameplate.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Digital Battery Passport/1_Digital Nameplate/1/0/IDTA 02035-1_DBP-Part-1_Digital Nameplate_without_examplevalues.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Digital nameplate/3/0/1/IDTA 02006-3-0-1_Template_Digital Nameplate.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Digital nameplate/3/0/IDTA 02006-3-0_Template_Digital Nameplate.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///61987#ABA300#008",
+      "preferred_name": "Manufacturer Product Type",
+      "idShort": "ManufacturerProductType",
+      "definition": "characteristic to differentiate between different products of a product family or special variants",
+      "datatype": "xs:string",
+      "value_type": "xs:string",
+      "unit": null,
+      "submodel_hint": "DigitalNameplate",
+      "element_type": "Property",
+      "aliases": [
+        "Manufacturer Product Type",
+        "ManufacturerProductType"
+      ],
+      "source_kind": "idta_concept_description+idta_semantic_reference+idta_template_reference",
+      "source_templates": [
+        "https://admin-shell.io/IDTA 02006-3-0",
+        "https://admin-shell.io/idta-02006-3-0"
+      ],
+      "source_paths": [
+        "Nameplate/ManufacturerProductType"
+      ],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Digital nameplate/3/0/1/IDTA 02006-3-0-1_Template_Digital Nameplate.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Digital nameplate/3/0/IDTA 02006-3-0_Template_Digital Nameplate.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///61987#ABA302#006",
+      "preferred_name": "Firmware Version",
+      "idShort": "FirmwareVersion",
+      "definition": "version of the firmware supplied with the device",
+      "datatype": "xs:string",
+      "value_type": "xs:string",
+      "unit": null,
+      "submodel_hint": "DigitalNameplate",
+      "element_type": "Property",
+      "aliases": [
+        "Firmware Version",
+        "FirmwareVersion"
+      ],
+      "source_kind": "idta_concept_description+idta_semantic_reference+idta_template_reference",
+      "source_templates": [
+        "https://admin-shell.io/IDTA 02006-3-0",
+        "https://admin-shell.io/idta-02006-3-0"
+      ],
+      "source_paths": [
+        "Nameplate/FirmwareVersion"
+      ],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Digital nameplate/3/0/1/IDTA 02006-3-0-1_Template_Digital Nameplate.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Digital nameplate/3/0/IDTA 02006-3-0_Template_Digital Nameplate.json"
+      ]
     },
     {
       "irdi": "0112/2///61987#ABA565#009",
@@ -25,11 +846,33 @@
       "idShort": "ManufacturerName",
       "definition": "Name of the manufacturer responsible for the product.",
       "datatype": "STRING_TRANSLATABLE",
-      "value_type": null,
+      "value_type": "STRING_TRANSLATABLE",
       "unit": null,
       "submodel_hint": "DigitalNameplate",
       "element_type": "MultiLanguageProperty",
-      "aliases": ["manufacturer", "manufacturer name", "maker", "supplier"]
+      "aliases": [
+        "Manufacturer name",
+        "manufacturer",
+        "maker",
+        "supplier",
+        "ManufacturerName"
+      ],
+      "source_kind": "curated_seed+idta_concept_description+idta_semantic_reference+idta_template_reference",
+      "source_templates": [
+        "https://admin-shell.io/IDTA 02006-3-0",
+        "https://admin-shell.io/idta-02006-3-0",
+        "https://admin-shell.io/idta-02035-1"
+      ],
+      "source_paths": [
+        "BatteryNameplate/ManufacturerName",
+        "Nameplate/ManufacturerName"
+      ],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Digital Battery Passport/1_Digital Nameplate/1/0/IDTA 02035-1_DBP-Part-1_Digital Nameplate.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Digital Battery Passport/1_Digital Nameplate/1/0/IDTA 02035-1_DBP-Part-1_Digital Nameplate_without_examplevalues.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Digital nameplate/3/0/1/IDTA 02006-3-0-1_Template_Digital Nameplate.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Digital nameplate/3/0/IDTA 02006-3-0_Template_Digital Nameplate.json"
+      ]
     },
     {
       "irdi": "0112/2///61987#ABA567#009",
@@ -37,11 +880,148 @@
       "idShort": "ManufacturerProductDesignation",
       "definition": "Manufacturer-specific product designation or model name.",
       "datatype": "STRING_TRANSLATABLE",
-      "value_type": null,
+      "value_type": "STRING_TRANSLATABLE",
       "unit": null,
       "submodel_hint": "DigitalNameplate",
       "element_type": "MultiLanguageProperty",
-      "aliases": ["model", "model name", "product designation", "type designation"]
+      "aliases": [
+        "Manufacturer product designation",
+        "model",
+        "model name",
+        "product designation",
+        "type designation",
+        "ManufacturerProductDesignation"
+      ],
+      "source_kind": "curated_seed+idta_concept_description+idta_semantic_reference+idta_template_reference",
+      "source_templates": [
+        "https://admin-shell.io/IDTA 02006-3-0",
+        "https://admin-shell.io/idta-02006-3-0"
+      ],
+      "source_paths": [
+        "Nameplate/ManufacturerProductDesignation"
+      ],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Digital nameplate/3/0/1/IDTA 02006-3-0-1_Template_Digital Nameplate.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Digital nameplate/3/0/IDTA 02006-3-0_Template_Digital Nameplate.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///61987#ABA581#007",
+      "preferred_name": "Product Article Number Of Manufacturer",
+      "idShort": "ProductArticleNumberOfManufacturer",
+      "definition": "unique product identifier of the manufacturer",
+      "datatype": "xs:string",
+      "value_type": "xs:string",
+      "unit": null,
+      "submodel_hint": "DigitalNameplate",
+      "element_type": "Property",
+      "aliases": [
+        "Product Article Number Of Manufacturer",
+        "ProductArticleNumberOfManufacturer"
+      ],
+      "source_kind": "idta_concept_description+idta_semantic_reference+idta_template_reference",
+      "source_templates": [
+        "https://admin-shell.io/IDTA 02006-3-0",
+        "https://admin-shell.io/idta-02006-3-0"
+      ],
+      "source_paths": [
+        "Nameplate/ProductArticleNumberOfManufacturer"
+      ],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Digital nameplate/3/0/1/IDTA 02006-3-0-1_Template_Digital Nameplate.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Digital nameplate/3/0/IDTA 02006-3-0_Template_Digital Nameplate.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///61987#ABA588#004",
+      "preferred_name": "Rated Voltage",
+      "idShort": "RatedVoltage",
+      "definition": "operating voltage of the device as defined by the manufacturer and to which certain device properties are referenced",
+      "datatype": "xs:double",
+      "value_type": "xs:double",
+      "unit": "V",
+      "submodel_hint": "FunctionalSafety",
+      "element_type": "Property",
+      "aliases": [
+        "Rated Voltage",
+        "RatedVoltage"
+      ],
+      "source_kind": "idta_concept_description+idta_semantic_reference+idta_template_reference",
+      "source_templates": [
+        "https://admin-shell.io/idta/SubmodelTemplate/FunctionalSafety/1/0",
+        "https://admin-shell.io/idta/SubmodelTemplate/Reliability/1/0"
+      ],
+      "source_paths": [
+        "FunctionalSafety/OperatingConditionsOfFunctionalSafetyCharacteristics/RatedVoltage",
+        "Reliability/OperatingConditionsOfReliabilityCharacteristics/RatedVoltage"
+      ],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Functional Safety/1/0/1/IDTA 02014-1-0-1_Template_FunctionalSafety.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Functional Safety/1/0/1/IDTA 02014-1-0-1_Template_FunctionalSafety_forAASMetamodelV3.1.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Functional Safety/1/0/IDTA 02014-1-0_Template_FunctionalSafety.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Reliability/1/0/1/IDTA 02013-1-0-1_Template_Reliability.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Reliability/1/0/1/IDTA 02013-1-0-1_Template_Reliability_forAASMetamodelV3.1.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Reliability/1/0/IDTA 02013-1-0_Template_Reliability.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///61987#ABA601#008",
+      "preferred_name": "Software Version",
+      "idShort": "SoftwareVersion",
+      "definition": "version of the software used by the device",
+      "datatype": "xs:string",
+      "value_type": "xs:string",
+      "unit": null,
+      "submodel_hint": "DigitalNameplate",
+      "element_type": "Property",
+      "aliases": [
+        "Software Version",
+        "SoftwareVersion",
+        "E M P T Y",
+        "EMPTY"
+      ],
+      "source_kind": "idta_concept_description+idta_semantic_reference+idta_template_reference",
+      "source_templates": [
+        "https://admin-shell.io/IDTA 02006-3-0",
+        "https://admin-shell.io/idta-02006-3-0",
+        "https://admin-shell.io/idta/SubmodelTemplate/opcuaserverdatasheet/1/0"
+      ],
+      "source_paths": [
+        "Nameplate/SoftwareVersion",
+        "UAServerDataSheet/Identification/SoftwareVersion"
+      ],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Digital nameplate/3/0/1/IDTA 02006-3-0-1_Template_Digital Nameplate.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Digital nameplate/3/0/IDTA 02006-3-0_Template_Digital Nameplate.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/OPC UA Server Datasheet/1/0/IDTA 02009-1-0-Template-OPCUA-Server Datasheet.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///61987#ABA926#008",
+      "preferred_name": "Hardware Version",
+      "idShort": "HardwareVersion",
+      "definition": "version of the hardware supplied with the device",
+      "datatype": "xs:string",
+      "value_type": "xs:string",
+      "unit": null,
+      "submodel_hint": "DigitalNameplate",
+      "element_type": "Property",
+      "aliases": [
+        "Hardware Version",
+        "HardwareVersion"
+      ],
+      "source_kind": "idta_concept_description+idta_semantic_reference+idta_template_reference",
+      "source_templates": [
+        "https://admin-shell.io/IDTA 02006-3-0",
+        "https://admin-shell.io/idta-02006-3-0"
+      ],
+      "source_paths": [
+        "Nameplate/HardwareVersion"
+      ],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Digital nameplate/3/0/1/IDTA 02006-3-0-1_Template_Digital Nameplate.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Digital nameplate/3/0/IDTA 02006-3-0_Template_Digital Nameplate.json"
+      ]
     },
     {
       "irdi": "0112/2///61987#ABA950#008",
@@ -53,7 +1033,37 @@
       "unit": null,
       "submodel_hint": "DigitalNameplate",
       "element_type": "Property",
-      "aliases": ["order code", "article number", "part number", "order number"]
+      "aliases": [
+        "Order code of manufacturer",
+        "order code",
+        "article number",
+        "part number",
+        "order number",
+        "OrderCodeOfManufacturer",
+        "Order Code Tool Of Manufacturer",
+        "OrderCodeToolOfManufacturer",
+        "Order Code Consumable Of Manufacturer",
+        "OrderCodeConsumableOfManufacturer",
+        "Order Code Spare Part Of Manufacturer",
+        "OrderCodeSparePartOfManufacturer"
+      ],
+      "source_kind": "curated_seed+idta_concept_description+idta_semantic_reference+idta_template_reference",
+      "source_templates": [
+        "https://admin-shell-io/idta-02018",
+        "https://admin-shell.io/IDTA 02006-3-0",
+        "https://admin-shell.io/idta-02006-3-0"
+      ],
+      "source_paths": [
+        "MaintenanceInstructions/MaintenanceConsumablesList/MaintenanceConsumable/OrderCodeConsumableOfManufacturer",
+        "MaintenanceInstructions/MaintenanceSparePartList/MaintenanceSparePart/OrderCodeSparePartOfManufacturer",
+        "MaintenanceInstructions/MaintenanceToolList/MaintenanceTool/OrderCodeToolOfManufacturer",
+        "Nameplate/OrderCodeOfManufacturer"
+      ],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Digital nameplate/3/0/1/IDTA 02006-3-0-1_Template_Digital Nameplate.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Digital nameplate/3/0/IDTA 02006-3-0_Template_Digital Nameplate.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Maintenance Instructions/1/0/IDTA_02018_Template_MaintenanceInstructions.json"
+      ]
     },
     {
       "irdi": "0112/2///61987#ABA951#009",
@@ -65,7 +1075,447 @@
       "unit": null,
       "submodel_hint": "DigitalNameplate",
       "element_type": "Property",
-      "aliases": ["serial number", "serial", "s/n", "sn"]
+      "aliases": [
+        "Serial number",
+        "serial",
+        "s/n",
+        "sn",
+        "SerialNumber"
+      ],
+      "source_kind": "curated_seed+idta_concept_description+idta_semantic_reference+idta_template_reference",
+      "source_templates": [
+        "https://admin-shell.io/IDTA 02006-3-0",
+        "https://admin-shell.io/idta-02006-3-0",
+        "https://admin-shell.io/idta-02035-1"
+      ],
+      "source_paths": [
+        "BatteryNameplate/SerialNumber",
+        "Nameplate/SerialNumber"
+      ],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Digital Battery Passport/1_Digital Nameplate/1/0/IDTA 02035-1_DBP-Part-1_Digital Nameplate.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Digital Battery Passport/1_Digital Nameplate/1/0/IDTA 02035-1_DBP-Part-1_Digital Nameplate_without_examplevalues.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Digital nameplate/3/0/1/IDTA 02006-3-0-1_Template_Digital Nameplate.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Digital nameplate/3/0/IDTA 02006-3-0_Template_Digital Nameplate.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///61987#ABA969#007",
+      "preferred_name": "Type Of Voltage",
+      "idShort": "TypeOfVoltage",
+      "definition": "classification of a power supply according to the time behaviour of the voltage",
+      "datatype": "xs:string",
+      "value_type": "xs:string",
+      "unit": null,
+      "submodel_hint": "FunctionalSafety",
+      "element_type": "Property",
+      "aliases": [
+        "Type Of Voltage",
+        "TypeOfVoltage",
+        "Typeof Voltage"
+      ],
+      "source_kind": "idta_concept_description+idta_semantic_reference+idta_template_reference",
+      "source_templates": [
+        "https://admin-shell.io/idta/SubmodelTemplate/FunctionalSafety/1/0",
+        "https://admin-shell.io/idta/SubmodelTemplate/Reliability/1/0"
+      ],
+      "source_paths": [
+        "FunctionalSafety/OperatingConditionsOfFunctionalSafetyCharacteristics/TypeOfVoltage",
+        "Reliability/OperatingConditionsOfReliabilityCharacteristics/TypeOfVoltage"
+      ],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Functional Safety/1/0/1/IDTA 02014-1-0-1_Template_FunctionalSafety.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Functional Safety/1/0/1/IDTA 02014-1-0-1_Template_FunctionalSafety_forAASMetamodelV3.1.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Functional Safety/1/0/IDTA 02014-1-0_Template_FunctionalSafety.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Reliability/1/0/1/IDTA 02013-1-0-1_Template_Reliability.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Reliability/1/0/1/IDTA 02013-1-0-1_Template_Reliability_forAASMetamodelV3.1.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Reliability/1/0/IDTA 02013-1-0_Template_Reliability.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///61987#ABB146#007",
+      "preferred_name": "Marking Additional Text",
+      "idShort": "MarkingAdditionalText",
+      "definition": "where applicable, additional information on the marking in plain text, e.g. the ID-number of the notified body involved in the conformity process",
+      "datatype": "xs:string",
+      "value_type": "xs:string",
+      "unit": null,
+      "submodel_hint": "DigitalBatteryPassport",
+      "element_type": "Property",
+      "aliases": [
+        "Marking Additional Text",
+        "MarkingAdditionalText",
+        "Marking Additional Text 00",
+        "MarkingAdditionalText 00",
+        "MarkingAdditionalText__00__"
+      ],
+      "source_kind": "idta_concept_description+idta_semantic_reference+idta_template_reference",
+      "source_templates": [
+        "https://admin-shell.io/IDTA 02006-3-0",
+        "https://admin-shell.io/idta-02006-3-0",
+        "https://admin-shell.io/idta-02035-1"
+      ],
+      "source_paths": [
+        "BatteryNameplate/Markings/Markings__00__/MarkingAdditionalText",
+        "Nameplate/Markings/MarkingAdditionalText"
+      ],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Digital Battery Passport/1_Digital Nameplate/1/0/IDTA 02035-1_DBP-Part-1_Digital Nameplate.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Digital Battery Passport/1_Digital Nameplate/1/0/IDTA 02035-1_DBP-Part-1_Digital Nameplate_without_examplevalues.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Digital nameplate/3/0/1/IDTA 02006-3-0-1_Template_Digital Nameplate.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Digital nameplate/3/0/IDTA 02006-3-0_Template_Digital Nameplate.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///61987#ABB271",
+      "preferred_name": "Tag",
+      "idShort": "Tag",
+      "definition": "Identifier linking the measurement to its source or device.",
+      "datatype": "xs:string",
+      "value_type": "xs:string",
+      "unit": null,
+      "submodel_hint": "Sensor40",
+      "element_type": "Property",
+      "aliases": [
+        "Tag"
+      ],
+      "source_kind": "idta_concept_description+idta_semantic_reference+idta_template_reference",
+      "source_templates": [
+        "https://admin-shell.io/idta/SubmodelTemplate/measurementValue/1/0"
+      ],
+      "source_paths": [
+        "MeasurementValue/MeasurementQualifier/Tag"
+      ],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/sensor4.0/Part 1 Measurement Value/1/0/IDTA 02029-1_Template_Sensor4.0_MeasurementValue.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///61987#ABB757#007",
+      "preferred_name": "Date Of Manufacture",
+      "idShort": "DateOfManufacture",
+      "definition": "date when an item was manufactured",
+      "datatype": "xs:date",
+      "value_type": "xs:date",
+      "unit": null,
+      "submodel_hint": "DigitalBatteryPassport",
+      "element_type": "Property",
+      "aliases": [
+        "Date Of Manufacture",
+        "DateOfManufacture"
+      ],
+      "source_kind": "idta_concept_description+idta_semantic_reference+idta_template_reference",
+      "source_templates": [
+        "https://admin-shell.io/IDTA 02006-3-0",
+        "https://admin-shell.io/idta-02006-3-0",
+        "https://admin-shell.io/idta-02035-1"
+      ],
+      "source_paths": [
+        "BatteryNameplate/DateOfManufacture",
+        "Nameplate/DateOfManufacture"
+      ],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Digital Battery Passport/1_Digital Nameplate/1/0/IDTA 02035-1_DBP-Part-1_Digital Nameplate.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Digital Battery Passport/1_Digital Nameplate/1/0/IDTA 02035-1_DBP-Part-1_Digital Nameplate_without_examplevalues.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Digital nameplate/3/0/1/IDTA 02006-3-0-1_Template_Digital Nameplate.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Digital nameplate/3/0/IDTA 02006-3-0_Template_Digital Nameplate.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///61987#ABD461#004",
+      "preferred_name": "Minimum Rated Voltage",
+      "idShort": "MinimumRatedVoltage",
+      "definition": "lowest operating voltage of the device as defined by the manufacturer",
+      "datatype": "xs:double",
+      "value_type": "xs:double",
+      "unit": "V",
+      "submodel_hint": "FunctionalSafety",
+      "element_type": "Property",
+      "aliases": [
+        "Minimum Rated Voltage",
+        "MinimumRatedVoltage",
+        "Min R V",
+        "MinRV",
+        "MinRatedVol",
+        "Min Rated Vol"
+      ],
+      "source_kind": "idta_concept_description+idta_semantic_reference+idta_template_reference",
+      "source_templates": [
+        "https://admin-shell.io/idta/SubmodelTemplate/FunctionalSafety/1/0",
+        "https://admin-shell.io/idta/SubmodelTemplate/Reliability/1/0"
+      ],
+      "source_paths": [
+        "FunctionalSafety/OperatingConditionsOfFunctionalSafetyCharacteristics/MinimumRatedVoltage",
+        "Reliability/OperatingConditionsOfReliabilityCharacteristics/MinimumRatedVoltage"
+      ],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Functional Safety/1/0/1/IDTA 02014-1-0-1_Template_FunctionalSafety.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Functional Safety/1/0/1/IDTA 02014-1-0-1_Template_FunctionalSafety_forAASMetamodelV3.1.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Functional Safety/1/0/IDTA 02014-1-0_Template_FunctionalSafety.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Reliability/1/0/1/IDTA 02013-1-0-1_Template_Reliability.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Reliability/1/0/1/IDTA 02013-1-0-1_Template_Reliability_forAASMetamodelV3.1.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Reliability/1/0/IDTA 02013-1-0_Template_Reliability.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///61987#ABD462#004",
+      "preferred_name": "Maximum Rated Voltage",
+      "idShort": "MaximumRatedVoltage",
+      "definition": "highest operating voltage of the device as defined by the manufacturer",
+      "datatype": "xs:double",
+      "value_type": "xs:double",
+      "unit": "V",
+      "submodel_hint": "FunctionalSafety",
+      "element_type": "Property",
+      "aliases": [
+        "Maximum Rated Voltage",
+        "MaximumRatedVoltage",
+        "MaxRV",
+        "Max R V",
+        "Max Rat Vol",
+        "MaxRatVol"
+      ],
+      "source_kind": "idta_concept_description+idta_semantic_reference+idta_template_reference",
+      "source_templates": [
+        "https://admin-shell.io/idta/SubmodelTemplate/FunctionalSafety/1/0",
+        "https://admin-shell.io/idta/SubmodelTemplate/Reliability/1/0"
+      ],
+      "source_paths": [
+        "FunctionalSafety/OperatingConditionsOfFunctionalSafetyCharacteristics/MaximumRatedVoltage",
+        "Reliability/OperatingConditionsOfReliabilityCharacteristics/MaximumRatedVoltage"
+      ],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Functional Safety/1/0/1/IDTA 02014-1-0-1_Template_FunctionalSafety.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Functional Safety/1/0/1/IDTA 02014-1-0-1_Template_FunctionalSafety_forAASMetamodelV3.1.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Functional Safety/1/0/IDTA 02014-1-0_Template_FunctionalSafety.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Reliability/1/0/1/IDTA 02013-1-0-1_Template_Reliability.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Reliability/1/0/1/IDTA 02013-1-0-1_Template_Reliability_forAASMetamodelV3.1.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Reliability/1/0/IDTA 02013-1-0_Template_Reliability.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///61987#ABH783#001",
+      "preferred_name": "Designation Of Certificate Or Approval",
+      "idShort": "DesignationOfCertificateOrApproval",
+      "definition": "Note: Approval identifier, reference to the certificate number, to be entered without spaces ",
+      "datatype": "xs:string",
+      "value_type": "xs:string",
+      "unit": null,
+      "submodel_hint": "InspectionDocumentsOfSteelProducts",
+      "element_type": "Property",
+      "aliases": [
+        "Designation Of Certificate Or Approval",
+        "DesignationOfCertificateOrApproval"
+      ],
+      "source_kind": "idta_semantic_reference+idta_template_reference",
+      "source_templates": [
+        "https://admin-shell.io/idta/02032-1-0"
+      ],
+      "source_paths": [
+        "InspectionDocumentsOfSteelProducts/Validation/CEMarking/DesignationOfCertificateOrApproval"
+      ],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Inspection Documents of Steel Products/1/0/1/IDTA 02032-1-0-1_Template Inspection Documents of Steel Products.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Inspection Documents of Steel Products/1/0/1/IDTA 02032-1-0-1_Template Inspection Documents of Steel Products_forAASMetamodelV3.1.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Inspection Documents of Steel Products/1/0/IDTA 02032-1-0_Template Inspection Documents of Steel Products.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///61987#ABH783#003",
+      "preferred_name": "Designation Of Certificate Or Approval",
+      "idShort": "DesignationOfCertificateOrApproval",
+      "definition": "alphanumeric character sequence identifying a certificate or approval",
+      "datatype": "xs:string",
+      "value_type": "xs:string",
+      "unit": null,
+      "submodel_hint": "DigitalBatteryPassport",
+      "element_type": "Property",
+      "aliases": [
+        "Designation Of Certificate Or Approval",
+        "DesignationOfCertificateOrApproval"
+      ],
+      "source_kind": "idta_concept_description+idta_semantic_reference+idta_template_reference",
+      "source_templates": [
+        "https://admin-shell.io/IDTA 02006-3-0",
+        "https://admin-shell.io/idta-02006-3-0",
+        "https://admin-shell.io/idta-02035-1"
+      ],
+      "source_paths": [
+        "BatteryNameplate/Markings/Markings__00__/DesignationOfCertificateOrApproval",
+        "Nameplate/Markings/DesignationOfCertificateOrApproval"
+      ],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Digital Battery Passport/1_Digital Nameplate/1/0/IDTA 02035-1_DBP-Part-1_Digital Nameplate.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Digital Battery Passport/1_Digital Nameplate/1/0/IDTA 02035-1_DBP-Part-1_Digital Nameplate_without_examplevalues.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Digital nameplate/3/0/1/IDTA 02006-3-0-1_Template_Digital Nameplate.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Digital nameplate/3/0/IDTA 02006-3-0_Template_Digital Nameplate.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///61987#ABH830#002",
+      "preferred_name": "Expiry Date",
+      "idShort": "ExpiryDate",
+      "definition": "date, at which the specified certificate expires ",
+      "datatype": "xs:date",
+      "value_type": "xs:date",
+      "unit": null,
+      "submodel_hint": "DigitalBatteryPassport",
+      "element_type": "Property",
+      "aliases": [
+        "Expiry Date",
+        "ExpiryDate"
+      ],
+      "source_kind": "idta_concept_description+idta_semantic_reference+idta_template_reference",
+      "source_templates": [
+        "https://admin-shell.io/IDTA 02006-3-0",
+        "https://admin-shell.io/idta-02006-3-0",
+        "https://admin-shell.io/idta-02035-1"
+      ],
+      "source_paths": [
+        "BatteryNameplate/Markings/Markings__00__/ExpiryDate",
+        "Nameplate/Markings/ExpiryDate"
+      ],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Digital Battery Passport/1_Digital Nameplate/1/0/IDTA 02035-1_DBP-Part-1_Digital Nameplate.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Digital Battery Passport/1_Digital Nameplate/1/0/IDTA 02035-1_DBP-Part-1_Digital Nameplate_without_examplevalues.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Digital nameplate/3/0/1/IDTA 02006-3-0-1_Template_Digital Nameplate.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Digital nameplate/3/0/IDTA 02006-3-0_Template_Digital Nameplate.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///61987#ABN590#002",
+      "preferred_name": "URI of the product",
+      "idShort": "URIOfTheProduct",
+      "definition": "Unique URI that identifies the product or product instance.",
+      "datatype": "URI",
+      "value_type": "xs:anyURI",
+      "unit": null,
+      "submodel_hint": "DigitalNameplate",
+      "element_type": "Property",
+      "aliases": [
+        "URI of the product",
+        "U R I of the product",
+        "product uri",
+        "product url",
+        "URIOfTheProduct"
+      ],
+      "source_kind": "curated_seed+idta_concept_description+idta_semantic_reference+idta_template_reference",
+      "source_templates": [
+        "https://admin-shell.io/IDTA 02006-3-0",
+        "https://admin-shell.io/idta-02006-3-0",
+        "https://admin-shell.io/idta-02035-1",
+        "https://admin-shell.io/idta/SubmodelTemplate/AIDataset/1/0",
+        "https://admin-shell.io/idta/SubmodelTemplate/AIDeployment/1/0",
+        "https://admin-shell.io/idta/SubmodelTemplate/AIModelNameplate/1/0"
+      ],
+      "source_paths": [
+        "AIDataset/URIOfTheProduct",
+        "AIDeployment/URIOfTheProduct",
+        "AIModelNameplate/URIOfTheProduct",
+        "BatteryNameplate/URIOfTheProduct",
+        "Nameplate/URIOfTheProduct"
+      ],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Artificial Intelligence Dataset/1/0/1/IDTA 02058-1-0-1_Template_AIDataset.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Artificial Intelligence Dataset/1/0/1/IDTA 02058-1-0-1_Template_AIDataset_forAASMetamodelV3.1.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Artificial Intelligence Dataset/1/0/IDTA 02058-1-0_Template_AIDataset.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Artificial Intelligence Deployment/1/0/1/IDTA 02059-1-0-1_Template_AIDeployment.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Artificial Intelligence Deployment/1/0/1/IDTA 02059-1-0-1_Template_AIDeployment_forAASMetamodelV3.1.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Artificial Intelligence Deployment/1/0/IDTA 02059-1-0_Template_AIDeployment.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Artificial Intelligence Model Nameplate/1/0/1/IDTA 02060-1-0-1_Template_AIModelNameplate.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Artificial Intelligence Model Nameplate/1/0/1/IDTA 02060-1-0-1_Template_AIModelNameplate_forAASMetamodelV3.1.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Artificial Intelligence Model Nameplate/1/0/IDTA 02060-1-0_Template_AIModelNameplate.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Digital Battery Passport/1_Digital Nameplate/1/0/IDTA 02035-1_DBP-Part-1_Digital Nameplate.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Digital Battery Passport/1_Digital Nameplate/1/0/IDTA 02035-1_DBP-Part-1_Digital Nameplate_without_examplevalues.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Digital nameplate/3/0/1/IDTA 02006-3-0-1_Template_Digital Nameplate.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Digital nameplate/3/0/IDTA 02006-3-0_Template_Digital Nameplate.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///61987#ABN718#001",
+      "preferred_name": "Distance",
+      "idShort": "Distance",
+      "definition": "The measured length between two points.",
+      "datatype": "xs:float",
+      "value_type": "xs:float",
+      "unit": null,
+      "submodel_hint": "Sensor40",
+      "element_type": "Property",
+      "aliases": [
+        "Distance"
+      ],
+      "source_kind": "idta_concept_description+idta_semantic_reference+idta_template_reference",
+      "source_templates": [
+        "https://admin-shell.io/idta/SubmodelTemplate/measurementValue/1/0"
+      ],
+      "source_paths": [
+        "MeasurementValue/MeasuredValuePreDefined/Distance"
+      ],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/sensor4.0/Part 1 Measurement Value/1/0/IDTA 02029-1_Template_Sensor4.0_MeasurementValue.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///61987#ABO097#001",
+      "preferred_name": "Issue Date",
+      "idShort": "IssueDate",
+      "definition": "date, at which the specified certificate is issued ",
+      "datatype": "xs:date",
+      "value_type": "xs:date",
+      "unit": null,
+      "submodel_hint": "DigitalBatteryPassport",
+      "element_type": "Property",
+      "aliases": [
+        "Issue Date",
+        "IssueDate"
+      ],
+      "source_kind": "idta_concept_description+idta_semantic_reference+idta_template_reference",
+      "source_templates": [
+        "https://admin-shell.io/IDTA 02006-3-0",
+        "https://admin-shell.io/idta-02006-3-0",
+        "https://admin-shell.io/idta-02035-1"
+      ],
+      "source_paths": [
+        "BatteryNameplate/Markings/Markings__00__/IssueDate",
+        "Nameplate/Markings/IssueDate"
+      ],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Digital Battery Passport/1_Digital Nameplate/1/0/IDTA 02035-1_DBP-Part-1_Digital Nameplate.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Digital Battery Passport/1_Digital Nameplate/1/0/IDTA 02035-1_DBP-Part-1_Digital Nameplate_without_examplevalues.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Digital nameplate/3/0/1/IDTA 02006-3-0-1_Template_Digital Nameplate.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Digital nameplate/3/0/IDTA 02006-3-0_Template_Digital Nameplate.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///61987#ABO100#002",
+      "preferred_name": "Marking File",
+      "idShort": "MarkingFile",
+      "definition": "conformity symbol of the marking ",
+      "datatype": "STRING",
+      "value_type": "STRING",
+      "unit": null,
+      "submodel_hint": "DigitalBatteryPassport",
+      "element_type": "File",
+      "aliases": [
+        "Marking File",
+        "MarkingFile"
+      ],
+      "source_kind": "idta_concept_description+idta_semantic_reference+idta_template_reference",
+      "source_templates": [
+        "https://admin-shell.io/IDTA 02006-3-0",
+        "https://admin-shell.io/idta-02006-3-0",
+        "https://admin-shell.io/idta-02035-1"
+      ],
+      "source_paths": [
+        "BatteryNameplate/Markings/Markings__00__/MarkingFile",
+        "Nameplate/Markings/MarkingFile"
+      ],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Digital Battery Passport/1_Digital Nameplate/1/0/IDTA 02035-1_DBP-Part-1_Digital Nameplate.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Digital Battery Passport/1_Digital Nameplate/1/0/IDTA 02035-1_DBP-Part-1_Digital Nameplate_without_examplevalues.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Digital nameplate/3/0/1/IDTA 02006-3-0-1_Template_Digital Nameplate.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Digital nameplate/3/0/IDTA 02006-3-0_Template_Digital Nameplate.json"
+      ]
     },
     {
       "irdi": "0112/2///61987#ABP000#002",
@@ -77,7 +1527,24 @@
       "unit": null,
       "submodel_hint": "DigitalNameplate",
       "element_type": "Property",
-      "aliases": ["year of construction", "year of manufacture", "manufacture year"]
+      "aliases": [
+        "Year of construction",
+        "year of manufacture",
+        "manufacture year",
+        "YearOfConstruction"
+      ],
+      "source_kind": "curated_seed+idta_concept_description+idta_semantic_reference+idta_template_reference",
+      "source_templates": [
+        "https://admin-shell.io/IDTA 02006-3-0",
+        "https://admin-shell.io/idta-02006-3-0"
+      ],
+      "source_paths": [
+        "Nameplate/YearOfConstruction"
+      ],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Digital nameplate/3/0/1/IDTA 02006-3-0-1_Template_Digital Nameplate.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Digital nameplate/3/0/IDTA 02006-3-0_Template_Digital Nameplate.json"
+      ]
     },
     {
       "irdi": "0112/2///61987#ABP462#001",
@@ -89,7 +1556,1071 @@
       "unit": null,
       "submodel_hint": "DigitalNameplate",
       "element_type": "Property",
-      "aliases": ["country of origin", "made in", "origin country"]
+      "aliases": [
+        "Country of origin",
+        "made in",
+        "origin country",
+        "CountryOfOrigin"
+      ],
+      "source_kind": "curated_seed+idta_concept_description+idta_semantic_reference+idta_template_reference",
+      "source_templates": [
+        "https://admin-shell.io/IDTA 02006-3-0",
+        "https://admin-shell.io/idta-02006-3-0"
+      ],
+      "source_paths": [
+        "Nameplate/CountryOfOrigin"
+      ],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Digital nameplate/3/0/1/IDTA 02006-3-0-1_Template_Digital Nameplate.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Digital nameplate/3/0/IDTA 02006-3-0_Template_Digital Nameplate.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///61987#ABP463#001",
+      "preferred_name": "Company Logo",
+      "idShort": "CompanyLogo",
+      "definition": "a graphic mark used to represent a company, an organisation or a product",
+      "datatype": "STRING",
+      "value_type": "STRING",
+      "unit": null,
+      "submodel_hint": "DigitalNameplate",
+      "element_type": "File",
+      "aliases": [
+        "Company Logo",
+        "CompanyLogo"
+      ],
+      "source_kind": "idta_concept_description+idta_semantic_reference+idta_template_reference",
+      "source_templates": [
+        "https://admin-shell.io/IDTA 02006-3-0",
+        "https://admin-shell.io/idta-02006-3-0"
+      ],
+      "source_paths": [
+        "Nameplate/CompanyLogo"
+      ],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Digital nameplate/3/0/1/IDTA 02006-3-0-1_Template_Digital Nameplate.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Digital nameplate/3/0/IDTA 02006-3-0_Template_Digital Nameplate.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///61987#ABP464#002",
+      "preferred_name": "Manufacturer Product Family",
+      "idShort": "ManufacturerProductFamily",
+      "definition": "second level of a 3 level manufacturer specific product hierarchy",
+      "datatype": "STRING_TRANSLATABLE",
+      "value_type": "STRING_TRANSLATABLE",
+      "unit": null,
+      "submodel_hint": "DigitalNameplate",
+      "element_type": "MultiLanguageProperty",
+      "aliases": [
+        "Manufacturer Product Family",
+        "ManufacturerProductFamily"
+      ],
+      "source_kind": "idta_concept_description+idta_semantic_reference+idta_template_reference",
+      "source_templates": [
+        "https://admin-shell.io/IDTA 02006-3-0",
+        "https://admin-shell.io/idta-02006-3-0"
+      ],
+      "source_paths": [
+        "Nameplate/ManufacturerProductFamily"
+      ],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Digital nameplate/3/0/1/IDTA 02006-3-0-1_Template_Digital Nameplate.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Digital nameplate/3/0/IDTA 02006-3-0_Template_Digital Nameplate.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///62683#ACE005#001",
+      "preferred_name": "Number Of Functional Safety Sets Of Characteristics",
+      "idShort": "NumberOfFunctionalSafetySetsOfCharacteristics",
+      "definition": "cardinality property for the number of sets of characteristics of a product for use in functional safety assessment",
+      "datatype": "xs:int",
+      "value_type": "xs:int",
+      "unit": null,
+      "submodel_hint": "FunctionalSafety",
+      "element_type": "Property",
+      "aliases": [
+        "Number Of Functional Safety Sets Of Characteristics",
+        "NumberOfFunctionalSafetySetsOfCharacteristics"
+      ],
+      "source_kind": "idta_concept_description+idta_semantic_reference+idta_template_reference",
+      "source_templates": [
+        "https://admin-shell.io/idta/SubmodelTemplate/FunctionalSafety/1/0"
+      ],
+      "source_paths": [
+        "FunctionalSafety/NumberOfFunctionalSafetySetsOfCharacteristics"
+      ],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Functional Safety/1/0/1/IDTA 02014-1-0-1_Template_FunctionalSafety.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Functional Safety/1/0/1/IDTA 02014-1-0-1_Template_FunctionalSafety_forAASMetamodelV3.1.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Functional Safety/1/0/IDTA 02014-1-0_Template_FunctionalSafety.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///62683#ACE006#001",
+      "preferred_name": "Number Of Reliability Sets",
+      "idShort": "NumberOfReliabilitySets",
+      "definition": "number of reliability sets of characteristics",
+      "datatype": "xs:int",
+      "value_type": "xs:int",
+      "unit": null,
+      "submodel_hint": "Reliability",
+      "element_type": "Property",
+      "aliases": [
+        "Number Of Reliability Sets",
+        "NumberOfReliabilitySets",
+        "number of reliability sets of characteristics",
+        "NumberOfReliabilitySetsOfCharacteristics",
+        "No Of Reli Sets",
+        "NoOfReliSets"
+      ],
+      "source_kind": "idta_concept_description+idta_semantic_reference+idta_template_reference",
+      "source_templates": [
+        "https://admin-shell.io/idta/SubmodelTemplate/Reliability/1/0"
+      ],
+      "source_paths": [
+        "Reliability/NumberOfReliabilitySets"
+      ],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Reliability/1/0/1/IDTA 02013-1-0-1_Template_Reliability.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Reliability/1/0/1/IDTA 02013-1-0-1_Template_Reliability_forAASMetamodelV3.1.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Reliability/1/0/IDTA 02013-1-0_Template_Reliability.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///62683#ACE051#001",
+      "preferred_name": "S I L",
+      "idShort": "SIL",
+      "definition": "discrete level (one out of a possible three) for describing the capability to perform a safety function where safety integrity level three has the highest level of safety integrity and safety integrity level one has the lowest",
+      "datatype": "xs:string",
+      "value_type": "xs:string",
+      "unit": null,
+      "submodel_hint": "FunctionalSafety",
+      "element_type": "Property",
+      "aliases": [
+        "S I L",
+        "SIL",
+        "safety integrity level",
+        "SafetyIntegrityLevel"
+      ],
+      "source_kind": "idta_concept_description+idta_semantic_reference+idta_template_reference",
+      "source_templates": [
+        "https://admin-shell.io/idta/SubmodelTemplate/FunctionalSafety/1/0"
+      ],
+      "source_paths": [
+        "FunctionalSafety/SafetyDeviceTypes/InherentlySafeSubsystem/SIL",
+        "FunctionalSafety/SafetyDeviceTypes/SafetySubsystem/SIL"
+      ],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Functional Safety/1/0/1/IDTA 02014-1-0-1_Template_FunctionalSafety.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Functional Safety/1/0/1/IDTA 02014-1-0-1_Template_FunctionalSafety_forAASMetamodelV3.1.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Functional Safety/1/0/IDTA 02014-1-0_Template_FunctionalSafety.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///62683#ACE052#001",
+      "preferred_name": "P F H",
+      "idShort": "PFH",
+      "definition": "average frequency of dangerous failure of an SCS to perform a specified safety function over a given period of time",
+      "datatype": "xs:double",
+      "value_type": "xs:double",
+      "unit": "1/h",
+      "submodel_hint": "FunctionalSafety",
+      "element_type": "Property",
+      "aliases": [
+        "P F H",
+        "PFH",
+        "probability of dangerous failure within one hour",
+        "ProbabilityOfDangerousFailureWithinOneHour"
+      ],
+      "source_kind": "idta_concept_description+idta_semantic_reference+idta_template_reference",
+      "source_templates": [
+        "https://admin-shell.io/idta/SubmodelTemplate/FunctionalSafety/1/0"
+      ],
+      "source_paths": [
+        "FunctionalSafety/SafetyDeviceTypes/SafetySubsystem/PFH"
+      ],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Functional Safety/1/0/1/IDTA 02014-1-0-1_Template_FunctionalSafety.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Functional Safety/1/0/1/IDTA 02014-1-0-1_Template_FunctionalSafety_forAASMetamodelV3.1.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Functional Safety/1/0/IDTA 02014-1-0_Template_FunctionalSafety.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///62683#ACE053#001",
+      "preferred_name": "Type Of Interlocking Device",
+      "idShort": "TypeOfInterlockingDevice",
+      "definition": "classification of device which prevent the hazardous operation of machine, depending on the technology of their actuating means and their output system",
+      "datatype": "xs:string",
+      "value_type": "xs:string",
+      "unit": null,
+      "submodel_hint": "FunctionalSafety",
+      "element_type": "Property",
+      "aliases": [
+        "Type Of Interlocking Device",
+        "TypeOfInterlockingDevice",
+        "Interlocking"
+      ],
+      "source_kind": "idta_concept_description+idta_semantic_reference+idta_template_reference",
+      "source_templates": [
+        "https://admin-shell.io/idta/SubmodelTemplate/FunctionalSafety/1/0",
+        "https://admin-shell.io/idta/SubmodelTemplate/Reliability/1/0"
+      ],
+      "source_paths": [
+        "FunctionalSafety/OperatingConditionsOfFunctionalSafetyCharacteristics/TypeOfInterlockingDevice",
+        "Reliability/OperatingConditionsOfReliabilityCharacteristics/TypeOfInterlockingDevice"
+      ],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Functional Safety/1/0/1/IDTA 02014-1-0-1_Template_FunctionalSafety.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Functional Safety/1/0/1/IDTA 02014-1-0-1_Template_FunctionalSafety_forAASMetamodelV3.1.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Functional Safety/1/0/IDTA 02014-1-0_Template_FunctionalSafety.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Reliability/1/0/1/IDTA 02013-1-0-1_Template_Reliability.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Reliability/1/0/1/IDTA 02013-1-0-1_Template_Reliability_forAASMetamodelV3.1.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Reliability/1/0/IDTA 02013-1-0_Template_Reliability.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///62683#ACE054#001",
+      "preferred_name": "Useful Life In Time Interval",
+      "idShort": "UsefulLifeInTimeInterval",
+      "definition": "under given conditions, the time interval beginning at a given instant of time, and ending when the failure rate becomes unacceptable",
+      "datatype": "xs:double",
+      "value_type": "xs:double",
+      "unit": "y",
+      "submodel_hint": "FunctionalSafety",
+      "element_type": "Property",
+      "aliases": [
+        "Useful Life In Time Interval",
+        "UsefulLifeInTimeInterval",
+        "Time Interval",
+        "TimeInterval",
+        "Life In Time",
+        "LifeInTime"
+      ],
+      "source_kind": "idta_concept_description+idta_semantic_reference+idta_template_reference",
+      "source_templates": [
+        "https://admin-shell.io/idta/SubmodelTemplate/FunctionalSafety/1/0",
+        "https://admin-shell.io/idta/SubmodelTemplate/Reliability/1/0"
+      ],
+      "source_paths": [
+        "FunctionalSafety/OperatingConditionsOfFunctionalSafetyCharacteristics/UsefulLifeInTimeInterval",
+        "Reliability/OperatingConditionsOfReliabilityCharacteristics/UsefulLifeInTimeInterval"
+      ],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Functional Safety/1/0/1/IDTA 02014-1-0-1_Template_FunctionalSafety.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Functional Safety/1/0/1/IDTA 02014-1-0-1_Template_FunctionalSafety_forAASMetamodelV3.1.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Functional Safety/1/0/IDTA 02014-1-0_Template_FunctionalSafety.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Reliability/1/0/1/IDTA 02013-1-0-1_Template_Reliability.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Reliability/1/0/1/IDTA 02013-1-0-1_Template_Reliability_forAASMetamodelV3.1.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Reliability/1/0/IDTA 02013-1-0_Template_Reliability.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///62683#ACE055#001",
+      "preferred_name": "Useful Life In Number Of Operations",
+      "idShort": "UsefulLifeInNumberOfOperations",
+      "definition": "under given conditions, the number of operations for which the failure rate becomes unacceptable",
+      "datatype": "xs:double",
+      "value_type": "xs:double",
+      "unit": null,
+      "submodel_hint": "FunctionalSafety",
+      "element_type": "Property",
+      "aliases": [
+        "Useful Life In Number Of Operations",
+        "UsefulLifeInNumberOfOperations",
+        "No Of Operations",
+        "NoOfOperations"
+      ],
+      "source_kind": "idta_concept_description+idta_semantic_reference+idta_template_reference",
+      "source_templates": [
+        "https://admin-shell.io/idta/SubmodelTemplate/FunctionalSafety/1/0",
+        "https://admin-shell.io/idta/SubmodelTemplate/Reliability/1/0"
+      ],
+      "source_paths": [
+        "FunctionalSafety/OperatingConditionsOfFunctionalSafetyCharacteristics/UsefulLifeInNumberOfOperations",
+        "Reliability/OperatingConditionsOfReliabilityCharacteristics/UsefulLifeInNumberOfOperations"
+      ],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Functional Safety/1/0/1/IDTA 02014-1-0-1_Template_FunctionalSafety.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Functional Safety/1/0/1/IDTA 02014-1-0-1_Template_FunctionalSafety_forAASMetamodelV3.1.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Functional Safety/1/0/IDTA 02014-1-0_Template_FunctionalSafety.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Reliability/1/0/1/IDTA 02013-1-0-1_Template_Reliability.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Reliability/1/0/1/IDTA 02013-1-0-1_Template_Reliability_forAASMetamodelV3.1.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Reliability/1/0/IDTA 02013-1-0_Template_Reliability.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///62683#ACE056#001",
+      "preferred_name": "B10 D",
+      "idShort": "B10D",
+      "definition": "mean number of operating cycles at which ten percent of the components fail dangerously",
+      "datatype": "xs:double",
+      "value_type": "xs:double",
+      "unit": null,
+      "submodel_hint": "FunctionalSafety",
+      "element_type": "Property",
+      "aliases": [
+        "B10 D",
+        "B10D",
+        "number of operations until ten percent dangerous failure",
+        "NumberOfOperationsUntilTenPercentDangerousFailure"
+      ],
+      "source_kind": "idta_concept_description+idta_semantic_reference+idta_template_reference",
+      "source_templates": [
+        "https://admin-shell.io/idta/SubmodelTemplate/FunctionalSafety/1/0"
+      ],
+      "source_paths": [
+        "FunctionalSafety/SafetyDeviceTypes/ElectromechanicalElement/B10D"
+      ],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Functional Safety/1/0/1/IDTA 02014-1-0-1_Template_FunctionalSafety.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Functional Safety/1/0/1/IDTA 02014-1-0-1_Template_FunctionalSafety_forAASMetamodelV3.1.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Functional Safety/1/0/IDTA 02014-1-0_Template_FunctionalSafety.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///62683#ACE057#001",
+      "preferred_name": "M T T F D",
+      "idShort": "MTTFD",
+      "definition": "mean time to dangerous failure: expectation of the mean time to dangerous failure",
+      "datatype": "xs:int",
+      "value_type": "xs:int",
+      "unit": "y",
+      "submodel_hint": "FunctionalSafety",
+      "element_type": "Property",
+      "aliases": [
+        "M T T F D",
+        "MTTFD",
+        "mean time to dangerous failure",
+        "MeanTimeToDangerousFailure"
+      ],
+      "source_kind": "idta_concept_description+idta_semantic_reference+idta_template_reference",
+      "source_templates": [
+        "https://admin-shell.io/idta/SubmodelTemplate/FunctionalSafety/1/0"
+      ],
+      "source_paths": [
+        "FunctionalSafety/SafetyDeviceTypes/ElectronicElement/MTTFD"
+      ],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Functional Safety/1/0/1/IDTA 02014-1-0-1_Template_FunctionalSafety.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Functional Safety/1/0/1/IDTA 02014-1-0-1_Template_FunctionalSafety_forAASMetamodelV3.1.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Functional Safety/1/0/IDTA 02014-1-0_Template_FunctionalSafety.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///62683#ACE058#001",
+      "preferred_name": "Proof Test Interval",
+      "idShort": "ProofTestInterval",
+      "definition": "proof test interval",
+      "datatype": "xs:double",
+      "value_type": "xs:double",
+      "unit": "y",
+      "submodel_hint": "FunctionalSafety",
+      "element_type": "Property",
+      "aliases": [
+        "Proof Test Interval",
+        "ProofTestInterval",
+        "Test Interval",
+        "TestInterval"
+      ],
+      "source_kind": "idta_concept_description+idta_semantic_reference+idta_template_reference",
+      "source_templates": [
+        "https://admin-shell.io/idta/SubmodelTemplate/FunctionalSafety/1/0"
+      ],
+      "source_paths": [
+        "FunctionalSafety/SafetyDeviceTypes/ElectromechanicalElement/ProofTestInterval",
+        "FunctionalSafety/SafetyDeviceTypes/ElectronicElement/ProofTestInterval",
+        "FunctionalSafety/SafetyDeviceTypes/InherentlySafeSubsystem/ProofTestInterval",
+        "FunctionalSafety/SafetyDeviceTypes/SafetySubsystem/ProofTestInterval"
+      ],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Functional Safety/1/0/1/IDTA 02014-1-0-1_Template_FunctionalSafety.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Functional Safety/1/0/1/IDTA 02014-1-0-1_Template_FunctionalSafety_forAASMetamodelV3.1.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Functional Safety/1/0/IDTA 02014-1-0_Template_FunctionalSafety.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///62683#ACE060#001",
+      "preferred_name": "P L",
+      "idShort": "PL",
+      "definition": "discrete level used to specify the ability of safety-related parts of control systems to perform a safety function under foreseeable conditions",
+      "datatype": "xs:string",
+      "value_type": "xs:string",
+      "unit": null,
+      "submodel_hint": "FunctionalSafety",
+      "element_type": "Property",
+      "aliases": [
+        "P L",
+        "PL",
+        "performance level",
+        "PerformanceLevel"
+      ],
+      "source_kind": "idta_concept_description+idta_semantic_reference+idta_template_reference",
+      "source_templates": [
+        "https://admin-shell.io/idta/SubmodelTemplate/FunctionalSafety/1/0"
+      ],
+      "source_paths": [
+        "FunctionalSafety/SafetyDeviceTypes/InherentlySafeSubsystem/PL",
+        "FunctionalSafety/SafetyDeviceTypes/SafetySubsystem/PL"
+      ],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Functional Safety/1/0/1/IDTA 02014-1-0-1_Template_FunctionalSafety.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Functional Safety/1/0/1/IDTA 02014-1-0-1_Template_FunctionalSafety_forAASMetamodelV3.1.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Functional Safety/1/0/IDTA 02014-1-0_Template_FunctionalSafety.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///62683#ACE061#001",
+      "preferred_name": "M T T F",
+      "idShort": "MTTF",
+      "definition": "expectation of the operating time to failure",
+      "datatype": "xs:int",
+      "value_type": "xs:int",
+      "unit": "y",
+      "submodel_hint": "Reliability",
+      "element_type": "Property",
+      "aliases": [
+        "M T T F",
+        "MTTF",
+        "mean operating time to failure",
+        "MeanOperatingTimeToFailure"
+      ],
+      "source_kind": "idta_concept_description+idta_semantic_reference+idta_template_reference",
+      "source_templates": [
+        "https://admin-shell.io/idta/SubmodelTemplate/Reliability/1/0"
+      ],
+      "source_paths": [
+        "Reliability/ReliabilityCharacteristics/MTTF"
+      ],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Reliability/1/0/1/IDTA 02013-1-0-1_Template_Reliability.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Reliability/1/0/1/IDTA 02013-1-0-1_Template_Reliability_forAASMetamodelV3.1.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Reliability/1/0/IDTA 02013-1-0_Template_Reliability.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///62683#ACE062#001",
+      "preferred_name": "M T B F",
+      "idShort": "MTBF",
+      "definition": "expectation of the duration of the operating time between failures",
+      "datatype": "xs:int",
+      "value_type": "xs:int",
+      "unit": "y",
+      "submodel_hint": "Reliability",
+      "element_type": "Property",
+      "aliases": [
+        "M T B F",
+        "MTBF",
+        "mean operating time between failure",
+        "MeanOperatingTimeBetweenFailure"
+      ],
+      "source_kind": "idta_concept_description+idta_semantic_reference+idta_template_reference",
+      "source_templates": [
+        "https://admin-shell.io/idta/SubmodelTemplate/Reliability/1/0"
+      ],
+      "source_paths": [
+        "Reliability/ReliabilityCharacteristics/MTBF"
+      ],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Reliability/1/0/1/IDTA 02013-1-0-1_Template_Reliability.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Reliability/1/0/1/IDTA 02013-1-0-1_Template_Reliability_forAASMetamodelV3.1.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Reliability/1/0/IDTA 02013-1-0_Template_Reliability.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///62683#ACE063#001",
+      "preferred_name": "Category",
+      "idShort": "Category",
+      "definition": "classification of the safety-related parts of a control system in respect of their resistance to faults and their subsequent behaviour in the fault condition, and which is achieved by the structural arrangement of the parts, fault detection and/or by their reliability",
+      "datatype": "xs:string",
+      "value_type": "xs:string",
+      "unit": null,
+      "submodel_hint": "FunctionalSafety",
+      "element_type": "Property",
+      "aliases": [
+        "Category",
+        "Categroy"
+      ],
+      "source_kind": "idta_concept_description+idta_semantic_reference+idta_template_reference",
+      "source_templates": [
+        "https://admin-shell.io/idta/SubmodelTemplate/FunctionalSafety/1/0"
+      ],
+      "source_paths": [
+        "FunctionalSafety/SafetyDeviceTypes/InherentlySafeSubsystem/Category",
+        "FunctionalSafety/SafetyDeviceTypes/SafetySubsystem/Category"
+      ],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Functional Safety/1/0/1/IDTA 02014-1-0-1_Template_FunctionalSafety.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Functional Safety/1/0/1/IDTA 02014-1-0-1_Template_FunctionalSafety_forAASMetamodelV3.1.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Functional Safety/1/0/IDTA 02014-1-0_Template_FunctionalSafety.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///62683#ACE070#001",
+      "preferred_name": "Other Operating Conditions",
+      "idShort": "OtherOperatingConditions",
+      "definition": "other limits of operation related to functional safety characteristics",
+      "datatype": "xs:string",
+      "value_type": "xs:string",
+      "unit": null,
+      "submodel_hint": "FunctionalSafety",
+      "element_type": "Property",
+      "aliases": [
+        "Other Operating Conditions",
+        "OtherOperatingConditions",
+        "Other Oper Cond",
+        "OtherOperCond"
+      ],
+      "source_kind": "idta_concept_description+idta_semantic_reference+idta_template_reference",
+      "source_templates": [
+        "https://admin-shell.io/idta/SubmodelTemplate/FunctionalSafety/1/0",
+        "https://admin-shell.io/idta/SubmodelTemplate/Reliability/1/0"
+      ],
+      "source_paths": [
+        "FunctionalSafety/OperatingConditionsOfFunctionalSafetyCharacteristics/OtherOperatingConditions",
+        "Reliability/OperatingConditionsOfReliabilityCharacteristics/OtherOperatingConditions"
+      ],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Functional Safety/1/0/1/IDTA 02014-1-0-1_Template_FunctionalSafety.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Functional Safety/1/0/1/IDTA 02014-1-0-1_Template_FunctionalSafety_forAASMetamodelV3.1.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Functional Safety/1/0/IDTA 02014-1-0_Template_FunctionalSafety.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Reliability/1/0/1/IDTA 02013-1-0-1_Template_Reliability.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Reliability/1/0/1/IDTA 02013-1-0-1_Template_Reliability_forAASMetamodelV3.1.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Reliability/1/0/IDTA 02013-1-0_Template_Reliability.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///62683#ACE071#001",
+      "preferred_name": "Functional Safety Device Type",
+      "idShort": "FunctionalSafetyDeviceType",
+      "definition": "classification of device depending on their safety related characteristics and their capability as subsystem or subsystem element",
+      "datatype": "xs:string",
+      "value_type": "xs:string",
+      "unit": null,
+      "submodel_hint": "FunctionalSafety",
+      "element_type": "Property",
+      "aliases": [
+        "Functional Safety Device Type",
+        "FunctionalSafetyDeviceType",
+        "Functional Safety",
+        "FunctionalSafety"
+      ],
+      "source_kind": "idta_concept_description+idta_semantic_reference+idta_template_reference",
+      "source_templates": [
+        "https://admin-shell.io/idta/SubmodelTemplate/FunctionalSafety/1/0"
+      ],
+      "source_paths": [
+        "FunctionalSafety/SafetyDeviceTypes/FunctionalSafetyDeviceType"
+      ],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Functional Safety/1/0/1/IDTA 02014-1-0-1_Template_FunctionalSafety.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Functional Safety/1/0/1/IDTA 02014-1-0-1_Template_FunctionalSafety_forAASMetamodelV3.1.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Functional Safety/1/0/IDTA 02014-1-0_Template_FunctionalSafety.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///62683#ACE260#001",
+      "preferred_name": "housing or body material",
+      "idShort": "housing_or_body_material",
+      "definition": "housing or body material",
+      "datatype": null,
+      "value_type": null,
+      "unit": null,
+      "submodel_hint": "TechnicalData",
+      "element_type": "Property",
+      "aliases": [
+        "housing or body material",
+        "housing_or_body_material"
+      ],
+      "source_kind": "idta_concept_description+idta_semantic_reference",
+      "source_templates": [],
+      "source_paths": [],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Technical_Data/2/0/IDTA 02003_Sample_TechnicalData.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///62683#ACE440#001",
+      "preferred_name": "max ambient temperature",
+      "idShort": "max_ambient_temperature",
+      "definition": "operating temperature limits, determined under prescribed conditions, of the air surrounding the complete switching device",
+      "datatype": "xs:long",
+      "value_type": "xs:long",
+      "unit": "°C",
+      "submodel_hint": "TechnicalData",
+      "element_type": "Property",
+      "aliases": [
+        "max ambient temperature",
+        "max_ambient_temperature",
+        "max. ambient temperature",
+        "max. Umgebungstemperatur",
+        "ambient air temperature",
+        "ambient_air_temperature"
+      ],
+      "source_kind": "idta_concept_description+idta_semantic_reference+idta_template_reference",
+      "source_templates": [
+        "https://admin-shell.io/idta-02003-2-0"
+      ],
+      "source_paths": [
+        "TechnicalData/TechnicalPropertyAreas/IEC CDD/max_ambient_temperature"
+      ],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Technical_Data/2/0/IDTA 02003_Sample_TechnicalData.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///62683#ACE455#002",
+      "preferred_name": "rated operational voltage",
+      "idShort": "RatedOperationalVoltage",
+      "definition": "rated operational voltage",
+      "datatype": null,
+      "value_type": null,
+      "unit": null,
+      "submodel_hint": "TechnicalData",
+      "element_type": "Property",
+      "aliases": [
+        "rated operational voltage",
+        "RatedOperationalVoltage",
+        "Rated O V",
+        "RatedOV"
+      ],
+      "source_kind": "idta_concept_description",
+      "source_templates": [],
+      "source_paths": [],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Functional Safety/1/0/1/IDTA 02014-1-0-1_Template_FunctionalSafety.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Functional Safety/1/0/1/IDTA 02014-1-0-1_Template_FunctionalSafety_forAASMetamodelV3.1.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Functional Safety/1/0/IDTA 02014-1-0_Template_FunctionalSafety.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///62683#ACE534#001",
+      "preferred_name": "rated operational current, d.c.",
+      "idShort": "RatedOperationalCurrentDc",
+      "definition": "rated operational current, d.c.",
+      "datatype": null,
+      "value_type": null,
+      "unit": null,
+      "submodel_hint": "TechnicalData",
+      "element_type": "Property",
+      "aliases": [
+        "rated operational current, d.c.",
+        "Rated Operational Current Dc",
+        "RatedOperationalCurrentDc",
+        "OCDC",
+        "O C D C"
+      ],
+      "source_kind": "idta_concept_description",
+      "source_templates": [],
+      "source_paths": [],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Functional Safety/1/0/1/IDTA 02014-1-0-1_Template_FunctionalSafety.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Functional Safety/1/0/1/IDTA 02014-1-0-1_Template_FunctionalSafety_forAASMetamodelV3.1.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Functional Safety/1/0/IDTA 02014-1-0_Template_FunctionalSafety.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///62683#ACE601#001",
+      "preferred_name": "Operating voltage type",
+      "idShort": "Operating_voltage_type",
+      "definition": "kind of electric current supply",
+      "datatype": "xs:string",
+      "value_type": "xs:string",
+      "unit": null,
+      "submodel_hint": "TechnicalData",
+      "element_type": "Property",
+      "aliases": [
+        "Operating voltage type",
+        "Operating_voltage_type",
+        "Art der Betriebsspannung",
+        "kind of current",
+        "kind_of_current"
+      ],
+      "source_kind": "idta_concept_description+idta_semantic_reference+idta_template_reference",
+      "source_templates": [
+        "https://admin-shell.io/idta-02003-2-0"
+      ],
+      "source_paths": [
+        "TechnicalData/TechnicalPropertyAreas/IEC CDD/Operating_voltage_type"
+      ],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Technical_Data/2/0/IDTA 02003_Sample_TechnicalData.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///62683#ACE810#001",
+      "preferred_name": "diameter",
+      "idShort": "diameter",
+      "definition": "diameter of circular cross section of the device",
+      "datatype": "xs:long",
+      "value_type": "xs:long",
+      "unit": "mm",
+      "submodel_hint": "TechnicalData",
+      "element_type": "Property",
+      "aliases": [
+        "diameter",
+        "Durchmesser",
+        "diameter of the device",
+        "diameter_of_the_device"
+      ],
+      "source_kind": "idta_concept_description+idta_semantic_reference+idta_template_reference",
+      "source_templates": [
+        "https://admin-shell.io/idta-02003-2-0"
+      ],
+      "source_paths": [
+        "TechnicalData/TechnicalPropertyAreas/IEC CDD/diameter"
+      ],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Technical_Data/2/0/IDTA 02003_Sample_TechnicalData.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///62683#ACF057#001",
+      "preferred_name": "Operating conditions of functional safety characteristics",
+      "idShort": "OperatingConditionsOfFunctionalSafetyCharacteristics",
+      "definition": "operating condition limits for which the functional safety characteristics are valid",
+      "datatype": null,
+      "value_type": null,
+      "unit": null,
+      "submodel_hint": "TechnicalData",
+      "element_type": "Property",
+      "aliases": [
+        "Operating conditions of functional safety characteristics",
+        "OperatingConditionsOfFunctionalSafetyCharacteristics"
+      ],
+      "source_kind": "idta_concept_description",
+      "source_templates": [],
+      "source_paths": [],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Functional Safety/1/0/1/IDTA 02014-1-0-1_Template_FunctionalSafety.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Functional Safety/1/0/1/IDTA 02014-1-0-1_Template_FunctionalSafety_forAASMetamodelV3.1.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Functional Safety/1/0/IDTA 02014-1-0_Template_FunctionalSafety.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///62683#ACG057#001",
+      "preferred_name": "Operating conditions of functional safety characteristics",
+      "idShort": "OperatingConditionsOfFunctionalSafetyCharacteristics",
+      "definition": "Operating conditions of functional safety characteristics",
+      "datatype": null,
+      "value_type": null,
+      "unit": null,
+      "submodel_hint": "TechnicalData",
+      "element_type": "Property",
+      "aliases": [
+        "Operating conditions of functional safety characteristics",
+        "OperatingConditionsOfFunctionalSafetyCharacteristics"
+      ],
+      "source_kind": "idta_concept_description+idta_semantic_reference",
+      "source_templates": [],
+      "source_paths": [],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Functional Safety/1/0/1/IDTA 02014-1-0-1_Template_FunctionalSafety.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Functional Safety/1/0/1/IDTA 02014-1-0-1_Template_FunctionalSafety_forAASMetamodelV3.1.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Functional Safety/1/0/IDTA 02014-1-0_Template_FunctionalSafety.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Reliability/1/0/1/IDTA 02013-1-0-1_Template_Reliability.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Reliability/1/0/1/IDTA 02013-1-0-1_Template_Reliability_forAASMetamodelV3.1.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Reliability/1/0/IDTA 02013-1-0_Template_Reliability.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///62683#ACG065#001",
+      "preferred_name": "Safety subsystem",
+      "idShort": "SafetySubsystem",
+      "definition": "entity of the top-level architectural design of a safety-related system where a dangerous failure of the subsystem results in dangerous failure of a safety function",
+      "datatype": null,
+      "value_type": null,
+      "unit": null,
+      "submodel_hint": "TechnicalData",
+      "element_type": "Property",
+      "aliases": [
+        "Safety subsystem",
+        "SafetySubsystem",
+        "Subsystem"
+      ],
+      "source_kind": "idta_concept_description+idta_semantic_reference",
+      "source_templates": [],
+      "source_paths": [],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Functional Safety/1/0/1/IDTA 02014-1-0-1_Template_FunctionalSafety.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Functional Safety/1/0/1/IDTA 02014-1-0-1_Template_FunctionalSafety_forAASMetamodelV3.1.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Functional Safety/1/0/IDTA 02014-1-0_Template_FunctionalSafety.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///62683#ACG066#001",
+      "preferred_name": "Electronic element",
+      "idShort": "ElectronicElement",
+      "definition": "selected device type depending on its safety related characteristics and its capability as subsystem or subsystem element",
+      "datatype": null,
+      "value_type": null,
+      "unit": null,
+      "submodel_hint": "TechnicalData",
+      "element_type": "Property",
+      "aliases": [
+        "Electronic element",
+        "ElectronicElement",
+        "E E",
+        "EE"
+      ],
+      "source_kind": "idta_concept_description+idta_semantic_reference",
+      "source_templates": [],
+      "source_paths": [],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Functional Safety/1/0/1/IDTA 02014-1-0-1_Template_FunctionalSafety.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Functional Safety/1/0/1/IDTA 02014-1-0-1_Template_FunctionalSafety_forAASMetamodelV3.1.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Functional Safety/1/0/IDTA 02014-1-0_Template_FunctionalSafety.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///62683#ACG067#001",
+      "preferred_name": "Electromechanical element",
+      "idShort": "ElectromechanicalElement",
+      "definition": "electromechanical element subject to wearing provided with functional safety characteristics",
+      "datatype": null,
+      "value_type": null,
+      "unit": null,
+      "submodel_hint": "TechnicalData",
+      "element_type": "Property",
+      "aliases": [
+        "Electromechanical element",
+        "ElectromechanicalElement",
+        "E M elements",
+        "EM-elements"
+      ],
+      "source_kind": "idta_concept_description+idta_semantic_reference",
+      "source_templates": [],
+      "source_paths": [],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Functional Safety/1/0/1/IDTA 02014-1-0-1_Template_FunctionalSafety.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Functional Safety/1/0/1/IDTA 02014-1-0-1_Template_FunctionalSafety_forAASMetamodelV3.1.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Functional Safety/1/0/IDTA 02014-1-0_Template_FunctionalSafety.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///62683#ACG069#001",
+      "preferred_name": "Inherently safe subsystem",
+      "idShort": "InherentlySafeSubsystem",
+      "definition": "subsystem without dangerous failure mode",
+      "datatype": null,
+      "value_type": null,
+      "unit": null,
+      "submodel_hint": "TechnicalData",
+      "element_type": "Property",
+      "aliases": [
+        "Inherently safe subsystem",
+        "InherentlySafeSubsystem",
+        "subsystem"
+      ],
+      "source_kind": "idta_concept_description+idta_semantic_reference",
+      "source_templates": [],
+      "source_paths": [],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Functional Safety/1/0/1/IDTA 02014-1-0-1_Template_FunctionalSafety.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Functional Safety/1/0/1/IDTA 02014-1-0-1_Template_FunctionalSafety_forAASMetamodelV3.1.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Functional Safety/1/0/IDTA 02014-1-0_Template_FunctionalSafety.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///62683#ACG070#001",
+      "preferred_name": "Safety device types",
+      "idShort": "SafetyDeviceandTypes",
+      "definition": "selected device type depending on its safety related characteristics and its capability as subsystem or subsystem element",
+      "datatype": null,
+      "value_type": null,
+      "unit": null,
+      "submodel_hint": "TechnicalData",
+      "element_type": "Property",
+      "aliases": [
+        "Safety device types",
+        "Safety Deviceand Types",
+        "SafetyDeviceandTypes",
+        "Safety Device",
+        "SafetyDevice",
+        "SafetyDeviceTypes"
+      ],
+      "source_kind": "idta_concept_description+idta_semantic_reference",
+      "source_templates": [],
+      "source_paths": [],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Functional Safety/1/0/1/IDTA 02014-1-0-1_Template_FunctionalSafety.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Functional Safety/1/0/1/IDTA 02014-1-0-1_Template_FunctionalSafety_forAASMetamodelV3.1.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Functional Safety/1/0/IDTA 02014-1-0_Template_FunctionalSafety.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///62683#ACG071#001",
+      "preferred_name": "operating conditions of reliability characteristics",
+      "idShort": "OperatingConditionsOfReliabilityCharacteristics",
+      "definition": "operating conditions of reliability characteristics",
+      "datatype": null,
+      "value_type": null,
+      "unit": null,
+      "submodel_hint": "TechnicalData",
+      "element_type": "Property",
+      "aliases": [
+        "operating conditions of reliability characteristics",
+        "OperatingConditionsOfReliabilityCharacteristics"
+      ],
+      "source_kind": "idta_concept_description+idta_semantic_reference",
+      "source_templates": [],
+      "source_paths": [],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Reliability/1/0/1/IDTA 02013-1-0-1_Template_Reliability.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Reliability/1/0/1/IDTA 02013-1-0-1_Template_Reliability_forAASMetamodelV3.1.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Reliability/1/0/IDTA 02013-1-0_Template_Reliability.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///62683#ACG080#001",
+      "preferred_name": "Reliability characteristics",
+      "idShort": "ReliabilityCharacteristics",
+      "definition": "characteristics of a subsystem or a subsystem element intended for evaluating its ability to perform as required, without failure, for a given time interval, under given conditions",
+      "datatype": null,
+      "value_type": null,
+      "unit": null,
+      "submodel_hint": "TechnicalData",
+      "element_type": "Property",
+      "aliases": [
+        "Reliability characteristics",
+        "ReliabilityCharacteristics",
+        "Reliability Char",
+        "ReliabilityChar"
+      ],
+      "source_kind": "idta_concept_description+idta_semantic_reference",
+      "source_templates": [],
+      "source_paths": [],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Reliability/1/0/1/IDTA 02013-1-0-1_Template_Reliability.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Reliability/1/0/1/IDTA 02013-1-0-1_Template_Reliability_forAASMetamodelV3.1.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Reliability/1/0/IDTA 02013-1-0_Template_Reliability.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///62683#ACH235#001",
+      "preferred_name": "plastic",
+      "idShort": "plastic",
+      "definition": "plastic",
+      "datatype": "STRING",
+      "value_type": "STRING",
+      "unit": null,
+      "submodel_hint": "TechnicalData",
+      "element_type": "Property",
+      "aliases": [
+        "plastic"
+      ],
+      "source_kind": "idta_concept_description",
+      "source_templates": [],
+      "source_paths": [],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Technical_Data/2/0/IDTA 02003_Sample_TechnicalData.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///62683#ACH236#001",
+      "preferred_name": "metal",
+      "idShort": "metal",
+      "definition": "metal",
+      "datatype": "STRING",
+      "value_type": "STRING",
+      "unit": null,
+      "submodel_hint": "TechnicalData",
+      "element_type": "Property",
+      "aliases": [
+        "metal"
+      ],
+      "source_kind": "idta_concept_description",
+      "source_templates": [],
+      "source_paths": [],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Technical_Data/2/0/IDTA 02003_Sample_TechnicalData.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///62683#ACH351#001",
+      "preferred_name": "d.c.",
+      "idShort": "d.c.",
+      "definition": "d.c.",
+      "datatype": "STRING",
+      "value_type": "STRING",
+      "unit": null,
+      "submodel_hint": "TechnicalData",
+      "element_type": "Property",
+      "aliases": [
+        "d.c."
+      ],
+      "source_kind": "idta_concept_description",
+      "source_templates": [],
+      "source_paths": [],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Technical_Data/2/0/IDTA 02003_Sample_TechnicalData.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///62683#ACI144",
+      "preferred_name": "Kind",
+      "idShort": "Kind",
+      "definition": "Kind of measured value",
+      "datatype": "xs:string",
+      "value_type": "xs:string",
+      "unit": null,
+      "submodel_hint": "MaterialDataForPlasticWaste",
+      "element_type": "Property",
+      "aliases": [
+        "Kind"
+      ],
+      "source_kind": "idta_concept_description+idta_semantic_reference+idta_template_reference",
+      "source_templates": [
+        "https://admin-shell.io/IDTA 02080-1-0",
+        "https://admin-shell.io/idta/SubmodelTemplate/measurementValue/1/0"
+      ],
+      "source_paths": [
+        "MaterialDataForEN18065ClassificationOfPlastics/PropertyCharacteristics/AshContent/MeasuredValue/Kind",
+        "MaterialDataForEN18065ClassificationOfPlastics/PropertyCharacteristics/BulkDensity/MeasuredValue/Kind",
+        "MaterialDataForEN18065ClassificationOfPlastics/PropertyCharacteristics/Density/MeasuredValue/Kind",
+        "MaterialDataForEN18065ClassificationOfPlastics/PropertyCharacteristics/ParticleSizeDistribution/MeasuredValue/Kind",
+        "MaterialDataForEN18065ClassificationOfPlastics/PropertyCharacteristics/ResidualHumidity/MeasuredValue/Kind",
+        "MaterialDataForEN18065ClassificationOfPlastics/PropertyCharacteristics/TensileProperties/MeasuredValues/MeasuredValue/Kind",
+        "MaterialDataForEN18065ClassificationOfPlastics/PropertyCharacteristics/Viscosity/MeasuredValue/Kind",
+        "MeasurementValue/MeasuredValue/Kind"
+      ],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Material Data for Plastic Waste/1/0/IDTA_02080_Template_Material Data for Plastic Waste.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/sensor4.0/Part 1 Measurement Value/1/0/IDTA 02029-1_Template_Sensor4.0_MeasurementValue.json"
+      ]
+    },
+    {
+      "irdi": "0112/2///62720#UBA000",
+      "preferred_name": "Unit",
+      "idShort": "Unit",
+      "definition": "The unit of the measured value",
+      "datatype": "xs:string",
+      "value_type": "xs:string",
+      "unit": null,
+      "submodel_hint": "MaterialDataForPlasticWaste",
+      "element_type": "Property",
+      "aliases": [
+        "Unit"
+      ],
+      "source_kind": "idta_concept_description+idta_semantic_reference+idta_template_reference",
+      "source_templates": [
+        "https://admin-shell.io/IDTA 02080-1-0",
+        "https://admin-shell.io/idta/SubmodelTemplate/measurementValue/1/0"
+      ],
+      "source_paths": [
+        "MaterialDataForEN18065ClassificationOfPlastics/PropertyCharacteristics/AshContent/MeasuredValue/Unit",
+        "MaterialDataForEN18065ClassificationOfPlastics/PropertyCharacteristics/BulkDensity/MeasuredValue/Unit",
+        "MaterialDataForEN18065ClassificationOfPlastics/PropertyCharacteristics/Density/MeasuredValue/Unit",
+        "MaterialDataForEN18065ClassificationOfPlastics/PropertyCharacteristics/ParticleSizeDistribution/MeasuredValue/Unit",
+        "MaterialDataForEN18065ClassificationOfPlastics/PropertyCharacteristics/ResidualHumidity/MeasuredValue/Unit",
+        "MaterialDataForEN18065ClassificationOfPlastics/PropertyCharacteristics/TensileProperties/MeasuredValues/MeasuredValue/Unit",
+        "MaterialDataForEN18065ClassificationOfPlastics/PropertyCharacteristics/Viscosity/MeasuredValue/Unit",
+        "MeasurementValue/MeasuredValue/Unit"
+      ],
+      "source_files": [
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/Material Data for Plastic Waste/1/0/IDTA_02080_Template_Material Data for Plastic Waste.json",
+        "repositories/submodel_templates/admin_shell_io_submodel_templates/published/sensor4.0/Part 1 Measurement Value/1/0/IDTA 02029-1_Template_Sensor4.0_MeasurementValue.json"
+      ]
     }
   ]
 }

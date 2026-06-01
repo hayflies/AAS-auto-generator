@@ -103,7 +103,7 @@ class AASPropertyCandidate:
     aliases: list[str] = field(default_factory=list)
     similarity_score: float = 0.0
     eclass_irdi: str | None = None  # properties.json에서 로드됨
-    source: str = "project_repository"
+    source: str = "unknown"
     path: str | None = None
     element_type: str = "Property"
     value_type: str | None = None
@@ -207,6 +207,19 @@ class ValidationResult:
 
 
 @dataclass
+class MappingValidationResult:
+    """AAS 매핑 품질 검증 결과."""
+
+    overall_status: str
+    metrics: dict[str, Any]
+    ddms_metrics: dict[str, Any]
+    findings: list[dict[str, Any]] = field(default_factory=list)
+
+    def to_dict(self) -> dict[str, Any]:
+        return _compact(asdict(self))
+
+
+@dataclass
 class PipelineResult:
     """전체 파이프라인 실행 결과.
 
@@ -222,6 +235,7 @@ class PipelineResult:
     match_results: list[MatchResult]
     matched_properties: list[MatchedProperty]
     aas_mapping_plan: dict[str, Any]
+    mapping_validation: MappingValidationResult
     model_info: ModelInfo
     aas_json: dict[str, Any]
     aas_validation: dict[str, Any]
@@ -241,6 +255,7 @@ class PipelineResult:
             "match_results": [item.to_dict() for item in self.match_results],
             "matched_properties": [item.to_dict() for item in self.matched_properties],
             "aas_mapping_plan": self.aas_mapping_plan,
+            "mapping_validation": self.mapping_validation.to_dict(),
             "model_info": self.model_info.to_dict(),
             "aas_json": self.aas_json,
             "aas_validation": self.aas_validation,

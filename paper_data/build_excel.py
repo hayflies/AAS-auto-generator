@@ -317,7 +317,7 @@ for i, (h, w) in enumerate(zip(cols4, widths4), 1):
 pt_data = [
     ("이미지·PDF 전처리 및 OCR",          5,   0.1, "PDF 파서 + easyocr; 배치 이미지 처리"),
     ("속성 추출 (LLM 호출)",               8,   0.3, "Ollama 로컬 LLM; 디바이스당 단일 호출"),
-    ("의미 매칭 (임베딩 기반)",            10,  1.2, "nomic-embed-text 코사인 유사도; skip_llm=True"),
+    ("의미 매칭 (임베딩 기반)",            10,  1.2, "qwen3-embedding:4b 코사인 유사도; skip_llm=True"),
     ("서브모델 분류 및 AAS 매핑",          7,   0.2, "Sentence-transformers + 템플릿 매처"),
     ("AAS JSON 생성 및 유효성 검증",       5,   0.1, "코드 기반 생성; LLM 호출 없음"),
     ("합계 (엔드-투-엔드)",                35,  1.9, "3개 디바이스 평균 기준"),

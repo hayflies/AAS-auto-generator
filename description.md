@@ -14,7 +14,7 @@
 3. LLM 또는 manual extractor가 raw property를 ExtractedEntity로 만든다.
 4. LLM Semantic Node Builder가 SemanticNode를 생성하고 ECLASS IRDI를 보강한다.
 5. ECLASS, IEC CDD, Submodel Templates에서 top-k 후보군을 검색한다.
-6. 후보군을 LLM matcher에 넘겨 재랭킹한다. default mode에서는 similarity threshold로 fallback한다.
+6. 후보군을 LLM matcher에 넘겨 재랭킹한다. 기본 실행은 strict mode이며 LLM/embedding이 없으면 중단한다.
 7. SemanticNode와 가장 알맞은 AAS property, semanticId, eclassIrdi를 매핑한다.
 8. TemplateAwareAASMapper가 알맞은 Submodel Template/Submodel을 선택한다.
 9. ConceptDescription을 생성한다.
@@ -79,8 +79,8 @@ Output:
 - SemanticNode[]
 Responsibilities:
 - name, value, unit, value_type 정규화
-- conceptual_definition 생성 또는 fallback
-- affordance 생성 또는 fallback
+- Gemini API로 conceptual_definition 생성
+- Gemini API로 affordance 생성
 - ECLASS alias dictionary로 eclass_irdi 보강
 
         |
@@ -114,7 +114,7 @@ Output:
 - MatchResult[]
 Behavior:
 - default: threshold over candidate similarity_score
-- llm: batch prompt reranking by Ollama
+- llm: batch prompt reranking by Gemini API
 
         |
         v
@@ -181,21 +181,21 @@ Output:
 
 ### default
 
-외부 의존 없이 동작하는 baseline이다.
+기본 실행은 구체 모듈을 strict하게 연결한다. Gemini API key 또는 Ollama embedding 서버가 없으면 default module로 내려가지 않고 `PipelineConfigurationError`로 중단한다.
 
 ```text
 DefaultInputLayer
-→ ManualInputExtractor
-→ LLMSemanticNodeBuilder(skip_enrichment=True)
-→ HybridStandardsCandidateRetriever(use_embeddings=False)
-→ LLMMatcher(skip_llm=True)
-→ TemplateAwareAASMapper(use_llm_template_selection=False)
+→ LLMExtractor(Gemini)
+→ LLMSemanticNodeBuilder(Gemini)
+→ HybridStandardsCandidateRetriever(qwen3-embedding:4b)
+→ LLMMatcher(skip_llm=False)
+→ TemplateAwareAASMapper(use_llm_template_selection=True)
 → JsonAASGenerator
 ```
 
 ### llm
 
-Ollama가 실행 중이면 LLM 기반 단계를 활성화한다.
+default와 같은 strict composition이다. LLM provider는 `PipelineConfig.llm_provider`로 선택하며 기본값은 `gemini`이다.
 
 ```text
 DefaultInputLayer
@@ -208,11 +208,11 @@ DefaultInputLayer
 → JsonAASGenerator
 ```
 
-Ollama가 없으면 default 방식으로 fallback한다.
+오프라인 테스트가 필요할 때만 `allow_module_fallback=True`를 명시하면 ManualInputExtractor, DefaultSemanticNodeBuilder, lexical retrieval, similarity threshold 경로로 내려간다.
 
 ### yolo / llm-yolo
 
-YOLOPartDetector를 CV adapter로 연결한다. `ultralytics` 또는 weight 파일이 없으면 NoOpCVModel로 fallback한다.
+YOLOPartDetector를 CV adapter로 연결한다. `ultralytics` 또는 weight 파일이 없으면 fail-fast로 중단한다.
 
 ## Submodel 배치 설계
 
@@ -262,7 +262,7 @@ repositories/iec_cdd_dictionary/iec_cdd_properties.json
 ## AAS 생성 원칙
 
 1. LLM은 최종 AAS JSON을 직접 생성하지 않는다.
-2. LLM 출력은 항상 structured parser와 fallback을 통과한다.
+2. LLM 출력은 structured parser를 통과하며 strict mode에서는 형식 오류를 예외로 처리한다.
 3. property matching과 submodel placement의 근거를 `diagnostics`와 `placement`에 남긴다.
 4. `semanticId`와 `eclassIrdi`를 모두 보존한다.
 5. AAS JSON 생성은 `JsonAASGenerator`가 deterministic하게 수행한다.
@@ -287,10 +287,11 @@ candidates_by_node
 match_results
 matched_properties
 aas_mapping_plan
+mapping_validation
 aas_json
 aas_validation
 dt_registration
-dt_validation
+dt_validation (auxiliary 3D/sensor line)
 ```
 
 ## Verification
@@ -301,4 +302,4 @@ dt_validation
 python3 -m unittest
 ```
 
-현재 테스트는 default pipeline, Ollama client mock, extractor, matcher, TemplateAwareAASMapper placement correction을 포함한다.
+현재 테스트는 default pipeline fallback 경로, Gemini/Ollama client mock, extractor, matcher, TemplateAwareAASMapper placement correction을 포함한다.

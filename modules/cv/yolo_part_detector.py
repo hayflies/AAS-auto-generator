@@ -52,7 +52,7 @@ class YOLOPartDetector(BaseCVModel):
         except ImportError as exc:
             raise RuntimeError(
                 "YOLOPartDetector를 사용하려면 ultralytics 패키지가 필요합니다. "
-                "기본 파이프라인은 NoOpCVModel을 사용하므로 이 의존성이 필요 없습니다."
+                "YOLO pipeline에서는 이 의존성이 없으면 fail-fast로 중단합니다."
             ) from exc
 
         self._model = YOLO(model_path)
