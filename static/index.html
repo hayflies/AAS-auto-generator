@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AAS Generator</title>
+  <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.3.0/model-viewer.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -38,12 +39,9 @@
       display: flex;
       align-items: center;
       gap: 14px;
+      flex-shrink: 0;
     }
-    header h1 {
-      font-size: 1.25rem;
-      font-weight: 700;
-      letter-spacing: 0.03em;
-    }
+    header h1 { font-size: 1.25rem; font-weight: 700; letter-spacing: 0.03em; }
     header .badge {
       font-size: 0.7rem;
       background: var(--accent2);
@@ -59,8 +57,8 @@
       flex: 1;
       display: grid;
       grid-template-columns: 340px 1fr;
-      gap: 0;
       overflow: hidden;
+      height: calc(100vh - 53px);
     }
 
     /* ── Left panel ── */
@@ -82,50 +80,40 @@
       border-bottom: 1px solid var(--border);
     }
 
-    /* ── Drop zone ── */
+    /* ── Drop zones ── */
     .drop-zone {
-      margin: 16px;
+      margin: 16px 16px 0;
       border: 2px dashed var(--border);
       border-radius: 8px;
-      padding: 28px 16px;
+      padding: 22px 16px;
       text-align: center;
       cursor: pointer;
       transition: border-color 0.2s, background 0.2s;
       position: relative;
     }
-    .drop-zone:hover,
-    .drop-zone.drag-over {
+    .drop-zone:hover, .drop-zone.drag-over {
       border-color: var(--accent);
-      background: rgba(233, 69, 96, 0.06);
+      background: rgba(233,69,96,0.06);
+    }
+    .drop-zone.glb-zone:hover, .drop-zone.glb-zone.drag-over {
+      border-color: #4caf7d;
+      background: rgba(76,175,125,0.06);
     }
     .drop-zone input[type="file"] {
-      position: absolute;
-      inset: 0;
-      opacity: 0;
-      cursor: pointer;
-      width: 100%;
-      height: 100%;
+      position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
     }
-    .drop-zone .drop-icon {
-      font-size: 2rem;
-      margin-bottom: 8px;
-      display: block;
-    }
-    .drop-zone .drop-label {
-      font-size: 0.85rem;
-      color: var(--text-muted);
-      line-height: 1.5;
-    }
-    .drop-zone .drop-label strong {
-      color: var(--accent);
-    }
-    #file-list {
-      margin: 0 16px 4px;
+    .drop-zone .drop-icon { font-size: 1.6rem; margin-bottom: 6px; display: block; }
+    .drop-zone .drop-label { font-size: 0.8rem; color: var(--text-muted); line-height: 1.5; }
+    .drop-zone .drop-label strong { color: var(--accent); }
+    .drop-zone.glb-zone .drop-label strong { color: var(--success); }
+
+    .file-tag-list {
+      margin: 6px 16px 0;
       font-size: 0.75rem;
       color: var(--text-muted);
       min-height: 18px;
     }
-    #file-list span {
+    .file-tag-list span {
       display: inline-block;
       background: var(--surface2);
       border-radius: 4px;
@@ -136,7 +124,7 @@
 
     /* ── Form fields ── */
     .form-section {
-      padding: 4px 16px 0;
+      padding: 12px 16px 0;
       display: flex;
       flex-direction: column;
       gap: 10px;
@@ -161,12 +149,8 @@
       outline: none;
       transition: border-color 0.2s;
     }
-    .field input:focus {
-      border-color: var(--accent2);
-    }
-    .field input::placeholder {
-      color: var(--text-muted);
-    }
+    .field input:focus { border-color: var(--accent2); }
+    .field input::placeholder { color: var(--text-muted); }
 
     /* ── Generate button ── */
     .btn-generate {
@@ -190,7 +174,7 @@
     .btn-generate:active:not(:disabled) { transform: scale(0.98); }
     .btn-generate:disabled { opacity: 0.45; cursor: not-allowed; }
 
-    /* ── Status box ── */
+    /* ── Status ── */
     #status {
       margin: 0 16px 16px;
       padding: 10px 12px;
@@ -221,18 +205,24 @@
       overflow: hidden;
     }
 
-    .right-top {
-      flex: 0 0 auto;
+    /* ── Results table ── */
+    .results-section {
+      flex-shrink: 0;
       border-bottom: 1px solid var(--border);
-      display: flex;
-      flex-direction: column;
     }
-    .right-top .panel-title {
+    .results-header {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      padding: 14px 20px 10px;
+      border-bottom: 1px solid var(--border);
       display: flex;
       align-items: center;
       justify-content: space-between;
     }
-    .right-top .panel-title button {
+    .results-header button {
       font-size: 0.7rem;
       background: none;
       border: 1px solid var(--border);
@@ -242,22 +232,9 @@
       cursor: pointer;
       transition: border-color 0.2s, color 0.2s;
     }
-    .right-top .panel-title button:hover {
-      border-color: var(--accent2);
-      color: var(--text);
-    }
-
-    /* ── Results table ── */
-    .table-wrapper {
-      overflow-x: auto;
-      max-height: 220px;
-      overflow-y: auto;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.8rem;
-    }
+    .results-header button:hover { border-color: var(--accent2); color: var(--text); }
+    .table-wrapper { overflow-x: auto; max-height: 200px; overflow-y: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
     thead th {
       background: var(--surface);
       color: var(--text-muted);
@@ -271,18 +248,10 @@
       top: 0;
       white-space: nowrap;
     }
-    tbody tr {
-      border-bottom: 1px solid var(--border);
-      cursor: pointer;
-      transition: background 0.15s;
-    }
+    tbody tr { border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.15s; }
     tbody tr:hover  { background: rgba(255,255,255,0.04); }
     tbody tr.active { background: rgba(83,52,131,0.3); }
-    tbody td {
-      padding: 8px 14px;
-      white-space: nowrap;
-      color: var(--text);
-    }
+    tbody td { padding: 8px 14px; white-space: nowrap; color: var(--text); }
     tbody td.muted { color: var(--text-muted); font-size: 0.75rem; }
     .badge-count {
       display: inline-block;
@@ -290,6 +259,15 @@
       border-radius: 10px;
       padding: 1px 8px;
       font-size: 0.72rem;
+      font-weight: 600;
+    }
+    .badge-3d {
+      display: inline-block;
+      background: rgba(76,175,125,0.2);
+      color: var(--success);
+      border-radius: 10px;
+      padding: 1px 8px;
+      font-size: 0.68rem;
       font-weight: 600;
     }
     .btn-del {
@@ -302,56 +280,67 @@
       cursor: pointer;
       transition: border-color 0.15s, color 0.15s;
     }
-    .btn-del:hover {
-      border-color: var(--error);
-      color: var(--error);
-    }
-    #empty-row td {
-      text-align: center;
-      color: var(--text-muted);
-      padding: 22px;
-      cursor: default;
-    }
+    .btn-del:hover { border-color: var(--error); color: var(--error); }
+    #empty-row td { text-align: center; color: var(--text-muted); padding: 22px; cursor: default; }
 
-    /* ── JSON viewer ── */
-    .right-bottom {
+    /* ── Viewer tabs ── */
+    .viewer-section {
       flex: 1;
       display: flex;
       flex-direction: column;
       overflow: hidden;
     }
-    .right-bottom .panel-title {
+    .tab-bar {
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      padding: 0 20px;
+      background: var(--surface);
       flex-shrink: 0;
+      gap: 0;
     }
-    .right-bottom .panel-title .viewer-info {
-      font-size: 0.72rem;
+    .tab-btn {
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
       color: var(--text-muted);
-      font-weight: 400;
-      text-transform: none;
-      letter-spacing: 0;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 12px 16px 10px;
+      cursor: pointer;
+      transition: color 0.2s, border-color 0.2s;
+      white-space: nowrap;
     }
-    .btn-copy {
+    .tab-btn:hover { color: var(--text); }
+    .tab-btn.active { color: var(--text); border-bottom-color: var(--accent); }
+    .tab-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+    .tab-actions {
+      margin-left: auto;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .tab-actions button {
       font-size: 0.7rem;
       background: none;
       border: 1px solid var(--border);
       color: var(--text-muted);
       border-radius: 4px;
-      padding: 2px 8px;
+      padding: 3px 10px;
       cursor: pointer;
       transition: border-color 0.2s, color 0.2s;
     }
-    .btn-copy:hover {
-      border-color: var(--success);
-      color: var(--success);
-    }
-    .json-wrapper {
-      flex: 1;
-      overflow: auto;
-      padding: 14px 18px;
-    }
+    .tab-actions button:hover { border-color: var(--success); color: var(--success); }
+    #viewer-label { font-size: 0.72rem; color: var(--text-muted); }
+
+    /* ── Tab panes ── */
+    .tab-pane { display: none; flex: 1; overflow: hidden; flex-direction: column; }
+    .tab-pane.active { display: flex; }
+
+    /* JSON viewer */
+    .json-wrapper { flex: 1; overflow: auto; padding: 14px 18px; }
     #json-output {
       font-family: var(--mono);
       font-size: 0.78rem;
@@ -363,16 +352,38 @@
       outline: none;
       min-height: 100%;
     }
-    #json-placeholder {
+    .viewer-placeholder {
       font-size: 0.82rem;
       color: var(--text-muted);
       text-align: center;
       margin-top: 40px;
     }
 
-    /* ── Responsive ── */
+    /* 3D viewer */
+    .model-wrapper {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #0d0d1a;
+      position: relative;
+    }
+    model-viewer {
+      width: 100%;
+      height: 100%;
+      background: transparent;
+      --poster-color: transparent;
+    }
+    .model-placeholder {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      text-align: center;
+    }
+    .model-placeholder .icon { font-size: 3rem; display: block; margin-bottom: 12px; opacity: 0.4; }
+
     @media (max-width: 860px) {
-      main { grid-template-columns: 1fr; }
+      main { grid-template-columns: 1fr; height: auto; }
       .left-panel { border-right: none; border-bottom: 1px solid var(--border); }
     }
   </style>
@@ -385,19 +396,17 @@
 </header>
 
 <main>
-  <!-- ── Left panel: upload form ── -->
+  <!-- ── Left panel ── -->
   <aside class="left-panel">
     <div class="panel-title">Upload &amp; Generate</div>
 
+    <!-- 이미지/PDF 업로드 -->
     <div class="drop-zone" id="drop-zone">
       <input type="file" id="file-input" multiple accept=".pdf,.png,.jpg,.jpeg,.bmp,.tiff,.webp">
       <span class="drop-icon">&#128196;</span>
-      <div class="drop-label">
-        <strong>Click or drag</strong> files here<br>
-        PDF, PNG, JPG supported
-      </div>
+      <div class="drop-label"><strong>Click or drag</strong> files here<br>PDF, PNG, JPG</div>
     </div>
-    <div id="file-list"></div>
+    <div class="file-tag-list" id="file-list"></div>
 
     <div class="form-section">
       <div class="field">
@@ -422,10 +431,12 @@
     <div id="status"></div>
   </aside>
 
-  <!-- ── Right panel: results + viewer ── -->
+  <!-- ── Right panel ── -->
   <section class="right-panel">
-    <div class="right-top">
-      <div class="panel-title">
+
+    <!-- Results table -->
+    <div class="results-section">
+      <div class="results-header">
         <span>Results</span>
         <button onclick="loadResults()">&#8635; Refresh</button>
       </div>
@@ -433,36 +444,66 @@
         <table>
           <thead>
             <tr>
-              <th>#</th>
-              <th>Asset Name</th>
-              <th>Asset ID</th>
-              <th>Created</th>
-              <th>Props</th>
-              <th></th>
+              <th>#</th><th>Asset Name</th><th>Asset ID</th>
+              <th>Created</th><th>Props</th><th>3D</th><th></th>
             </tr>
           </thead>
           <tbody id="results-tbody">
-            <tr id="empty-row"><td colspan="6">No results yet. Generate an AAS to get started.</td></tr>
+            <tr id="empty-row">
+              <td colspan="7">No results yet. Generate an AAS to get started.</td>
+            </tr>
           </tbody>
         </table>
       </div>
     </div>
 
-    <div class="right-bottom">
-      <div class="panel-title">
-        <span>AAS JSON Viewer <span class="viewer-info" id="viewer-info"></span></span>
-        <button class="btn-copy" id="btn-copy" onclick="copyJson()" style="display:none">Copy JSON</button>
+    <!-- Viewer tabs -->
+    <div class="viewer-section">
+      <div class="tab-bar">
+        <button class="tab-btn active" id="tab-json-btn" onclick="switchTab('json')">AAS JSON</button>
+        <button class="tab-btn" id="tab-3d-btn" onclick="switchTab('3d')" disabled>3D Model</button>
+        <div class="tab-actions">
+          <span id="viewer-label"></span>
+          <button id="btn-copy" onclick="copyJson()" style="display:none">Copy JSON</button>
+        </div>
       </div>
-      <div class="json-wrapper">
-        <div id="json-placeholder">Select a result from the table above to view its AAS JSON.</div>
-        <pre id="json-output" style="display:none"></pre>
+
+      <!-- JSON pane -->
+      <div class="tab-pane active" id="pane-json">
+        <div class="json-wrapper">
+          <div class="viewer-placeholder" id="json-placeholder">
+            Select a result from the table above to view its AAS JSON.
+          </div>
+          <pre id="json-output" style="display:none"></pre>
+        </div>
+      </div>
+
+      <!-- 3D pane -->
+      <div class="tab-pane" id="pane-3d">
+        <div class="model-wrapper" id="model-wrapper">
+          <div class="model-placeholder" id="model-placeholder">
+            <span class="icon">&#127922;</span>
+            3D 모델이 없습니다.<br>GLB 파일을 함께 업로드하면 여기에 표시됩니다.
+          </div>
+          <model-viewer
+            id="model-viewer"
+            style="display:none"
+            auto-rotate
+            camera-controls
+            shadow-intensity="1"
+            environment-image="neutral"
+            tone-mapping="neutral"
+            ar
+          ></model-viewer>
+        </div>
       </div>
     </div>
+
   </section>
 </main>
 
 <script>
-  // ── File drag & drop ──────────────────────────────────────────────────────
+  // ── File drag & drop (이미지/PDF) ─────────────────────────────────────────
   const dropZone  = document.getElementById('drop-zone');
   const fileInput = document.getElementById('file-input');
   const fileList  = document.getElementById('file-list');
@@ -470,25 +511,18 @@
   dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
   dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
   dropZone.addEventListener('drop', e => {
-    e.preventDefault();
-    dropZone.classList.remove('drag-over');
-    fileInput.files = e.dataTransfer.files;
-    renderFileList();
+    e.preventDefault(); dropZone.classList.remove('drag-over');
+    fileInput.files = e.dataTransfer.files; renderFileList();
   });
   fileInput.addEventListener('change', renderFileList);
 
   function renderFileList() {
     const files = [...fileInput.files];
     fileList.innerHTML = files.length
-      ? files.map(f => `<span title="${f.name}">${truncate(f.name, 24)}</span>`).join('')
-      : '';
+      ? files.map(f => `<span title="${f.name}">${truncate(f.name, 22)}</span>`).join('') : '';
   }
 
-  function truncate(str, n) {
-    return str.length > n ? str.slice(0, n - 1) + '…' : str;
-  }
-
-  // ── Status helper ─────────────────────────────────────────────────────────
+  // ── Status ────────────────────────────────────────────────────────────────
   function setStatus(msg, type = 'info') {
     const el = document.getElementById('status');
     el.textContent = msg;
@@ -500,27 +534,20 @@
   async function handleGenerate() {
     const files = fileInput.files;
     if (!files || files.length === 0) {
-      setStatus('파일을 1개 이상 선택해 주세요.', 'error');
-      return;
+      setStatus('파일을 1개 이상 선택해 주세요.', 'error'); return;
     }
-
     const nameVal = document.getElementById('inp-name').value.trim();
     if (!nameVal) {
-      const nameInput = document.getElementById('inp-name');
-      nameInput.style.borderColor = 'var(--error)';
-      nameInput.focus();
-      setStatus('Asset Name을 입력해 주세요. (예: OMY)', 'error');
-      setTimeout(() => { nameInput.style.borderColor = ''; }, 2000);
-      return;
+      const el = document.getElementById('inp-name');
+      el.style.borderColor = 'var(--error)'; el.focus();
+      setStatus('Asset Name을 입력해 주세요.', 'error');
+      setTimeout(() => { el.style.borderColor = ''; }, 2000); return;
     }
 
     const btn     = document.getElementById('btn-generate');
     const spinner = document.getElementById('spinner');
     const label   = document.getElementById('btn-label');
-
-    btn.disabled       = true;
-    spinner.style.display = 'block';
-    label.textContent  = 'Generating…';
+    btn.disabled = true; spinner.style.display = 'block'; label.textContent = 'Generating…';
     setStatus('파이프라인 실행 중입니다. 잠시 기다려 주세요…', 'info');
 
     const form = new FormData();
@@ -530,48 +557,41 @@
     form.append('asset_type',   document.getElementById('inp-type').value.trim());
 
     try {
-      const res = await fetch('/api/generate', { method: 'POST', body: form });
+      const res  = await fetch('/api/generate', { method: 'POST', body: form });
       const data = await res.json();
-
-      if (!res.ok) {
-        setStatus(`오류: ${data.detail || res.statusText}`, 'error');
-        return;
-      }
+      if (!res.ok) { setStatus(`오류: ${data.detail || res.statusText}`, 'error'); return; }
 
       const validity = data.is_valid ? '✓ Valid' : '⚠ Invalid';
+      const modelNote = data.has_model ? ' | 3D ✓' : '';
       setStatus(
-        `AAS 생성 완료 — ID: ${data.id} | Properties: ${data.property_count} | ${validity}`,
+        `AAS 생성 완료 — ID: ${data.id} | Properties: ${data.property_count} | ${validity}${modelNote}`,
         'success'
       );
-
       await loadResults();
-      selectRow(data.id, data.aas_json, data.asset_name);
+      selectRow(data.id, data.aas_json, data.asset_name, data.has_model);
     } catch (err) {
       setStatus(`네트워크 오류: ${err.message}`, 'error');
     } finally {
-      btn.disabled       = false;
-      spinner.style.display = 'none';
-      label.textContent  = 'Generate AAS';
+      btn.disabled = false; spinner.style.display = 'none'; label.textContent = 'Generate AAS';
     }
   }
 
   // ── Results table ─────────────────────────────────────────────────────────
-  let activeRowId = null;
+  let activeRowId  = null;
+  let activeHasModel = false;
 
   async function loadResults() {
     try {
       const res  = await fetch('/api/results');
       const rows = await res.json();
       renderTable(rows);
-    } catch (err) {
-      console.error('결과 목록 로드 실패:', err);
-    }
+    } catch (err) { console.error('결과 목록 로드 실패:', err); }
   }
 
   function renderTable(rows) {
     const tbody = document.getElementById('results-tbody');
     if (!rows || rows.length === 0) {
-      tbody.innerHTML = '<tr id="empty-row"><td colspan="6">No results yet. Generate an AAS to get started.</td></tr>';
+      tbody.innerHTML = '<tr id="empty-row"><td colspan="7">No results yet. Generate an AAS to get started.</td></tr>';
       return;
     }
     tbody.innerHTML = rows.map(r => `
@@ -581,7 +601,8 @@
         <td class="muted">${escHtml(r.asset_id)}</td>
         <td class="muted">${r.created_at}</td>
         <td><span class="badge-count">${r.property_count}</span></td>
-        <td><button class="btn-del" onclick="deleteRow(event, ${r.id})">Delete</button></td>
+        <td>${r.model_path ? '<span class="badge-3d">GLB</span>' : '<span style="color:var(--text-muted);font-size:0.75rem">—</span>'}</td>
+        <td><button class="btn-del" onclick="deleteRow(event,${r.id})">Delete</button></td>
       </tr>
     `).join('');
   }
@@ -592,32 +613,75 @@
       const res  = await fetch(`/api/results/${id}`);
       if (!res.ok) return;
       const data = await res.json();
-      selectRow(id, data.aas_json, data.asset_name);
-      await loadResults();          // re-render to update active highlight
-    } catch (err) {
-      console.error('결과 조회 실패:', err);
-    }
+      const hasModel = !!data.model_path;
+      selectRow(id, data.aas_json, data.asset_name, hasModel);
+      await loadResults();
+    } catch (err) { console.error('결과 조회 실패:', err); }
   }
 
-  function selectRow(id, aasJson, name) {
-    activeRowId = id;
+  function selectRow(id, aasJson, name, hasModel) {
+    activeRowId   = id;
+    activeHasModel = hasModel;
+
+    // JSON pane
     const out = document.getElementById('json-output');
     const ph  = document.getElementById('json-placeholder');
-    const info = document.getElementById('viewer-info');
-    const copyBtn = document.getElementById('btn-copy');
-
     out.textContent = JSON.stringify(aasJson, null, 2);
     out.style.display = 'block';
     ph.style.display  = 'none';
-    info.textContent  = `— ${name || 'Result #' + id}`;
-    copyBtn.style.display = 'inline-block';
 
-    // highlight active row without full re-render
-    document.querySelectorAll('#results-tbody tr').forEach(tr => {
-      tr.classList.toggle('active', Number(tr.dataset.id) === id);
-    });
+    // label & copy
+    document.getElementById('viewer-label').textContent = `— ${name || 'Result #' + id}`;
+    document.getElementById('btn-copy').style.display = 'inline-block';
+
+    // 3D tab
+    const tab3d = document.getElementById('tab-3d-btn');
+    tab3d.disabled = !hasModel;
+    if (hasModel) {
+      loadModel(id);
+    } else {
+      clearModel();
+      // 3D 탭이 열려있으면 JSON 탭으로 전환
+      if (document.getElementById('pane-3d').classList.contains('active')) {
+        switchTab('json');
+      }
+    }
+
+    // highlight row
+    document.querySelectorAll('#results-tbody tr').forEach(tr =>
+      tr.classList.toggle('active', Number(tr.dataset.id) === id)
+    );
   }
 
+  // ── Tab switcher ──────────────────────────────────────────────────────────
+  function switchTab(tab) {
+    const isJson = tab === 'json';
+    document.getElementById('pane-json').classList.toggle('active', isJson);
+    document.getElementById('pane-3d').classList.toggle('active', !isJson);
+    document.getElementById('tab-json-btn').classList.toggle('active', isJson);
+    document.getElementById('tab-3d-btn').classList.toggle('active', !isJson);
+    document.getElementById('btn-copy').style.display = (isJson && activeRowId) ? 'inline-block' : 'none';
+  }
+
+  // ── 3D model viewer ───────────────────────────────────────────────────────
+  function loadModel(resultId) {
+    const viewer = document.getElementById('model-viewer');
+    const ph     = document.getElementById('model-placeholder');
+    const src    = `/api/models/${resultId}?t=${Date.now()}`;
+    viewer.src = src;
+    viewer.style.display = 'block';
+    ph.style.display = 'none';
+  }
+
+  function clearModel() {
+    const viewer = document.getElementById('model-viewer');
+    const ph     = document.getElementById('model-placeholder');
+    viewer.src = '';
+    viewer.style.display = 'none';
+    ph.style.display = 'flex';
+  }
+
+  // ── Delete ────────────────────────────────────────────────────────────────
   async function deleteRow(event, id) {
     event.stopPropagation();
     if (!confirm(`Result #${id} 을(를) 삭제하시겠습니까?`)) return;
@@ -625,16 +689,17 @@
       const res = await fetch(`/api/results/${id}`, { method: 'DELETE' });
       if (!res.ok) { alert('삭제에 실패했습니다.'); return; }
       if (activeRowId === id) {
-        activeRowId = null;
+        activeRowId = null; activeHasModel = false;
         document.getElementById('json-output').style.display = 'none';
         document.getElementById('json-placeholder').style.display = 'block';
-        document.getElementById('viewer-info').textContent = '';
+        document.getElementById('viewer-label').textContent = '';
         document.getElementById('btn-copy').style.display = 'none';
+        document.getElementById('tab-3d-btn').disabled = true;
+        clearModel();
+        switchTab('json');
       }
       await loadResults();
-    } catch (err) {
-      alert(`네트워크 오류: ${err.message}`);
-    }
+    } catch (err) { alert(`네트워크 오류: ${err.message}`); }
   }
 
   // ── Copy JSON ─────────────────────────────────────────────────────────────
@@ -650,12 +715,10 @@
   }
 
   // ── Utilities ─────────────────────────────────────────────────────────────
+  function truncate(str, n) { return str.length > n ? str.slice(0, n - 1) + '…' : str; }
   function escHtml(str) {
     return String(str)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
   // ── Init ──────────────────────────────────────────────────────────────────

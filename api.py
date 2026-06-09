@@ -1,4 +1,4 @@
-"""FastAPI 백엔드 — 파일 업로드 → 파이프라인 → DB → AAS JSON 반환."""
+"""FastAPI 백엔드 — 파일 업로드 → 파이프라인 → DB → AAS JSON / GLB 반환."""
 
 from __future__ import annotations
 
@@ -23,10 +23,8 @@ from db import delete_result, get_result, init_db, list_results, save_result
 
 app = FastAPI(title="AAS Generator", version="1.0.0")
 
-# DB 초기화
 init_db()
 
-# Static 파일 서빙 (index.html)
 STATIC_DIR = ROOT / "static"
 STATIC_DIR.mkdir(exist_ok=True)
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
@@ -76,6 +74,11 @@ async def generate_aas(
         except Exception as exc:
             raise HTTPException(status_code=500, detail=f"파이프라인 오류: {exc}") from exc
 
+    # 파이프라인이 생성한 GLB 경로 (파일이 실제 존재할 때만 저장)
+    model_path = result.model_info.model_path
+    if model_path and not Path(model_path).exists():
+        model_path = None
+
     prop_count = sum(
         len(sm.get("submodelElements", []))
         for sm in result.aas_json.get("submodels", [])
@@ -86,6 +89,7 @@ async def generate_aas(
         asset_name=asset_name,
         aas_json=result.aas_json,
         property_count=prop_count,
+        model_path=model_path,
     )
 
     return {
@@ -95,18 +99,17 @@ async def generate_aas(
         "property_count": prop_count,
         "is_valid": result.aas_validation.get("is_valid", False),
         "aas_json": result.aas_json,
+        "has_model": model_path is not None,
     }
 
 
 @app.get("/api/results")
 async def api_list_results() -> list[dict]:
-    """저장된 AAS 결과 목록을 반환한다."""
     return list_results()
 
 
 @app.get("/api/results/{result_id}")
 async def api_get_result(result_id: int) -> dict:
-    """특정 AAS 결과를 반환한다."""
     result = get_result(result_id)
     if result is None:
         raise HTTPException(status_code=404, detail="결과를 찾을 수 없습니다.")
@@ -115,10 +118,27 @@ async def api_get_result(result_id: int) -> dict:
 
 @app.delete("/api/results/{result_id}")
 async def api_delete_result(result_id: int) -> dict:
-    """특정 AAS 결과를 삭제한다."""
     if not delete_result(result_id):
         raise HTTPException(status_code=404, detail="결과를 찾을 수 없습니다.")
     return {"message": "삭제 완료"}
+
+
+@app.get("/api/models/{result_id}")
+async def api_get_model(result_id: int) -> FileResponse:
+    """파이프라인이 생성한 경량화 GLB 파일을 반환한다."""
+    result = get_result(result_id)
+    if result is None:
+        raise HTTPException(status_code=404, detail="결과를 찾을 수 없습니다.")
+
+    model_path = result.get("model_path")
+    if not model_path or not Path(model_path).exists():
+        raise HTTPException(status_code=404, detail="3D 모델 파일이 없습니다.")
+
+    return FileResponse(
+        path=model_path,
+        media_type="model/gltf-binary",
+        filename=Path(model_path).name,
+    )
 
 
 if __name__ == "__main__":
