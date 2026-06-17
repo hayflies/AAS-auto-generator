@@ -12,6 +12,7 @@ import uvicorn
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware  # CORS 미들웨어 임포트
 
 ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT))
@@ -22,6 +23,23 @@ from app.text import slugify
 from db import delete_result, get_result, init_db, list_results, save_result
 
 app = FastAPI(title="AAS Generator", version="1.0.0")
+
+# CORS 보안 정책 허용 설정
+origins = [
+    "http://localhost:3000",      # 로컬 React 기본 포트
+    "http://localhost:5173",      # 로컬 Vite/React 기본 포트
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:5173",
+    "https://aas-generator.vercel.app",  # 배포된 프론트엔드 주소
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,  # 프론트엔드의 어떤 포트(3000, 5173 등)든 모두 허용
+    allow_credentials=True,
+    allow_methods=["*"],  # GET, POST, DELETE 등 모든 HTTP 메서드 허용
+    allow_headers=["*"],  # 모든 HTTP 헤더 허용
+)
 
 init_db()
 
@@ -37,18 +55,26 @@ async def root() -> FileResponse:
 
 @app.post("/api/generate")
 async def generate_aas(
-    files: Annotated[list[UploadFile], File(description="이미지 또는 PDF 파일")],
-    name: Annotated[str, Form()] = "",
-    manufacturer: Annotated[str, Form()] = "",
-    asset_type: Annotated[str, Form()] = "",
+    # 프론트엔드 구조(UploadPage.tsx)에 맞춰서 파일들을 분리하여 수신 (비어있을 수 있으므로 기본값 설정)
+    documents: list[UploadFile] = File(default=[]),
+    models: list[UploadFile] = File(default=[]),
+    images: list[UploadFile] = File(default=[]),
+    # 텍스트 입력 데이터들도 개별 Form 데이터로 정확한 매칭 수신
+    name: str = Form(""),
+    manufacturer: str = Form(""),
+    asset_type: str = Form(""),
 ):
     """업로드된 파일로 AAS를 생성하고 DB에 저장한다."""
-    if not files:
+    
+    # 1. 프론트엔드가 따로 보낸 모든 파일들을 하나의 리스트로 통합
+    all_files = documents + models + images
+
+    if not all_files:
         raise HTTPException(status_code=400, detail="파일을 1개 이상 업로드하세요.")
 
     with tempfile.TemporaryDirectory() as tmp_dir:
         saved_paths: list[str] = []
-        for upload in files:
+        for upload in all_files:
             dest = Path(tmp_dir) / (upload.filename or "upload")
             with open(dest, "wb") as f:
                 shutil.copyfileobj(upload.file, f)
@@ -57,6 +83,7 @@ async def generate_aas(
         asset_name = name or Path(saved_paths[0]).stem.replace("_", " ").title()
         asset_id = slugify(asset_name)
 
+        # 2. 내부 파이프라인 엔진이 기대하는 데이터 구조(Payload)를 그대로 조립
         payload = {
             "manual_files": saved_paths,
             "user_inputs": {
