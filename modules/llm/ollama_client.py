@@ -22,8 +22,6 @@ from interfaces.base_llm import BaseLLM, LLMConnectionError
 OLLAMA_BASE_URL = "http://localhost:11434"
 DEFAULT_MODEL = "llama3.2"
 DEFAULT_EMBEDDING_MODEL = "nomic-embed-text"
-# [delete] DEFAULT_EMBEDDING_MODEL = "mxbai-embed-large"
-# [delete] DEFAULT_EMBEDDING_MODEL = "qwen3-embedding:4b"
 DEFAULT_EMBED_MODEL = DEFAULT_EMBEDDING_MODEL
 REQUEST_TIMEOUT = 120
 

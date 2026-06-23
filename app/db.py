@@ -1,4 +1,4 @@
-"""SQLite DB 헬퍼 — AAS 생성 결과를 저장/조회한다."""
+"""SQLite persistence for generated AAS results."""
 
 from __future__ import annotations
 
@@ -7,13 +7,16 @@ import sqlite3
 from datetime import datetime
 from pathlib import Path
 
-DB_PATH = Path(__file__).parent / "data" / "aas_database.db"
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+DB_PATH = PROJECT_ROOT / "data" / "aas_database.db"
 
 
 def init_db() -> None:
     DB_PATH.parent.mkdir(parents=True, exist_ok=True)
     conn = sqlite3.connect(DB_PATH)
-    conn.execute("""
+    conn.execute(
+        """
         CREATE TABLE IF NOT EXISTS aas_results (
             id              INTEGER PRIMARY KEY AUTOINCREMENT,
             asset_id        TEXT    NOT NULL,
@@ -23,12 +26,12 @@ def init_db() -> None:
             aas_json        TEXT    NOT NULL,
             model_path      TEXT
         )
-    """)
-    # 기존 DB에 model_path 컬럼이 없으면 추가 (마이그레이션)
+        """
+    )
     try:
         conn.execute("ALTER TABLE aas_results ADD COLUMN model_path TEXT")
     except sqlite3.OperationalError:
-        pass  # 이미 존재하면 무시
+        pass
     conn.commit()
     conn.close()
 
@@ -68,7 +71,7 @@ def list_results() -> list[dict]:
         "FROM aas_results ORDER BY created_at DESC"
     ).fetchall()
     conn.close()
-    return [dict(r) for r in rows]
+    return [dict(row) for row in rows]
 
 
 def get_result(result_id: int) -> dict | None:

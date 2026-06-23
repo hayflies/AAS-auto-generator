@@ -2,6 +2,8 @@
 __pycache__/
 *.py[cod]
 .pytest_cache/
+.DS_Store
+*.egg-info/
 
 data/output/*
 data/generated_aas/*
@@ -20,3 +22,8 @@ data/input/images/*
 # Claude Code 설정 (로컬 전용)
 .claude/
 .venv/
+
+# Discontinued local classifier-training artifacts
+data/models/
+data/fine_tuning/
+data/evaluation/

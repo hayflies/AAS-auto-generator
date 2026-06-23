@@ -6,8 +6,6 @@ from pathlib import Path
 
 SEMANTIC_NODE_LLM_MODEL = "llama3.2"
 DEFAULT_EMBEDDING_MODEL = "nomic-embed-text"
-# [delete] DEFAULT_EMBEDDING_MODEL = "mxbai-embed-large"
-# [delete] DEFAULT_EMBEDDING_MODEL = "qwen3-embedding:4b"
 
 
 @dataclass(frozen=True)

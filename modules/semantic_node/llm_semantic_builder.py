@@ -223,11 +223,18 @@ class LLMSemanticNodeBuilder(BaseSemanticNodeBuilder):
             if definition and affordance:
                 enrichments[input_index] = (definition, affordance)
 
-        if self.fail_fast and len(enrichments) != len(entities):
-            raise LLMResponseFormatError(
-                "LLM batch semantic enrichment response must include one complete item per entity."
-            )
-        if not self.fail_fast and len(enrichments) != len(entities):
+        missing_indices = [
+            index
+            for index in range(1, len(entities) + 1)
+            if index not in enrichments
+        ]
+        if self.fail_fast and missing_indices:
+            # A partial batch response is recoverable: retry only the omitted
+            # entities, while retaining fail-fast behavior if that retry is
+            # unavailable or malformed.
+            for index in missing_indices:
+                enrichments[index] = self._enrich(entities[index - 1])
+        if not self.fail_fast and missing_indices:
             missing_count = len(entities) - len(enrichments)
             print(
                 "[LLMSemanticNodeBuilder] "

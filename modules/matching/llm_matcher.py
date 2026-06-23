@@ -1,11 +1,7 @@
-"""LLM 기반 엔티티 매처.
+"""Production LLM entity matcher.
 
-interfaces/base_matcher.py의 BaseEntityMatcher를 구현한다.
-파이프라인은 RuleBasedEntityMatcher 대신 이 클래스를 꽂아 쓸 수 있다.
-
-파이프라인 호출 방식 (pipeline.py 85번 줄):
-    node_matches = [self.matcher.match(node, candidate) for candidate in candidates]
-즉 후보를 하나씩 넘겨서 MatchResult 하나씩 받는 구조다.
+It implements ``BaseEntityMatcher`` and supports both an individual candidate
+comparison and batch reranking of a retrieved top-k candidate set.
 """
 
 from __future__ import annotations

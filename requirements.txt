@@ -1,0 +1,14 @@
+# Web API and multipart file upload
+fastapi>=0.115,<1.0
+uvicorn[standard]>=0.30,<1.0
+python-multipart>=0.0.9,<1.0
+
+# PDF and image text extraction
+pdfplumber>=0.11,<1.0
+pypdf>=5.0,<7.0
+easyocr>=1.7,<2.0
+Pillow>=10.0,<13.0
+numpy>=1.26,<3.0
+
+# Optional CV stage used by the yolo pipeline mode
+ultralytics>=8.3,<9.0

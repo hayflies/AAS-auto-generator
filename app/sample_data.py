@@ -11,8 +11,7 @@ def sample_payload() -> dict[str, Any]:
     """
 
     return {
-        "asset_images": ["data/input/robot_arm_front.jpg", "data/input/robot_arm_nameplate.jpg"],
-        "manual_files": ["data/input/robot_arm_datasheet.pdf"],
+        "free_text": "Rated voltage: 24 V\nRated current: 3.5 A\nWeight: 12.4 kg",
         "user_inputs": {
             "asset_id": "robot_arm_a",
             "asset_name": "Robot Arm A",

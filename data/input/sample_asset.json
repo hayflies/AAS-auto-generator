@@ -1,12 +1,5 @@
 {
-  "asset_images": [
-    "data/input/robot_arm_front.jpg",
-    "data/input/robot_arm_nameplate.jpg",
-    "data/input/테스트사진.jpg"
-  ],
-  "manual_files": [
-    "data/input/robot_arm_datasheet.pdf"
-  ],
+  "free_text": "Rated voltage: 34 V\nRated current: 4.5 A\nWeight: 13.4 kg",
   "user_inputs": {
     "asset_id": "robot_arm_b",
     "asset_name": "Robot Arm B",
